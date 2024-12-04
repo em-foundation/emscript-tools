@@ -12,7 +12,7 @@ export function isPackage(path: string): boolean {
 
 export function mkBucketNames(): string[] {
     let res = new Array<string>();
-    let wpath = rootPath()
+    let wpath = workPath()
     Fs.readdirSync(wpath).forEach(f => {
         let ppath = Path.join(wpath, f);
         if (isPackage(ppath)) Fs.readdirSync(ppath).forEach(f => {
@@ -25,7 +25,7 @@ export function mkBucketNames(): string[] {
 
 export function mkPackageNames(): string[] {
     let res = new Array<string>();
-    let wpath = rootPath()
+    let wpath = workPath()
     Fs.readdirSync(wpath).forEach(f => {
         if (isPackage(Path.join(wpath, f))) res.push(f);
     });
@@ -34,4 +34,8 @@ export function mkPackageNames(): string[] {
 
 export function rootPath(): string {
     return Vsc.workspace.workspaceFolders![0].uri.fsPath
+}
+
+export function workPath(): string {
+    return Path.join(rootPath(), "workspace")
 }

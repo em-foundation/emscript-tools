@@ -17,7 +17,7 @@
         "Programming Languages"
     ],
     "activationEvents": [
-        "workspaceContains:em-workspace.ini"
+        "workspaceContains:workspace/em-workspace.ini"
     ],
     "main": "./out/Main",
     "scripts": {
