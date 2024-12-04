@@ -32,6 +32,7 @@
     },
     "dependencies": {
         "commander": "^8.3.0",
+        "json5": "^2.2.3",
         "sprintf-js": "1.0.3"
     },
     "devDependencies": {
@@ -40,9 +41,7 @@
         "tsx": "^4.19.2",
         "typescript": "^5.7.2"
     },
-
     "extensionDependencies": [
         "vscode-icons-team.vscode-icons"
     ]
-
 }
