@@ -16,6 +16,7 @@ async function refreshIcons() {
         { icon: 'empackage', extensions: pnames, format: 'svg' },
         { icon: 'embucket', extensions: bnames, format: 'svg' },
         { icon: 'emscript', extensions: ['.emscript'], format: 'svg' },
+        { icon: 'emwork', extensions: ['workspace'], format: 'svg' },
     ], Vsc.ConfigurationTarget.Workspace)
     await conf.update('associations.files', [
         { icon: 'emunit', extensions: ['.em.ts'], format: 'svg' },
