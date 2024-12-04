@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/extension.ts"],
-  "sourcesContent": ["import * as Vsc from 'vscode'\n\nexport async function activate(context: Vsc.ExtensionContext) {\n    console.log(\"em-script active\")\n    Vsc.window.showInformationMessage(\"EM\u2022Script activated\");\n}"],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,UAAqB;AAErB,eAAsB,SAAS,SAA+B;AAC1D,UAAQ,IAAI,kBAAkB;AAC9B,EAAI,WAAO,uBAAuB,0BAAqB;AAC3D;",
-  "names": []
-}

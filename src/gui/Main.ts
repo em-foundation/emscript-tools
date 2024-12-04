@@ -1,3 +1,4 @@
+import * as Utils from './Utils'
 import * as Vsc from 'vscode'
 
 export async function activate(context: Vsc.ExtensionContext) {
