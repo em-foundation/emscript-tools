@@ -19,16 +19,13 @@
     "activationEvents": [
         "workspaceContains:workspace/em-workspace.ini"
     ],
-    "main": "./out/Main",
+    "main": "./out/ext/Main",
     "scripts": {
         "vscode:prepublish": "npm run build-base -- --minify",
-        "build-base": "esbuild --bundle --external:vscode src/gui/Main.ts --outdir=out --platform=node --format=cjs",
-        "build": "npm run build-base -- --sourcemap",
-        "watch": "npm run build-base -- --sourcemap --watch",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test",
-        "typecheck": "tsc --noEmit",
-        "format": "prettier --write .",
-        "lint": "eslint ."
+        "build-cli": "esbuild --bundle --external:vscode ./src/cli/Main --outdir=out/cli --platform=node --format=cjs",
+        "build-ext": "esbuild --bundle --external:vscode ./src/ext/Main --outdir=out/ext --platform=node --format=cjs",
+        "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap ",
+        "watch": "npm run build-cli -- --sourcemap --watch"
     },
     "dependencies": {
         "commander": "^8.3.0",
