@@ -6,6 +6,12 @@ export async function activate(context: Vsc.ExtensionContext) {
     console.log("em-script active")
     await refreshIcons()
     Utils.updateConfig()
+    Utils.updateSettings('editor', 'tabCompletion', 'on')
+    Utils.updateSettings('workbench', 'tree.indent', 20)
+    Utils.updateSettings('files', 'associations', {
+         "*.em.ts": "typescript",
+     })
+
     Vsc.window.showInformationMessage("EM•Script activated")
 }
 
@@ -20,7 +26,7 @@ async function refreshIcons() {
         { icon: 'emwork', extensions: ['workspace'], format: 'svg' },
     ], Vsc.ConfigurationTarget.Workspace)
     await conf.update('associations.files', [
-        { icon: 'emunit', extensions: ['.em.ts'], format: 'svg' },
+        { icon: 'emunit', extensions: ['.em.ts', '.em-ts'], format: 'svg' },
     ], Vsc.ConfigurationTarget.Workspace)
     await conf.update('customIconFolderPath', Path.join(Vsc.extensions.getExtension('the-em-foundation.em-script')!.extensionPath, 'etc'))
     Vsc.commands.executeCommand('vscode-icons.regenerateIcons')

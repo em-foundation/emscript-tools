@@ -43,5 +43,49 @@
     },
     "extensionDependencies": [
         "vscode-icons-team.vscode-icons"
-    ]
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "em.build",
+                "title": "EM - Build"
+            }
+        ],
+        "languages": [
+            {
+                "id": "em",
+                "aliases": [
+                    "EM•Script",
+                    "EM",
+                    "Em",
+                    "em"
+                ],
+                "extensions": [
+                    ".em.ts"
+                ]
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "em.build",
+                    "when": "false"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "em.build",
+                    "group": "ZZZem-script@2",
+                    "when": "resourceFilename =~ /^.+\\.em\\.ts$/"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "em.build",
+                    "group": "ZZZem-builder@2",
+                    "when": "resourceExtname == '.ts'"
+                }
+            ]
+        }
+    }
 }

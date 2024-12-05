@@ -55,6 +55,11 @@ export function rootPath(): string {
     return Vsc.workspace.workspaceFolders![0].uri.fsPath
 }
 
+export async function updateSettings(sect: string, key: string, val: any) {
+    let conf = Vsc.workspace.getConfiguration(sect, Vsc.Uri.file(rootPath()))
+    await conf.update(key, val, Vsc.ConfigurationTarget.Workspace)
+}
+
 export function workPath(): string {
     return Path.join(rootPath(), "workspace")
 }
