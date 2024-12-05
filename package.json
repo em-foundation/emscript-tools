@@ -48,7 +48,7 @@
         "commands": [
             {
                 "command": "em.build",
-                "title": "EM - Build"
+                "title": "EM•Script — Build"
             }
         ],
         "languages": [

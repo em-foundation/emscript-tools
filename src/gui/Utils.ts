@@ -1,24 +1,43 @@
+import ChildProc from 'child_process'
 import Fs from "fs";
 import Path from "path";
 import Vsc from "vscode";
 
 import * as JSON5 from 'json5'
 
-export function updateConfig(): void {
-    const file = Path.join(rootPath(), 'tsconfig.json')
-    const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))
-    json.compilerOptions.paths = {"@EM-SCRIPT": ["./workspace/em.core/em.lang/em-script"]}
-    let wdir = workPath()
-    Fs.readdirSync(wdir).forEach(f1 => {
-        let ppath = Path.join(wdir, f1);
-        if (isPackage(ppath)) Fs.readdirSync(ppath).forEach(f2 => {
-            let bpath = Path.join(ppath, f2);
-            if (Fs.statSync(bpath).isDirectory()) {
-                json.compilerOptions.paths[`@${f2}/*`] = [`./workspace/${f1}/${f2}/*`]
-            }
-        });
-    });
-    Fs.writeFileSync(file, JSON.stringify(json, null, 4), 'utf-8')
+const EXT = ".em.ts"
+
+const loggerC = new class Logger {
+    readonly output = Vsc.window.createOutputChannel('EM•Script')
+    addBreak = (flag: boolean) => {
+        if (!flag) return
+        this.output.appendLine('----')
+        this.output.show(true)
+    }
+    addErr = async (msg: string) => { this.writeEntry('E', msg) }
+    addInfo = async (msg: string) => { this.writeEntry('I', msg) }
+    private writeEntry = (kind: string, msg: string) => {
+        msg.split('\n').forEach(ln => {
+            if (ln.length) this.output.appendLine(`${mkTime()} ${kind}: ${ln.trimEnd()}`)
+        })
+        this.output.show(true)
+    }
+}
+
+export function build(upath: string) {
+    loggerC.addInfo(`building ${upath} ...`)
+    let proc = ChildProc.spawn('npx', ['tsx', upath], { cwd: workPath(), shell: true })
+    proc.stdout.setEncoding('utf8')
+    proc.stdout.on('data', (data => loggerC.addInfo(data)))
+    proc.stderr.setEncoding('utf8')
+    proc.stderr.on('data', (data => loggerC.addErr(data)))
+    proc.on('close', (stat => {
+        loggerC.addInfo('done.')
+        loggerC.addBreak(true)
+    }))
+    proc.on('error', (err) => {
+        loggerC.addErr(err.message)
+    })
 }
 
 export function isPackage(path: string): boolean {
@@ -27,6 +46,14 @@ export function isPackage(path: string): boolean {
     let ifile = Path.join(path, 'em-package.ini');
     if (!Fs.existsSync(ifile)) return false;
     return true;
+}
+
+export function isUnitFile(uri: Vsc.Uri): boolean {
+    if (!Fs.existsSync(uri.fsPath)) return false
+    if (!Fs.statSync(uri.fsPath).isFile()) return false
+    if (!uri.fsPath.endsWith(EXT)) return false
+    return true
+
 }
 
 export function mkBucketNames(): string[] {
@@ -51,8 +78,36 @@ export function mkPackageNames(): string[] {
     return res;
 }
 
+export function mkTime(): string {
+    return (new Date).toISOString()
+}
+
+export function mkUpath(uri: Vsc.Uri): string {
+    const un = Path.basename(uri.fsPath, EXT)
+    const bn = Path.basename(Path.dirname(uri.fsPath))
+    const pn = Path.basename(Path.dirname(Path.dirname(uri.fsPath)))
+    return `${pn}/${bn}/${un}.em`
+}
+
 export function rootPath(): string {
     return Vsc.workspace.workspaceFolders![0].uri.fsPath
+}
+
+export function updateConfig(): void {
+    const file = Path.join(rootPath(), 'tsconfig.json')
+    const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))
+    json.compilerOptions.paths = { "@EM-SCRIPT": ["./workspace/em.core/em.lang/em-script"] }
+    let wdir = workPath()
+    Fs.readdirSync(wdir).forEach(f1 => {
+        let ppath = Path.join(wdir, f1);
+        if (isPackage(ppath)) Fs.readdirSync(ppath).forEach(f2 => {
+            let bpath = Path.join(ppath, f2);
+            if (Fs.statSync(bpath).isDirectory()) {
+                json.compilerOptions.paths[`@${f2}/*`] = [`./workspace/${f1}/${f2}/*`]
+            }
+        });
+    });
+    Fs.writeFileSync(file, JSON.stringify(json, null, 4), 'utf-8')
 }
 
 export async function updateSettings(sect: string, key: string, val: any) {
@@ -63,3 +118,5 @@ export async function updateSettings(sect: string, key: string, val: any) {
 export function workPath(): string {
     return Path.join(rootPath(), "workspace")
 }
+
+

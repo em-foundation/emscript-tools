@@ -1,3 +1,4 @@
+import * as Cmd from './Cmd'
 import * as Path from 'path'
 import * as Utils from './Utils'
 import * as Vsc from 'vscode'
@@ -9,8 +10,11 @@ export async function activate(context: Vsc.ExtensionContext) {
     Utils.updateSettings('editor', 'tabCompletion', 'on')
     Utils.updateSettings('workbench', 'tree.indent', 20)
     Utils.updateSettings('files', 'associations', {
-         "*.em.ts": "typescript",
-     })
+        "*.em.ts": "typescript",
+    })
+
+    context.subscriptions.push(Vsc.commands.registerCommand("em.build", Cmd.build))
+
 
     Vsc.window.showInformationMessage("EM•Script activated")
 }

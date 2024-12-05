@@ -9,5 +9,6 @@
         ".vscode": false,
         ".history": true
     },
-    "explorerExclude.backup": {}
+    "explorerExclude.backup": {},
+    "editor.formatOnSave": true
 }
