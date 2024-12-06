@@ -9,6 +9,7 @@ export async function activate(context: Vsc.ExtensionContext) {
     Utils.updateConfig()
     Utils.updateSettings('editor', 'tabCompletion', 'on')
     Utils.updateSettings('workbench', 'tree.indent', 20)
+    Utils.updateSettings('workbench', 'colorTheme', 'EM•Script Dark')
     Utils.updateSettings('files', 'associations', {
         "*.em.ts": "typescript",
     })

@@ -1,0 +1,33 @@
+{
+    "name": "EM•Script Dark",
+    "colors": {},
+    "tokenColors": [
+        {
+            "scope": [
+                "break.eml",
+                "tag.eml"
+            ],
+            "settings": {
+                "foreground": "#888888",
+            }
+        },
+        {
+            "scope": "error.eml",
+            "settings": {
+                "foreground": "#FF0000",
+            }
+        },
+        {
+            "scope": "info.eml",
+            "settings": {
+                "foreground": "#4EC9B0",
+            }
+        },
+        {
+            "scope": "time.eml",
+            "settings": {
+                "foreground": "#53acf5",
+            }
+        }
+    ]
+}

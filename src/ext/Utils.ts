@@ -6,9 +6,10 @@ import Vsc from "vscode";
 import * as JSON5 from 'json5'
 
 const EXT = ".em.ts"
+const EXTENSION_ID = "the-em-foundation.em-script"
 
 const loggerC = new class Logger {
-    readonly output = Vsc.window.createOutputChannel('EM•Script')
+    readonly output = Vsc.window.createOutputChannel('EM•Script', 'em-log')
     addBreak = (flag: boolean) => {
         if (!flag) return
         this.output.appendLine('----')
@@ -25,8 +26,10 @@ const loggerC = new class Logger {
 }
 
 export function build(upath: string) {
-    loggerC.addInfo(`building ${upath} ...`)
-    let proc = ChildProc.spawn('npx', ['tsx', upath], { cwd: workPath(), shell: true })
+    let main = Path.join(getExtRoot(), 'out/cli/Main.js')
+    let args = [main, 'build', '-u', upath]
+    process.env['NODE_PATH'] = Path.join(getExtRoot(), 'node_modules')
+    let proc = ChildProc.spawn('node', args, { cwd: workPath() })
     proc.stdout.setEncoding('utf8')
     proc.stdout.on('data', (data => loggerC.addInfo(data)))
     proc.stderr.setEncoding('utf8')
@@ -38,6 +41,10 @@ export function build(upath: string) {
     proc.on('error', (err) => {
         loggerC.addErr(err.message)
     })
+}
+
+export function getExtRoot(): string {
+    return Vsc.extensions.getExtension(EXTENSION_ID)!.extensionPath
 }
 
 export function isPackage(path: string): boolean {

@@ -48,6 +48,13 @@
                 "title": "EM•Script — Build"
             }
         ],
+        "grammars": [
+            {
+                "language": "em-log",
+                "scopeName": "source.eml",
+                "path": "./etc/syntaxes/EmLog.tmLanguage.json"
+            }
+        ],
         "languages": [
             {
                 "id": "em",
@@ -59,6 +66,19 @@
                 ],
                 "extensions": [
                     ".em.ts"
+                ]
+            },
+            {
+                "id": "em-log",
+                "aliases": [
+                    "EmLog",
+                    "em-log"
+                ],
+                "extensions": [
+                    ".eml"
+                ],
+                "mimetypes": [
+                    "text/x-code-output"
                 ]
             }
         ],
@@ -83,6 +103,13 @@
                     "when": "resourceExtname == '.ts'"
                 }
             ]
-        }
+        },
+        "themes": [
+            {
+                "label": "EM•Script Dark",
+                "uiTheme": "vs-dark",
+                "path": "etc/themes/em-dark-color-theme.json"
+            }
+        ]
     }
 }
