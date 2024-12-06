@@ -1,5 +1,7 @@
 import * as Commander from 'commander'
 
+import * as Session from './Session'
+
 const CMD = new Commander.Command('em-script')
 
 CMD
@@ -14,5 +16,6 @@ CMD
 CMD.parse(process.argv)
 
 function doBuild(opts: any) {
-    console.log(`building ${opts.unit} ...`)
+    Session.activate('.', Session.Mode.BUILD)
+    Session.buildUnit(opts.unit)
 }
