@@ -10,17 +10,24 @@ export enum Mode {
     UNITS,
 }
 
-let curWorkDir: string
+let projDir: string
+let workDir: string
+let buildDir: string
 
-export function activate(workDir: string, mode: Mode): void {
-    curWorkDir = workDir
+export function activate(root: string, mode: Mode): void {
+    projDir = root
+    workDir = Path.join(projDir, 'workspace')
+    buildDir = Path.join(workDir, '.emscript')
+    process.chdir(projDir)
+    if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
 }
 
 export function buildUnit(upath: string): void {
-    MetaProg.parse(upath)
+    MetaProg.parse(Path.join(workDir, upath))
     MetaProg.dump()
+    MetaProg.emit()
 }
 
 export function getWorkDir(): string {
-    return curWorkDir
+    return workDir
 }
