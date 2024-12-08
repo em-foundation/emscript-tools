@@ -1,5 +1,6 @@
 import * as Fs from 'fs';
 import * as Path from 'path';
+import * as Trans from './Trans'
 import * as Ts from 'typescript';
 
 const OUTDIR = './workspace/.emscript/genjs'
@@ -56,7 +57,10 @@ export function dump(): void {
 }
 
 export function emit(): void {
-    const emitResult = curProg.emit();
+    const transformers: Ts.CustomTransformers = {
+        before: [Trans.imports(curProg)]
+    }
+    const emitResult = curProg.emit(undefined, undefined, undefined, false, transformers);
     // exec()
 }
 
@@ -83,7 +87,7 @@ export function parse(upath: string): void {
                 })
             );
         },
-    };
+    }
     const cfg = Ts.getParsedCommandLineOfConfigFile('./tsconfig.json', {}, cfgHost)
     const options: Ts.CompilerOptions = {
         module: Ts.ModuleKind.CommonJS,
@@ -98,10 +102,10 @@ export function parse(upath: string): void {
         ...Ts.createCompilerHost({}),
         getSourceFile: (fileName, languageVersion, onError) => {
             if (fileName.endsWith(".em.ts") && Path.isAbsolute(fileName)) {
-                // console.log("Reading source file:", fileName);
+                console.log("Reading source file:", fileName);
             }
             return Ts.createCompilerHost({}).getSourceFile(fileName, languageVersion, onError);
         },
     };
-    curProg = Ts.createProgram([upath], options, customCompilerHost);
+    curProg = Ts.createProgram([upath], options, customCompilerHost)
 }
