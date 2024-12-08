@@ -1,12 +1,10 @@
 import * as Path from "path"
 import * as Ts from "typescript"
 
-export function imports(program: Ts.Program): Ts.TransformerFactory<Ts.SourceFile> {
+export function importStmt(program: Ts.Program): Ts.TransformerFactory<Ts.SourceFile> {
     const compilerOptions = program.getCompilerOptions()
-
     return (context) => {
         const { factory } = context
-
         return (sourceFile) => {
             const visitor: Ts.Visitor = (node) => {
                 if (Ts.isImportDeclaration(node)) {
@@ -38,12 +36,44 @@ export function imports(program: Ts.Program): Ts.TransformerFactory<Ts.SourceFil
                         }
                     }
                 }
-
                 return Ts.visitEachChild(node, visitor, context)
             }
-
             const updatedSourceFile = Ts.visitEachChild(sourceFile, visitor, context)
             return updatedSourceFile as Ts.SourceFile // Ensure we return a SourceFile
+        }
+    }
+}
+
+export function unitSpec(program: Ts.Program): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context: Ts.TransformationContext) => {
+        const visit: Ts.Visitor = (node) => {
+            if (Ts.isCallExpression(node)) {
+                const expression = node.expression
+                if (
+                    Ts.isPropertyAccessExpression(expression) &&
+                    expression.name.text === "declare" &&
+                    expression.expression.getText() === "em"
+                ) {
+                    const args = node.arguments
+                    if (args.length === 1) {
+                        return Ts.factory.updateCallExpression(
+                            node,                      // Original call node
+                            node.expression,           // Keep the same expression (`em.declare`)
+                            node.typeArguments,        // Preserve type arguments
+                            [
+                                args[0],               // Original first argument
+                                Ts.factory.createStringLiteral(currentFileName), // Add file name as second argument
+                            ]
+                        )
+                    }
+                }
+            }
+            return Ts.visitEachChild(node, visit, context)
+        }
+        let currentFileName: string
+        return (sourceFile) => {
+            currentFileName = sourceFile.fileName // Capture the file name
+            return Ts.visitEachChild(sourceFile, visit, context) // Process the SourceFile
         }
     }
 }

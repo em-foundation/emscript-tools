@@ -17,7 +17,10 @@ export function dump(): void {
 
 export function emit(): void {
     const transformers: Ts.CustomTransformers = {
-        before: [Trans.imports(curProg)]
+        before: [
+            Trans.importStmt(curProg),
+            Trans.unitSpec(curProg),
+        ]
     }
     const emitResult = curProg.emit(undefined, undefined, undefined, false, transformers);
 }
