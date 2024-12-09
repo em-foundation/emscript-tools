@@ -10,5 +10,6 @@
         ".history": true
     },
     "explorerExclude.backup": {},
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "breadcrumbs.enabled": false
 }

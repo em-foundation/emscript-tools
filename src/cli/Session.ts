@@ -23,7 +23,6 @@ export function activate(root: string, mode: Mode): void {
 }
 
 export function buildUnit(upath: string): void {
-    // MetaProg.parse(Path.join(workDir, upath))
     MetaProg.parse(upath)
     MetaProg.dump()
     MetaProg.emit()
