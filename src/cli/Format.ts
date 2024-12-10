@@ -22,7 +22,7 @@ const formatSettings: Ts.FormatCodeSettings = {
 
 export function exec(upath: string): void {
     const src = formatUnit(upath, formatSettings).trim()
-    Fs.writeFileSync(upath, src, "utf8")
+    Fs.writeFileSync(upath, src + '\n', "utf8")
 }
 
 function formatUnit(upath: string, settings: Ts.FormatCodeSettings) {
