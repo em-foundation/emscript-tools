@@ -1,6 +1,7 @@
 import * as Commander from 'commander'
 import * as Path from 'path'
 
+import * as Format from './Format'
 import * as Session from './Session'
 
 const CMD = new Commander.Command('em-script')
@@ -17,6 +18,11 @@ CMD
     .command('clean')
     .description('clean a bundle')
     .action((opts: any) => doClean(opts))
+CMD
+    .command('fmt')
+    .description('format a unit')
+    .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
+    .action((opts: any) => doFormat(opts))
 
 CMD.parse(process.argv)
 
@@ -27,6 +33,10 @@ function doBuild(opts: any): void {
 
 function doClean(opts: any): void {
     Session.activate(getRoot(), Session.Mode.CLEAN)
+}
+
+function doFormat(opts: any): void {
+    Format.exec(opts.unit)
 }
 
 function getRoot() {

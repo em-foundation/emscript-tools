@@ -14,7 +14,13 @@ let curUpath: string
 export function dump(): void {
     UnitMgr.units().forEach((ud, uid) => {
         console.log(`${uid}: ${ud.kind}`)
-        ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
+        ud.sf.statements.forEach((stmt) => {
+            if (Ts.isVariableStatement(stmt)) {
+                const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
+                console.log(`    ${dtxt}`)
+            }
+        })
+        // ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
     })
 }
 
