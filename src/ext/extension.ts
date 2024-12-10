@@ -16,6 +16,9 @@ export async function activate(context: Vsc.ExtensionContext) {
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.build", Cmd.build))
 
+    Vsc.workspace.onDidSaveTextDocument((document) => {
+        if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
+    })
 
     Vsc.window.showInformationMessage("EM•Script activated")
 }

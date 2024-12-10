@@ -43,6 +43,13 @@ export function build(upath: string) {
     })
 }
 
+export function format(upath: string): void {
+    let main = Path.join(getExtRoot(), 'out/cli/Main.js')
+    let args = [main, 'fmt', '-u', upath]
+    process.env['NODE_PATH'] = Path.join(getExtRoot(), 'node_modules')
+    let proc = ChildProc.spawnSync('node', args, { cwd: workPath() })
+}
+
 export function getExtRoot(): string {
     return Vsc.extensions.getExtension(EXTENSION_ID)!.extensionPath
 }
