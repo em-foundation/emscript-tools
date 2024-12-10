@@ -21,7 +21,7 @@ const formatSettings: Ts.FormatCodeSettings = {
 }
 
 export function exec(upath: string): void {
-    const src = formatUnit(upath, formatSettings)
+    const src = formatUnit(upath, formatSettings).trim()
     Fs.writeFileSync(upath, src, "utf8")
 }
 
