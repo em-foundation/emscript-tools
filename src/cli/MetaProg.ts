@@ -14,18 +14,18 @@ let curProg: Ts.Program
 let curUpath: string
 
 export function dump(): void {
-    UnitMgr.units().forEach((ud, uid) => {
-        console.log(`${uid}: ${ud.kind}`)
-        //     ud.sf.statements.forEach((stmt) => {
-        //         if (Ts.isVariableStatement(stmt)) {
-        //             const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
-        //             const m = dtxt.match(/(\w+)\.em\$clone\(.*\)$/)
-        //             if (m) console.log(ud.imports.get(m[1]))
-        //             //if (dtxt.match(/console.log(`    ${dtxt}`)
-        //         }
-        //     })
-        ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
-    })
+    // UnitMgr.units().forEach((ud, uid) => {
+    //     console.log(`${uid}: ${ud.kind}`)
+    //     //     ud.sf.statements.forEach((stmt) => {
+    //     //         if (Ts.isVariableStatement(stmt)) {
+    //     //             const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
+    //     //             const m = dtxt.match(/(\w+)\.em\$clone\(.*\)$/)
+    //     //             if (m) console.log(ud.imports.get(m[1]))
+    //     //             //if (dtxt.match(/console.log(`    ${dtxt}`)
+    //     //         }
+    //     //     })
+    //     ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
+    // })
 }
 
 export function emit(): void {
@@ -164,7 +164,7 @@ export function parse(upath: string): void {
         //     UnitMgr.create(res.transformed[0])
         // }
         workList = []
-        expand(expandDoneSet)
+        // expand(expandDoneSet)
     }
 }
 
