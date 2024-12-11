@@ -16,15 +16,15 @@ let curUpath: string
 export function dump(): void {
     // UnitMgr.units().forEach((ud, uid) => {
     //     console.log(`${uid}: ${ud.kind}`)
-    //     ud.sf.statements.forEach((stmt) => {
-    //         if (Ts.isVariableStatement(stmt)) {
-    //             const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
-    //             const m = dtxt.match(/(\w+)\.em\$clone\(.*\)$/)
-    //             if (m) console.log(ud.imports.get(m[1]))
-    //             //if (dtxt.match(/console.log(`    ${dtxt}`)
-    //         }
-    //     })
-    //     // ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
+    //     //     ud.sf.statements.forEach((stmt) => {
+    //     //         if (Ts.isVariableStatement(stmt)) {
+    //     //             const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
+    //     //             const m = dtxt.match(/(\w+)\.em\$clone\(.*\)$/)
+    //     //             if (m) console.log(ud.imports.get(m[1]))
+    //     //             //if (dtxt.match(/console.log(`    ${dtxt}`)
+    //     //         }
+    //     //     })
+    //     ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
     // })
 }
 
@@ -36,7 +36,7 @@ export function emit(): void {
         ]
     }
     const writeFile: Ts.WriteFileCallback = (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
-        console.log(`writing '${fileName}'`)
+        // console.log(`writing '${fileName}'`)
         Fs.mkdirSync(Path.dirname(fileName), { recursive: true })
         Fs.writeFileSync(fileName, data, 'utf-8')
         // if (sourceFiles && sourceFiles.length > 0) {

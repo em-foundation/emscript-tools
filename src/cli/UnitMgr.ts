@@ -16,7 +16,6 @@ class UnitDesc {
 
 export function create(sf: Ts.SourceFile): UnitDesc {
     const tobj = transform(sf)
-    // const updSf = Ts.transform(sf, [transformer]).transformed[0]
     const unit = new UnitDesc(mkUid(sf.fileName), tobj.kind, tobj.sf, tobj.imps)
     // sf.statements.map(stmt => {
     //     if (Ts.isImportDeclaration(stmt)) {
@@ -46,34 +45,6 @@ function printSf(sf: Ts.SourceFile) {
     console.log(content);
 }
 
-const transformer = (context: Ts.TransformationContext) => {
-    return (sf: Ts.SourceFile): Ts.SourceFile => {
-        const visitor: Ts.Visitor = (node) => {
-            if (Ts.isImportDeclaration(node)) {
-                const modSpecNode = node.moduleSpecifier
-                if (Ts.isStringLiteral(modSpecNode)) {
-                    let modSpec = modSpecNode.text.replace(/(['"](@EM-SCRIPT)['"])'/, '../em.lang/em-script')
-                    console.log(`modSpec: ${modSpec}`)
-                    const updNode = Ts.factory.updateImportDeclaration(
-                        node,
-                        node.modifiers,
-                        node.importClause,
-                        Ts.factory.createStringLiteral(modSpec),
-                        node.attributes
-                    )
-                    return updNode
-                }
-            }
-            return node
-        };
-        const updatedStatements: Ts.Statement[] = sf.statements.map(stmt =>
-            Ts.visitNode(stmt, visitor) as Ts.Statement
-        );
-        return Ts.factory.updateSourceFile(sf, updatedStatements);
-    };
-}
-
-
 function transform(sf: Ts.SourceFile): TransResult {
     let res = { kind: 'MODULE', imps: new Map<string, string> } as TransResult
     const transformer = (context: Ts.TransformationContext) => {
@@ -82,7 +53,13 @@ function transform(sf: Ts.SourceFile): TransResult {
                 if (Ts.isImportDeclaration(node)) {
                     const modSpecNode = node.moduleSpecifier
                     if (Ts.isStringLiteral(modSpecNode)) {
-                        let modSpec = modSpecNode.text.replace(/@EM-SCRIPT/, '../em.lang/em-script')
+                        let modSpec = modSpecNode.text.replace('@EM-SCRIPT', '../em.lang/em-script')
+                        const iuMatch = modSpec.match(/^@(.+)\.em$/)
+                        if (iuMatch) {
+                            modSpec = modSpec.replace('@', '../')
+                            const inMatch = node.importClause!.getText(sf).match(/\W*(\w+)$/)
+                            res.imps.set(inMatch![1], iuMatch[1])
+                        }
                         console.log(`modSpec: ${modSpec}`)
                         const updNode = Ts.factory.updateImportDeclaration(
                             node,
