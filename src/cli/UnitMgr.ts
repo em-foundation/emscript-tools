@@ -60,7 +60,6 @@ function transform(sf: Ts.SourceFile): TransResult {
                             const inMatch = node.importClause!.getText(sf).match(/\W*(\w+)$/)
                             res.imps.set(inMatch![1], iuMatch[1])
                         }
-                        console.log(`modSpec: ${modSpec}`)
                         const updNode = Ts.factory.updateImportDeclaration(
                             node,
                             node.modifiers,
@@ -71,6 +70,10 @@ function transform(sf: Ts.SourceFile): TransResult {
                         return updNode
                     }
                 }
+                if (Ts.isVariableStatement(node)) {
+                    const m = node.getText(sf).match(/em\.declare\(['"](\w+)['"]/)
+                    if (m) res.kind = m[1] as UnitKind
+                }
                 return node
             };
             const updatedStatements: Ts.Statement[] = sf.statements.map(stmt =>
@@ -80,7 +83,7 @@ function transform(sf: Ts.SourceFile): TransResult {
         };
     }
     res.sf = Ts.transform(sf, [transformer]).transformed[0]
-    printSf(res.sf)
+    // printSf(res.sf)
     return res
 }
 
