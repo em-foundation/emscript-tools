@@ -3,17 +3,12 @@ import * as Path from 'path'
 import * as Ts from 'typescript'
 
 import * as Session from './Session'
-import * as Trans from './Trans'
 import * as UnitMgr from './UnitMgr'
 
-const CLONE_DIR = './workspace/.emscript/.clone'
-const BUILD_DIR = './workspace/.emscript'
-
-let curProg: Ts.Program
 let curUpath: string
 
 export function exec(): void {
-    const jsPath = Path.resolve(BUILD_DIR, `${UnitMgr.mkUid(curUpath)}.em.js`)
+    const jsPath = Path.resolve(Session.getBuildDir(), `${UnitMgr.mkUid(curUpath)}.em.js`)
     try {
         require(jsPath)
     } catch (error) {
@@ -31,7 +26,7 @@ function expand(doneSet: Set<string>): Array<string> {
                 const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
                 const m = dtxt.match(/^(\w+)\W+(\w+)\.em\$clone\(.*\)$/)
                 if (!m) return
-                const xpath = `${BUILD_DIR}/${uid}__${m[1]}.em.ts`
+                const xpath = `${Session.getBuildDir()}/${uid}__${m[1]}.em.ts`
                 res.push(xpath)
                 const tuid = ud.imports.get(m[2])!
                 const tud = UnitMgr.units().get(tuid)!
@@ -76,7 +71,7 @@ export function parse(upath: string): void {
         strict: true,
         esModuleInterop: true,
         sourceMap: true,
-        outDir: BUILD_DIR,
+        outDir: Session.getBuildDir(),
         paths: cfg!.options.paths!
     }
     const baseHost = Ts.createCompilerHost({})
@@ -102,19 +97,20 @@ export function parse(upath: string): void {
 }
 
 function transpile(options: Ts.CompilerOptions) {
+    const buildDir = Session.getBuildDir()
     UnitMgr.units().forEach((ud, uid) => {
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName
         })
-        Fs.mkdirSync(`${BUILD_DIR}/${Path.dirname(uid)}`, { recursive: true })
-        Fs.writeFileSync(`${BUILD_DIR}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
+        Fs.mkdirSync(`${buildDir}/${Path.dirname(uid)}`, { recursive: true })
+        Fs.writeFileSync(`${buildDir}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
         let src = transOut.outputText
         src = src.replaceAll(/_EM_SCRIPT_1\.default\.declare\((.+)\)/g, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
         src = src.replace('@EM-SCRIPT', '../em.lang/em-script')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em")).default`)
-        Fs.writeFileSync(`${BUILD_DIR}/${uid}.em.js`, src, 'utf-8')
+        Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
     })
     const emFile = 'em.lang/em-script'
     const emInFile = `./workspace/em.core/${emFile}.ts`
@@ -123,7 +119,7 @@ function transpile(options: Ts.CompilerOptions) {
         compilerOptions: options,
         fileName: emInFile
     })
-    Fs.mkdirSync(`${BUILD_DIR}/${Path.dirname(emFile)}`, { recursive: true })
-    Fs.writeFileSync(`${BUILD_DIR}/${emFile}.js.map`, emOut.sourceMapText!, 'utf-8')
-    Fs.writeFileSync(`${BUILD_DIR}/${emFile}.js`, emOut.outputText, 'utf-8')
+    Fs.mkdirSync(`${buildDir}/${Path.dirname(emFile)}`, { recursive: true })
+    Fs.writeFileSync(`${buildDir}/${emFile}.js.map`, emOut.sourceMapText!, 'utf-8')
+    Fs.writeFileSync(`${buildDir}/${emFile}.js`, emOut.outputText, 'utf-8')
 }
