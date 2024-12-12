@@ -13,7 +13,7 @@ let curProg: Ts.Program
 let curUpath: string
 
 export function dump(): void {
-    // console.log('*** dump'); return
+    console.log('*** dump'); return
     UnitMgr.units().forEach((ud, uid) => {
         console.log(`${uid}: ${ud.kind} ${ud.sf.fileName}`)
         //     ud.sf.statements.forEach((stmt) => {
@@ -47,7 +47,7 @@ export function emit(): void {
 }
 
 export function exec(): void {
-    console.log('*** exec'); return
+    // console.log('*** exec'); return
     const jsPath = Path.resolve(BUILD_DIR, `${UnitMgr.mkUid(curUpath)}.em.js`)
     try {
         require(jsPath)
@@ -133,4 +133,32 @@ export function parse(upath: string): void {
         workList = expand(expandDoneSet)
         // console.log(workList)
     }
+    transpile(options)
+}
+
+function transpile(options: Ts.CompilerOptions) {
+    UnitMgr.units().forEach((ud, uid) => {
+        // console.log(`transpile: ${uid}`)
+        const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
+            compilerOptions: options,
+            fileName: ud.sf.fileName
+        })
+        Fs.mkdirSync(`${BUILD_DIR}/${Path.dirname(uid)}`, { recursive: true })
+        Fs.writeFileSync(`${BUILD_DIR}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
+        let content = transOut.outputText
+        content = content.replaceAll(/_EM_SCRIPT_1\.default\.declare\((.+)\)/g, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
+        content = content.replace('@EM-SCRIPT', '../em.lang/em-script')
+        content = content.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
+        Fs.writeFileSync(`${BUILD_DIR}/${uid}.em.js`, content, 'utf-8')
+    })
+    const emFile = 'em.lang/em-script'
+    const emInFile = `./workspace/em.core/${emFile}.ts`
+    const emSrc = Fs.readFileSync(emInFile, 'utf-8')
+    const emOut = Ts.transpileModule(emSrc, {
+        compilerOptions: options,
+        fileName: emInFile
+    })
+    Fs.mkdirSync(`${BUILD_DIR}/${Path.dirname(emFile)}`, { recursive: true })
+    Fs.writeFileSync(`${BUILD_DIR}/${emFile}.js.map`, emOut.sourceMapText!, 'utf-8')
+    Fs.writeFileSync(`${BUILD_DIR}/${emFile}.js`, emOut.outputText, 'utf-8')
 }
