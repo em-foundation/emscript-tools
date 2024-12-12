@@ -10,8 +10,10 @@ class UnitDesc {
         readonly id: string,
         readonly kind: UnitKind,
         readonly sf: Ts.SourceFile,
-        readonly imports: Map<string, string>
+        private _imports: Map<string, string>
     ) { }
+    addImport(impName: string, impUid: string) { this._imports.set(impName, impUid) }
+    get imports(): ReadonlyMap<string, string> { return this._imports }
 }
 
 function cloneNode<T extends Ts.Node>(node: T): T {

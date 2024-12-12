@@ -27,6 +27,7 @@ function expand(doneSet: Set<string>): Array<string> {
                 const m = dtxt.match(/^(\w+)\W+(\w+)\.em\$clone\(.*\)$/)
                 if (!m) return
                 const xpath = `${Session.getBuildDir()}/${uid}__${m[1]}.em.ts`
+                ud.addImport(m[1], `${uid}__${m[1]}`)
                 res.push(xpath)
                 const tuid = ud.imports.get(m[2])!
                 const tud = UnitMgr.units().get(tuid)!
