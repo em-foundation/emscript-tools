@@ -117,7 +117,7 @@ export function parse(upath: string): void {
             ...baseHost,
             getSourceFile: (fileName, languageVersion, onError) => {
                 if (fileName.endsWith(".em.ts") && Path.isAbsolute(fileName)) {
-                    foundList.push(fileName)
+                    foundList.unshift(fileName)
                     // console.log(mkUname(fileName))
                 }
                 return baseHost.getSourceFile(fileName, languageVersion, onError)
@@ -125,131 +125,7 @@ export function parse(upath: string): void {
         }
         curProg = Ts.createProgram(workList, options, customHost)
         for (const p of foundList) UnitMgr.create(curProg.getSourceFile(p)!)
-        // for (const p of foundList) {
-        //     let sf = curProg.getSourceFile(p)!
-        //     let res = Ts.transform(sf, [
-        //         transUnitSpec
-        //     ])
-        //     UnitMgr.create(res.transformed[0])
-        // }
         workList = []
         // expand(expandDoneSet)
     }
-    // transpileAll(options)
 }
-
-function transpileAll(options: Ts.CompilerOptions) {
-    const transpile = (sf: Ts.SourceFile) => {
-        let opts: Ts.TranspileOptions
-        const transOut = Ts.transpileModule(sf.getText(sf), {
-            compilerOptions: options,
-            fileName: sf.fileName,
-        })
-        console.log(transOut.outputText)
-    }
-    UnitMgr.units().forEach((ud, uid) => {
-        console.log(uid)
-        console.log(ud.sf.getText(ud.sf))
-        transpile(ud.sf)
-    })
-}
-
-// function transUnitSpec(context: Ts.TransformationContext) {
-//     return (sf: Ts.SourceFile): Ts.SourceFile => {
-//         const visitor: Ts.Visitor = (node) => {
-//             if (Ts.isImportDeclaration(node)) {
-//                 let mod = node.moduleSpecifier.getText(sf).replace('@EM-SCRIPT', '../em.lang/em-script')
-//                 mod = mod.replace(/['"]@(.+)\.em['"]$/, "'../$1.em'")
-//                 return Ts.factory.updateImportDeclaration(
-//                     node,
-//                     node.modifiers,
-//                     node.importClause,
-//                     Ts.factory.createStringLiteral(mod),
-//                     node.attributes
-//                 )
-//             }
-//             return node
-//         };
-//         const updatedStatements: Ts.Statement[] = sf.statements.map(stmt =>
-//             Ts.visitNode(stmt, visitor) as Ts.Statement
-//         );
-//         return Ts.factory.updateSourceFile(sf, updatedStatements);
-//     };
-// }
-
-// function expand(
-//     entryFiles: string[],
-//     options: Ts.CompilerOptions,
-//     templateReader: (templateName: string) => string
-// ): Map<string, Ts.SourceFile> {
-//     const allFiles = new Map<string, Ts.SourceFile>()
-//     const pendingFiles = new Set(entryFiles)
-//     let newFilesGenerated = false
-//     do {
-//         newFilesGenerated = false
-//         const host = Ts.createCompilerHost(options)
-//         const program = Ts.createProgram(
-//             [...pendingFiles, ...Array.from(allFiles.keys())],
-//             options,
-//             {
-//                 ...host,
-//                 getSourceFile: (fileName, languageVersion) => {
-//                     if (allFiles.has(fileName)) {
-//                         return allFiles.get(fileName)
-//                     }
-//                     return host.getSourceFile(fileName, languageVersion)
-//                 },
-//             }
-//         )
-//         for (const sourceFile of program.getSourceFiles()) {
-//             if (!sourceFile.fileName.endsWith('.ts')) continue // Skip non-TS files
-//             if (allFiles.has(sourceFile.fileName)) continue // Already processed
-//             const transformer: Ts.TransformerFactory<Ts.SourceFile> = (context) => (sourceFile) => {
-//                 const visitor: Ts.Visitor = (node) => {
-//                     if (
-//                         Ts.isVariableDeclaration(node) &&
-//                         node.initializer &&
-//                         Ts.isCallExpression(node.initializer) &&
-//                         Ts.isPropertyAccessExpression(node.initializer.expression) &&
-//                         node.initializer.expression.name.text === '$clone'
-//                     ) {
-//                         const variableName = node.name.getText()
-//                         const templateModule = node.initializer.expression.expression.getText()
-//                         const newFileName = `./${variableName}.ts`
-//                         if (!allFiles.has(newFileName)) {
-//                             const templateContent = templateReader(templateModule)
-//                             const newSourceFile = Ts.createSourceFile(
-//                                 newFileName,
-//                                 templateContent,
-//                                 Ts.ScriptTarget.Latest
-//                             )
-//                             allFiles.set(newFileName, newSourceFile)
-//                             pendingFiles.add(newFileName)
-//                             newFilesGenerated = true
-//                         }
-//                         return Ts.factory.createVariableDeclaration(
-//                             node.name,
-//                             undefined,
-//                             undefined,
-//                             Ts.factory.createCallExpression(
-//                                 Ts.factory.createIdentifier('require'),
-//                                 undefined,
-//                                 [Ts.factory.createStringLiteral(newFileName)]
-//                             )
-//                         )
-//                     }
-//                     return Ts.visitEachChild(node, visitor, context)
-//                 }
-//                 const transformedSourceFile = Ts.visitNode(sourceFile, visitor) as Ts.SourceFile
-//                 allFiles.set(sourceFile.fileName, transformedSourceFile)
-//                 return transformedSourceFile
-//             }
-//             const result = Ts.transform(sourceFile, [transformer])
-//             const transformedSourceFile = result.transformed[0] as Ts.SourceFile
-//             allFiles.set(sourceFile.fileName, transformedSourceFile)
-//             result.dispose()
-//         }
-//         pendingFiles.clear()
-//     } while (newFilesGenerated)
-//     return allFiles
-// }
