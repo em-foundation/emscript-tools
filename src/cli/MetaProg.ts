@@ -6,6 +6,7 @@ import * as Session from './Session'
 import * as UnitMgr from './UnitMgr'
 
 let curUpath: string
+let curUidList: Array<string>
 
 export function exec(): void {
     const jsPath = Path.resolve(Session.getBuildDir(), `${UnitMgr.mkUid(curUpath)}.em.js`)
@@ -94,13 +95,14 @@ export function parse(upath: string): void {
         workList = expand(expandDoneSet)
         // console.log(workList)
     }
-    tsortUnits()
+    curUidList = tsortUnits()
     transpile(options)
 }
 
 function transpile(options: Ts.CompilerOptions) {
     const buildDir = Session.getBuildDir()
-    UnitMgr.units().forEach((ud, uid) => {
+    for (const uid of curUidList) {
+        const ud = UnitMgr.units().get(uid)!
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName
@@ -113,7 +115,7 @@ function transpile(options: Ts.CompilerOptions) {
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em")).default`)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
-    })
+    }
     const emFile = 'em.lang/em-script'
     const emInFile = `./workspace/em.core/${emFile}.ts`
     const emSrc = Fs.readFileSync(emInFile, 'utf-8')
@@ -126,7 +128,7 @@ function transpile(options: Ts.CompilerOptions) {
     Fs.writeFileSync(`${buildDir}/${emFile}.js`, emOut.outputText, 'utf-8')
 }
 
-function tsortUnits() {
+function tsortUnits(): Array<string> {
     const units = UnitMgr.units()
     const res = new Array<string>
     const visited = new Set<string>
@@ -139,5 +141,5 @@ function tsortUnits() {
         res.push(uid)
     }
     dfs(UnitMgr.mkUid(curUpath))
-    console.log(res)
+    return res
 }
