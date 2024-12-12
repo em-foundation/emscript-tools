@@ -26,8 +26,8 @@ function cloneNode<T extends Ts.Node>(node: T): T {
 }
 
 export function create(sf: Ts.SourceFile): UnitDesc {
-    const tobj = transform(sf)
-    const unit = new UnitDesc(mkUid(sf.fileName), tobj.kind, tobj.sf, tobj.imps)
+    const sobj = scan(sf)
+    const unit = new UnitDesc(mkUid(sf.fileName), sobj.kind, sf, sobj.imps)
     unitTab.set(unit.id, unit)
     return unit
 }
@@ -47,6 +47,33 @@ function printSf(sf: Ts.SourceFile) {
     const printer = Ts.createPrinter()
     const content = printer.printFile(sf)
     console.log(content)
+}
+
+interface ScanResult {
+    kind: UnitKind,
+    imps: Map<string, string>
+}
+
+function scan(sf: Ts.SourceFile): ScanResult {
+    let res = { kind: 'MODULE', imps: new Map<string, string> } as ScanResult
+    sf.statements.map((stmt) => {
+        if (Ts.isImportDeclaration(stmt)) {
+            const modSpecNode = stmt.moduleSpecifier
+            if (Ts.isStringLiteral(modSpecNode)) {
+                let modSpec = modSpecNode.text
+                const iuMatch = modSpec.match(/^@(.+)\.em$/)
+                if (iuMatch) {
+                    const inMatch = stmt.importClause!.getText(sf).match(/\W*(\w+)$/)
+                    res.imps.set(inMatch![1], iuMatch[1])
+                }
+            }
+        }
+        else if (Ts.isVariableStatement(stmt)) {
+            const m = stmt.getText(sf).match(/em\.declare\(['"](\w+)['"]/)
+            if (m) res.kind = m[1] as UnitKind
+        }
+    })
+    return res
 }
 
 interface TransResult {

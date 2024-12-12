@@ -14,21 +14,22 @@ let curProg: Ts.Program
 let curUpath: string
 
 export function dump(): void {
-    // UnitMgr.units().forEach((ud, uid) => {
-    //     console.log(`${uid}: ${ud.kind}`)
-    //     //     ud.sf.statements.forEach((stmt) => {
-    //     //         if (Ts.isVariableStatement(stmt)) {
-    //     //             const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
-    //     //             const m = dtxt.match(/(\w+)\.em\$clone\(.*\)$/)
-    //     //             if (m) console.log(ud.imports.get(m[1]))
-    //     //             //if (dtxt.match(/console.log(`    ${dtxt}`)
-    //     //         }
-    //     //     })
-    //     ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
-    // })
+    UnitMgr.units().forEach((ud, uid) => {
+        console.log(`${uid}: ${ud.kind}`)
+        //     ud.sf.statements.forEach((stmt) => {
+        //         if (Ts.isVariableStatement(stmt)) {
+        //             const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
+        //             const m = dtxt.match(/(\w+)\.em\$clone\(.*\)$/)
+        //             if (m) console.log(ud.imports.get(m[1]))
+        //             //if (dtxt.match(/console.log(`    ${dtxt}`)
+        //         }
+        //     })
+        ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
+    })
 }
 
 export function emit(): void {
+    // console.log('*** emit'); return
     const writeFile: Ts.WriteFileCallback = (fileName, content, writeByteOrderMark, onError, sourceFiles) => {
         const outfile = `${Path.basename(Path.dirname(fileName))}/${Path.basename(fileName)}`
         const outpath = Path.resolve(BUILD_DIR, outfile)
@@ -36,7 +37,7 @@ export function emit(): void {
         Fs.mkdirSync(Path.dirname(outpath), { recursive: true })
         if (outfile.endsWith('.js') && outfile != 'em.lang/em-script.js') {
             const uid = outfile.replace(/\.js$/, '')
-            content = content.replace(/_EM_SCRIPT_1\.default\.declare\((.+)\)/, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
+            content = content.replaceAll(/_EM_SCRIPT_1\.default\.declare\((.+)\)/g, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
             content = content.replace('@EM-SCRIPT', '../em.lang/em-script')
             content = content.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         }
@@ -46,6 +47,7 @@ export function emit(): void {
 }
 
 export function exec(): void {
+    // console.log('*** exec'); return
     const jsPath = Path.resolve(BUILD_DIR, `${UnitMgr.mkUid(curUpath)}.em.js`)
     try {
         require(jsPath)
@@ -86,31 +88,31 @@ export function parse(upath: string): void {
     curUpath = upath
     let workList = new Array<string>(Path.join(Session.getWorkDir(), upath))
     let expandDoneSet = new Set<string>
+    const cfgHost: Ts.ParseConfigFileHost = {
+        ...Ts.sys,
+        onUnRecoverableConfigFileDiagnostic: (diagnostic) => {
+            console.error(
+                Ts.formatDiagnosticsWithColorAndContext([diagnostic], {
+                    getCanonicalFileName: (fileName) => fileName,
+                    getCurrentDirectory: Ts.sys.getCurrentDirectory,
+                    getNewLine: () => Ts.sys.newLine,
+                })
+            )
+        },
+    }
+    const cfg = Ts.getParsedCommandLineOfConfigFile('./tsconfig.json', {}, cfgHost)
+    const options: Ts.CompilerOptions = {
+        module: Ts.ModuleKind.CommonJS,
+        target: Ts.ScriptTarget.ESNext,
+        strict: true,
+        esModuleInterop: true,
+        sourceMap: true,
+        outDir: BUILD_DIR,
+        paths: cfg!.options.paths!
+    }
+    const baseHost = Ts.createCompilerHost({})
     while (workList.length > 0) {
         let foundList = new Array<string>
-        const cfgHost: Ts.ParseConfigFileHost = {
-            ...Ts.sys,
-            onUnRecoverableConfigFileDiagnostic: (diagnostic) => {
-                console.error(
-                    Ts.formatDiagnosticsWithColorAndContext([diagnostic], {
-                        getCanonicalFileName: (fileName) => fileName,
-                        getCurrentDirectory: Ts.sys.getCurrentDirectory,
-                        getNewLine: () => Ts.sys.newLine,
-                    })
-                )
-            },
-        }
-        const cfg = Ts.getParsedCommandLineOfConfigFile('./tsconfig.json', {}, cfgHost)
-        const options: Ts.CompilerOptions = {
-            module: Ts.ModuleKind.CommonJS,
-            target: Ts.ScriptTarget.ESNext,
-            strict: true,
-            esModuleInterop: true,
-            sourceMap: true,
-            outDir: BUILD_DIR,
-            paths: cfg!.options.paths!
-        }
-        const baseHost = Ts.createCompilerHost({})
         const customHost: Ts.CompilerHost = {
             ...baseHost,
             getSourceFile: (fileName, languageVersion, onError) => {
@@ -133,6 +135,23 @@ export function parse(upath: string): void {
         workList = []
         // expand(expandDoneSet)
     }
+    // transpileAll(options)
+}
+
+function transpileAll(options: Ts.CompilerOptions) {
+    const transpile = (sf: Ts.SourceFile) => {
+        let opts: Ts.TranspileOptions
+        const transOut = Ts.transpileModule(sf.getText(sf), {
+            compilerOptions: options,
+            fileName: sf.fileName,
+        })
+        console.log(transOut.outputText)
+    }
+    UnitMgr.units().forEach((ud, uid) => {
+        console.log(uid)
+        console.log(ud.sf.getText(ud.sf))
+        transpile(ud.sf)
+    })
 }
 
 // function transUnitSpec(context: Ts.TransformationContext) {
