@@ -26,9 +26,12 @@ function cloneNode<T extends Ts.Node>(node: T): T {
 }
 
 export function create(sf: Ts.SourceFile): UnitDesc {
+    const uid = mkUid(sf.fileName)
+    if (unitTab.has(uid)) return unitTab.get(uid)!
     const sobj = scan(sf)
-    const unit = new UnitDesc(mkUid(sf.fileName), sobj.kind, sf, sobj.imps)
-    unitTab.set(unit.id, unit)
+    const unit = new UnitDesc(uid, sobj.kind, sf, sobj.imps)
+    // console.log(`create: ${uid}`)
+    unitTab.set(uid, unit)
     return unit
 }
 
