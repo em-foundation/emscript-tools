@@ -12,42 +12,7 @@ const BUILD_DIR = './workspace/.emscript'
 let curProg: Ts.Program
 let curUpath: string
 
-export function dump(): void {
-    console.log('*** dump'); return
-    UnitMgr.units().forEach((ud, uid) => {
-        console.log(`${uid}: ${ud.kind} ${ud.sf.fileName}`)
-        //     ud.sf.statements.forEach((stmt) => {
-        //         if (Ts.isVariableStatement(stmt)) {
-        //             const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
-        //             const m = dtxt.match(/(\w+)\.em\$clone\(.*\)$/)
-        //             if (m) console.log(ud.imports.get(m[1]))
-        //             //if (dtxt.match(/console.log(`    ${dtxt}`)
-        //         }
-        //     })
-        // ud.imports.forEach((uid, imp) => console.log(`    ${imp}: ${uid}`))
-    })
-}
-
-export function emit(): void {
-    console.log('*** emit'); return
-    const writeFile: Ts.WriteFileCallback = (fileName, content, writeByteOrderMark, onError, sourceFiles) => {
-        const outfile = `${Path.basename(Path.dirname(fileName))}/${Path.basename(fileName)}`
-        const outpath = Path.resolve(BUILD_DIR, outfile)
-        // console.log(`writing '${outpath}'`)
-        Fs.mkdirSync(Path.dirname(outpath), { recursive: true })
-        if (outfile.endsWith('.js') && outfile != 'em.lang/em-script.js') {
-            const uid = outfile.replace(/\.js$/, '')
-            content = content.replaceAll(/_EM_SCRIPT_1\.default\.declare\((.+)\)/g, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
-            content = content.replace('@EM-SCRIPT', '../em.lang/em-script')
-            content = content.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
-        }
-        Fs.writeFileSync(outpath, content, 'utf-8')
-    }
-    const emitResult = curProg.emit(undefined, writeFile, undefined, false)
-}
-
 export function exec(): void {
-    // console.log('*** exec'); return
     const jsPath = Path.resolve(BUILD_DIR, `${UnitMgr.mkUid(curUpath)}.em.js`)
     try {
         require(jsPath)
@@ -138,18 +103,18 @@ export function parse(upath: string): void {
 
 function transpile(options: Ts.CompilerOptions) {
     UnitMgr.units().forEach((ud, uid) => {
-        // console.log(`transpile: ${uid}`)
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName
         })
         Fs.mkdirSync(`${BUILD_DIR}/${Path.dirname(uid)}`, { recursive: true })
         Fs.writeFileSync(`${BUILD_DIR}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
-        let content = transOut.outputText
-        content = content.replaceAll(/_EM_SCRIPT_1\.default\.declare\((.+)\)/g, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
-        content = content.replace('@EM-SCRIPT', '../em.lang/em-script')
-        content = content.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
-        Fs.writeFileSync(`${BUILD_DIR}/${uid}.em.js`, content, 'utf-8')
+        let src = transOut.outputText
+        src = src.replaceAll(/_EM_SCRIPT_1\.default\.declare\((.+)\)/g, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
+        src = src.replace('@EM-SCRIPT', '../em.lang/em-script')
+        src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
+        src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em")).default`)
+        Fs.writeFileSync(`${BUILD_DIR}/${uid}.em.js`, src, 'utf-8')
     })
     const emFile = 'em.lang/em-script'
     const emInFile = `./workspace/em.core/${emFile}.ts`
