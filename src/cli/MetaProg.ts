@@ -29,52 +29,20 @@ export function dump(): void {
 }
 
 export function emit(): void {
-    const transformers: Ts.CustomTransformers = {
-        before: [
-            // Trans.importStmt(curProg),
-            // Trans.unitSpec(),
-        ]
+    const writeFile: Ts.WriteFileCallback = (fileName, content, writeByteOrderMark, onError, sourceFiles) => {
+        const outfile = `${Path.basename(Path.dirname(fileName))}/${Path.basename(fileName)}`
+        const outpath = Path.resolve(BUILD_DIR, outfile)
+        // console.log(`writing '${outpath}'`)
+        Fs.mkdirSync(Path.dirname(outpath), { recursive: true })
+        content = content.replace('@EM-SCRIPT', '../em.lang/em-script')
+        content = content.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
+        Fs.writeFileSync(outpath, content, 'utf-8')
     }
-    const writeFile: Ts.WriteFileCallback = (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
-        // console.log(`writing '${fileName}'`)
-        Fs.mkdirSync(Path.dirname(fileName), { recursive: true })
-        Fs.writeFileSync(fileName, data, 'utf-8')
-        // if (sourceFiles && sourceFiles.length > 0) {
-        //     const sourceFile = sourceFiles[0].fileName;
-        //     console.log(`writeFile: ${sourceFile}`)
-        //     return
-        // 
-        //     // Compute relative path from 'src' directory
-        //     const srcDir = Path.resolve("src");
-        //     const outDir = Path.resolve("out");
-        // 
-        //     const relativePath = Path.relative(srcDir, sourceFile); // e.g., 'dir1/dir2/File.ts'
-        // 
-        //     // Remove the first directory (e.g., 'dir1/')
-        //     const newRelativePath = Path.join(Path.dirname(relativePath).split(Path.sep).slice(1).join(Path.sep), Path.basename(relativePath));
-        // 
-        //     // Construct the new output path
-        //     const outputPath = Path.join(outDir, newRelativePath.replace(/\.ts$/, ".js"));
-        // 
-        //     // Ensure the output directory exists
-        //     const fs = require("fs");
-        //     fs.mkdirSync(Path.dirname(outputPath), { recursive: true });
-        // 
-        //     // Write the transformed file to the new path
-        //     fs.writeFileSync(outputPath, data, { encoding: writeByteOrderMark ? "utf8-bom" : "utf8" });
-        // } else {
-        //     console.error("Unable to determine source file for emission");
-        // }
-    }
-    const emitResult = curProg.emit(undefined, writeFile, undefined, false, transformers)
+    const emitResult = curProg.emit(undefined, writeFile, undefined, false)
 }
 
 export function exec(): void {
-    return
-    // const jsPath = Path.resolve(BUILD_DIR, `${UnitMgr.mkUid(curUpath)}.em.js`)
-    console.log(`curUpath = ${curUpath}`)
-    const jsPath = Path.resolve(BUILD_DIR, curUpath).replace(/\\/g, '/').replace(/\.ts$/, '.js')
-
+    const jsPath = Path.resolve(BUILD_DIR, `${UnitMgr.mkUid(curUpath)}.em.js`)
     try {
         require(jsPath)
     } catch (error) {
@@ -108,11 +76,6 @@ function expand(doneSet: Set<string>) {
             }
         })
     })
-}
-
-function mkStmtNode(frag: string): Ts.Statement {
-    const sf = Ts.createSourceFile('$$.ts', frag, Ts.ScriptTarget.Latest, true)
-    return sf.statements[0]
 }
 
 export function parse(upath: string): void {

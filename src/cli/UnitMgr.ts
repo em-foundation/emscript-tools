@@ -27,57 +27,9 @@ function cloneNode<T extends Ts.Node>(node: T): T {
 
 export function create(sf: Ts.SourceFile): UnitDesc {
     const tobj = transform(sf)
-    printSf(tobj.sf)
     const unit = new UnitDesc(mkUid(sf.fileName), tobj.kind, tobj.sf, tobj.imps)
-    // sf.statements.map(stmt => {
-    //     if (Ts.isImportDeclaration(stmt)) {
-    //         const iuMatch = stmt.moduleSpecifier.getText(sf).match(/^['"]@(.+)\.em['"]$/)
-    //         if (!iuMatch) return
-    //         const inMatch = stmt.importClause!.getText(sf).match(/\W*(\w+)$/)
-    //         unit.addImport(inMatch![1], iuMatch[1])
-    //     }
-    // })
     unitTab.set(unit.id, unit)
     return unit
-}
-
-interface TransResult {
-    sf: Ts.SourceFile,
-    kind: UnitKind,
-    imps: Map<string, string>
-}
-
-function mkStmtNode(frag: string): Ts.Statement {
-    const sf = Ts.createSourceFile('$$.ts', frag, Ts.ScriptTarget.Latest, true);
-
-    // Print original and clone of the source file to debug
-    printNode(sf);  // Debug: original SourceFile text
-    const sfClone = cloneNode(sf);  // Clone the SourceFile
-    printNode(sfClone);  // Debug: cloned SourceFile text
-
-    // Extract and print the statement after cloning
-    const stmt = sfClone.statements[0];
-    if (Ts.isVariableStatement(stmt)) {
-        const varStmt = Ts.factory.createVariableStatement(stmt.modifiers, stmt.declarationList);
-        printNode(varStmt);  // Debug: the recreated VariableStatement
-    }
-
-    // Return a clean clone of the statement
-    return cloneNode(stmt);
-}
-
-
-function mkStmtNode2(frag: string): Ts.Statement {
-    const sf = Ts.createSourceFile('$$.ts', frag, Ts.ScriptTarget.Latest, true)
-    printNode(sf)
-    const sfClone = cloneNode(sf)
-    printNode(sfClone)
-    const stmt = sfClone.statements[0]
-    if (Ts.isVariableStatement(stmt)) {
-        const varStmt = Ts.factory.createVariableStatement(stmt.modifiers, stmt.declarationList)
-        printNode(varStmt)
-    }
-    return cloneNode(stmt)
 }
 
 export function mkUid(upath: string): string {
@@ -95,6 +47,12 @@ function printSf(sf: Ts.SourceFile) {
     const printer = Ts.createPrinter()
     const content = printer.printFile(sf)
     console.log(content)
+}
+
+interface TransResult {
+    sf: Ts.SourceFile,
+    kind: UnitKind,
+    imps: Map<string, string>
 }
 
 function transform(sf: Ts.SourceFile): TransResult {
@@ -152,11 +110,6 @@ function transform(sf: Ts.SourceFile): TransResult {
                             varDeclList
                         );
                         return varStmt
-
-
-                        // const frag = node.getText(sf).replace(/\)$/, `, '${sf.fileName}')`)
-                        // const stmt = mkStmtNode(frag) as Ts.VariableStatement
-                        // return Ts.factory.createVariableStatement(stmt.modifiers, stmt.declarationList)
                     }
                 }
                 return node
@@ -168,7 +121,6 @@ function transform(sf: Ts.SourceFile): TransResult {
         }
     }
     res.sf = Ts.transform(sf, [transformer]).transformed[0]
-    // printSf(res.sf)
     return res
 }
 
