@@ -34,8 +34,12 @@ export function emit(): void {
         const outpath = Path.resolve(BUILD_DIR, outfile)
         // console.log(`writing '${outpath}'`)
         Fs.mkdirSync(Path.dirname(outpath), { recursive: true })
-        content = content.replace('@EM-SCRIPT', '../em.lang/em-script')
-        content = content.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
+        if (outfile.endsWith('.js') && outfile != 'em.lang/em-script.js') {
+            const uid = outfile.replace(/\.js$/, '')
+            content = content.replace(/_EM_SCRIPT_1\.default\.declare\((.+)\)/, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
+            content = content.replace('@EM-SCRIPT', '../em.lang/em-script')
+            content = content.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
+        }
         Fs.writeFileSync(outpath, content, 'utf-8')
     }
     const emitResult = curProg.emit(undefined, writeFile, undefined, false)
