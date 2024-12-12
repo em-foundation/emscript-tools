@@ -93,6 +93,7 @@ export function parse(upath: string): void {
         workList = expand(expandDoneSet)
         // console.log(workList)
     }
+    tsortUnits()
     transpile(options)
 }
 
@@ -122,4 +123,20 @@ function transpile(options: Ts.CompilerOptions) {
     Fs.mkdirSync(`${buildDir}/${Path.dirname(emFile)}`, { recursive: true })
     Fs.writeFileSync(`${buildDir}/${emFile}.js.map`, emOut.sourceMapText!, 'utf-8')
     Fs.writeFileSync(`${buildDir}/${emFile}.js`, emOut.outputText, 'utf-8')
+}
+
+function tsortUnits() {
+    const units = UnitMgr.units()
+    const res = new Array<string>
+    const visited = new Set<string>
+    function dfs(uid: string) {
+        if (visited.has(uid)) return
+        visited.add(uid)
+        units.get(uid)!.imports.forEach(imp => {
+            dfs(imp)
+        })
+        res.push(uid)
+    }
+    dfs(UnitMgr.mkUid(curUpath))
+    console.log(res)
 }
