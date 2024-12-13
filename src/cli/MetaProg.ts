@@ -12,13 +12,8 @@ let curUidList: Array<string>
 export function exec(): void {
     const mainJs = `${Session.getBuildDir()}/meta-main.js`
     let metaObj: any = {}
-    // const jsPath = Path.resolve(Session.getBuildDir(), `${UnitMgr.mkUid(curUpath)}.em.js`)
-    try {
-        metaObj = require(mainJs)
-        metaObj['$$exec']()
-    } catch (error) {
-        console.error(`*** execution error: ${error}`)
-    }
+    metaObj = require(mainJs)
+    metaObj['$$exec']()
 }
 
 function expand(doneSet: Set<string>): Array<string> {
@@ -149,8 +144,8 @@ function transpile(options: Ts.CompilerOptions) {
         Fs.mkdirSync(`${buildDir}/${Path.dirname(uid)}`, { recursive: true })
         Fs.writeFileSync(`${buildDir}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
         let src = transOut.outputText
-        src = src.replaceAll(/_EM_SCRIPT_1\.default\.declare\((.+)\)/g, `_EM_SCRIPT_1.default.declare($1, '${uid}')`)
-        src = src.replace('@EM-SCRIPT', '../em.lang/em-script')
+        src = src.replaceAll(/__em_script_1\.default\.declare\((.+)\)/g, `__em_script_1.default.declare($1, '${uid}')`)
+        src = src.replace('@$$em-script', '../em.lang/em-script')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em")).default`)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
@@ -174,6 +169,7 @@ function tsortUnits(): Array<string> {
     function dfs(uid: string) {
         if (visited.has(uid)) return
         visited.add(uid)
+        console.log(uid)
         units.get(uid)!.imports.forEach(imp => {
             dfs(imp)
         })

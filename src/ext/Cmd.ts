@@ -13,7 +13,7 @@ export function build(uri: Vsc.Uri, opts: string[] = []) {
 
 export async function newModule(uri: Vsc.Uri) {
     const content = `
-import em from '@EM-SCRIPT'
+import em from '@$$em-script'
 export const em$_U = em.declare('MODULE')
 
 const em$config = { }

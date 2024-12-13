@@ -129,7 +129,7 @@ export async function newUnit(uri: Vsc.Uri, uks: string, content: string) {
 export function updateConfig(): void {
     const file = Path.join(rootPath(), 'tsconfig.json')
     const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))
-    json.compilerOptions.paths = { "@EM-SCRIPT": ["./workspace/em.core/em.lang/em-script"] }
+    json.compilerOptions.paths = { "@$$em-script": ["./workspace/em.core/em.lang/em-script"] }
     let wdir = workPath()
     Fs.readdirSync(wdir).forEach(f1 => {
         let ppath = Path.join(wdir, f1);
