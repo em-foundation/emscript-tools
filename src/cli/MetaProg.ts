@@ -2,6 +2,7 @@ import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Ts from 'typescript'
 
+import * as Out from './Out'
 import * as Session from './Session'
 import * as UnitMgr from './UnitMgr'
 
@@ -9,9 +10,12 @@ let curUpath: string
 let curUidList: Array<string>
 
 export function exec(): void {
-    const jsPath = Path.resolve(Session.getBuildDir(), `${UnitMgr.mkUid(curUpath)}.em.js`)
+    const mainJs = `${Session.getBuildDir()}/meta-main.js`
+    let metaObj: any = {}
+    // const jsPath = Path.resolve(Session.getBuildDir(), `${UnitMgr.mkUid(curUpath)}.em.js`)
     try {
-        require(jsPath)
+        metaObj = require(mainJs)
+        metaObj['$$exec']()
     } catch (error) {
         console.error(`*** execution error: ${error}`)
     }
@@ -48,6 +52,21 @@ function expand(doneSet: Set<string>): Array<string> {
         })
     })
     return res
+}
+
+function generate(): void {
+    Out.open(`${Session.getBuildDir()}/meta-main.js`)
+    Out.genTitle('PROLOGUE')
+    Out.addFile('./workspace/em.core/em.lang/meta-prologue.js')
+    Out.genTitle('MAIN BODY')
+    for (const uid of curUidList) {
+        const ud = UnitMgr.units().get(uid)!
+        Out.print("$$units.set('%1', require('%2'));\n", uid, `./${uid}.em.js`)
+        // $$units.set('em.lang/BuildC', require('c:/Users/biosb/vsc-projs/em-prime/dev/em-bios/em.docs/.out/em.lang/BuildC.js'));
+    }
+    Out.genTitle('EPILOGUE')
+    Out.addFile('./workspace/em.core/em.lang/meta-epilogue.js')
+    Out.close()
 }
 
 export function parse(upath: string): void {
@@ -97,6 +116,7 @@ export function parse(upath: string): void {
     }
     curUidList = tsortUnits()
     transpile(options)
+    generate()
 }
 
 function transpile(options: Ts.CompilerOptions) {
