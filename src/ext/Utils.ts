@@ -107,6 +107,25 @@ export function rootPath(): string {
     return Vsc.workspace.workspaceFolders![0].uri.fsPath
 }
 
+export async function newUnit(uri: Vsc.Uri, uks: string, content: string) {
+    let uname = await Vsc.window.showInputBox({ placeHolder: `${uks} name` })
+    if (!uname) return
+    if (!(uname.match(/^\w(\w|\d)*$/))) {
+        Vsc.window.showErrorMessage(`'${uname}' is not a valid identifier`)
+        return
+    }
+    let ppath = uri.fsPath
+    let upath = Path.join(ppath, `${uname}.em.ts`)
+    let pname = Path.basename(ppath)
+    if (Fs.existsSync(upath)) {
+        Vsc.window.showErrorMessage(`unit '${pname}/${uname}' already exists`)
+        return
+    }
+    Fs.writeFileSync(upath, content)
+    Vsc.commands.executeCommand('vscode.open', Vsc.Uri.file(upath), { preview: true })
+}
+
+
 export function updateConfig(): void {
     const file = Path.join(rootPath(), 'tsconfig.json')
     const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))

@@ -11,4 +11,20 @@ export function build(uri: Vsc.Uri, opts: string[] = []) {
     }
 }
 
+export async function newModule(uri: Vsc.Uri) {
+    const content = `
+import em from '@EM-SCRIPT'
+export const em$_U = em.declare('MODULE')
+
+const em$config = { }
+
+namespace em$meta { }
+
+namespace em$targ { }
+
+export default { em$_U /*, ...em$meta */ /*, ...em$targ */ }
+    `
+    await Utils.newUnit(uri, 'module', content.trim())
+}
+
 

@@ -46,6 +46,10 @@
             {
                 "command": "em.build",
                 "title": "EM•Script — Build"
+            },
+            {
+                "command": "em.newModule",
+                "title": "EM•Script - New Module..."
             }
         ],
         "grammars": [
@@ -87,6 +91,10 @@
                 {
                     "command": "em.build",
                     "when": "false"
+                },
+                {
+                    "command": "em.newModule",
+                    "when": "false"
                 }
             ],
             "explorer/context": [
@@ -94,6 +102,11 @@
                     "command": "em.build",
                     "group": "ZZZem-script@2",
                     "when": "resourceFilename =~ /^.+\\.em\\.ts$/"
+                },
+                {
+                    "command": "em.newModule",
+                    "group": "ZZYem-script@2",
+                    "when": "resourceFilename in ext.buckets"
                 }
             ],
             "editor/context": [

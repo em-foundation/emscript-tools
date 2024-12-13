@@ -15,6 +15,7 @@ export async function activate(context: Vsc.ExtensionContext) {
     })
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.build", Cmd.build))
+    context.subscriptions.push(Vsc.commands.registerCommand("em.newModule", Cmd.newModule))
 
     Vsc.workspace.onDidSaveTextDocument((document) => {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
@@ -38,4 +39,7 @@ async function refreshIcons() {
     ], Vsc.ConfigurationTarget.Workspace)
     await conf.update('customIconFolderPath', Path.join(Vsc.extensions.getExtension('the-em-foundation.em-script')!.extensionPath, 'etc'))
     Vsc.commands.executeCommand('vscode-icons.regenerateIcons')
+    Vsc.commands.executeCommand('setContext', 'ext.buckets', bnames)
+    Vsc.commands.executeCommand('setContext', 'ext.packages', pnames)
+
 }
