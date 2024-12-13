@@ -54,6 +54,21 @@ function expand(doneSet: Set<string>): Array<string> {
     return res
 }
 
+function findUsed(): Set<string> {
+    const used = new Set<string>()
+    function dfs(uid: string) {
+        if (used.has(uid)) return
+        const ud = UnitMgr.units().get(uid)!
+        if (ud.kind != 'MODULE') return
+        used.add(uid)
+        ud.imports.forEach(imp => {
+            dfs(imp)
+        })
+    }
+    dfs(UnitMgr.mkUid(curUpath))
+    return used
+}
+
 function generate(): void {
     Out.open(`${Session.getBuildDir()}/meta-main.js`)
     Out.genTitle('PROLOGUE')
@@ -61,9 +76,13 @@ function generate(): void {
     Out.genTitle('MAIN BODY')
     for (const uid of curUidList) {
         const ud = UnitMgr.units().get(uid)!
-        Out.print("$$units.set('%1', require('%2'));\n", uid, `./${uid}.em.js`)
-        // $$units.set('em.lang/BuildC', require('c:/Users/biosb/vsc-projs/em-prime/dev/em-bios/em.docs/.out/em.lang/BuildC.js'));
+        const suf = (ud.kind == 'MODULE') ? ".default" : ""
+        Out.print("$$units.set('%1', require('%2')%3);\n", uid, `./${uid}.em.js`, suf)
     }
+    Out.print("\n")
+    findUsed().forEach(uid => {
+        Out.print("$$units.get('%1').em$_U.used();\n", uid)
+    })
     Out.genTitle('EPILOGUE')
     Out.addFile('./workspace/em.core/em.lang/meta-epilogue.js')
     Out.close()
