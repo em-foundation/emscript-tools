@@ -9,11 +9,41 @@ import * as UnitMgr from './UnitMgr'
 let curUpath: string
 let curUidList: Array<string>
 
+let $$units = new Map<string, any>()
+let $$used = new Set<string>()
+
 export function exec(): void {
-    const mainJs = `${Session.getBuildDir()}/meta-main.js`
-    let metaObj: any = {}
-    metaObj = require(mainJs)
-    metaObj['$$exec']()
+    for (const uid of curUidList) {
+        const ud = UnitMgr.units().get(uid)!
+        if (ud.kind == 'TEMPLATE') continue
+        const upath = `${Session.getBuildDir()}/${uid}.em.js`
+        let uobj: any = require(upath)
+        if (ud.kind == 'MODULE') uobj = uobj.default
+        $$units.set(uid, uobj)
+    }
+    findUsed().forEach(uid => {
+        $$units.get(uid).em$_U.used()
+    })
+    const $$uarrBot = Array.from($$units.values())
+    const $$uarrTop = Array.from($$units.values()).reverse()
+    $$uarrBot.forEach(u => { if ('em$initM' in u) u.em$initM() })
+    $$uarrTop.forEach(u => { if ('em$configureM' in u) u.em$configureM() })
+    $$uarrTop.forEach(u => {
+        if (!u.em$_U._used) return
+        if ('em$constructM' in u) u.em$constructM()
+        $$used.add(u.em$_U.uid)
+    })
+    $$used.forEach(uid => {
+        const uobj = $$units.get(uid)!
+        for (const p in uobj.em$_C) {
+            const cobj = uobj.em$_C[p]
+            if (cobj.$$em$config != 'proxy') return
+            if (!cobj.bound) return // TODO: error message
+            cobj.prx.em$_U._used = true
+            $$used.add(cobj.prx.em$_U.uid)
+        }
+    })
+    console.log('$$used: ', $$used)
 }
 
 function expand(doneSet: Set<string>): Array<string> {
@@ -64,25 +94,6 @@ function findUsed(): Set<string> {
     return used
 }
 
-function generate(): void {
-    Out.open(`${Session.getBuildDir()}/meta-main.js`)
-    Out.genTitle('PROLOGUE')
-    Out.addFile('./workspace/em.core/em.lang/meta-prologue.js')
-    Out.genTitle('MAIN BODY')
-    for (const uid of curUidList) {
-        const ud = UnitMgr.units().get(uid)!
-        const suf = (ud.kind == 'MODULE') ? ".default" : ""
-        Out.print("$$units.set('%1', require('%2')%3);\n", uid, `./${uid}.em.js`, suf)
-    }
-    Out.print("\n")
-    findUsed().forEach(uid => {
-        Out.print("$$units.get('%1').em$_U.used();\n", uid)
-    })
-    Out.genTitle('EPILOGUE')
-    Out.addFile('./workspace/em.core/em.lang/meta-epilogue.js')
-    Out.close()
-}
-
 export function parse(upath: string): void {
     curUpath = upath
     let workList = new Array<string>(Path.join(Session.getWorkDir(), upath))
@@ -130,7 +141,6 @@ export function parse(upath: string): void {
     }
     curUidList = tsortUnits()
     transpile(options)
-    generate()
 }
 
 function transpile(options: Ts.CompilerOptions) {
@@ -169,7 +179,6 @@ function tsortUnits(): Array<string> {
     function dfs(uid: string) {
         if (visited.has(uid)) return
         visited.add(uid)
-        console.log(uid)
         units.get(uid)!.imports.forEach(imp => {
             dfs(imp)
         })
