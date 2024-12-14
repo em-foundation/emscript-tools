@@ -11,20 +11,70 @@ export function build(uri: Vsc.Uri, opts: string[] = []) {
     }
 }
 
+export async function newComposite(uri: Vsc.Uri) {
+    const content = `
+import em from '@$$em-script'
+export const em$_U = em.declare('COMPOSITE')
+
+`
+    await Utils.newUnit(uri, 'composite', content.trim())
+}
+
+
+export async function newInterface(uri: Vsc.Uri) {
+    const content = `
+import em from '@$$em-script'
+export const em$_U = em.declare('INTERFACE')
+
+export interface em$_I { }
+
+`
+    await Utils.newUnit(uri, 'interface', content.trim())
+}
+
 export async function newModule(uri: Vsc.Uri) {
     const content = `
 import em from '@$$em-script'
 export const em$_U = em.declare('MODULE')
 
-const em$config = { }
+const em$_C = { }
 
 namespace em$meta { }
 
 namespace em$targ { }
 
-export default { em$_U /*, ...em$meta */ /*, ...em$targ */ }
-    `
+export default {
+    em$_U, 
+    // em$_C,
+    // ...em$meta,
+    // ...em$targ,
+}
+
+`
     await Utils.newUnit(uri, 'module', content.trim())
 }
 
+export async function newTemplate(uri: Vsc.Uri) {
+    const content = `
+import em from '@$$em-script'
+export const em$_T = em.declare('TEMPLATE')
+
+namespace em$template {
+    export const em$_U = em.declare('MODULE')
+    const em$_C = { }
+    namespace em$meta { }
+    namespace em$targ { }
+    export const em$clone = {
+        em$_U, 
+        // em$_C,
+        // ...em$meta,
+        // ...em$targ,
+    }
+}
+
+export function em$clone() { return { em$_T, ...em$template.em$clone } }
+
+`
+    await Utils.newUnit(uri, 'template', content.trim())
+}
 

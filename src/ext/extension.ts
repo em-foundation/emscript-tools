@@ -15,7 +15,10 @@ export async function activate(context: Vsc.ExtensionContext) {
     })
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.build", Cmd.build))
+    context.subscriptions.push(Vsc.commands.registerCommand("em.newComposite", Cmd.newComposite))
+    context.subscriptions.push(Vsc.commands.registerCommand("em.newInterface", Cmd.newInterface))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newModule", Cmd.newModule))
+    context.subscriptions.push(Vsc.commands.registerCommand("em.newTemplate", Cmd.newTemplate))
 
     Vsc.workspace.onDidSaveTextDocument((document) => {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)

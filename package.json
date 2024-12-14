@@ -48,8 +48,20 @@
                 "title": "EM•Script — Build"
             },
             {
+                "command": "em.newComposite",
+                "title": "EM•Script - New Composite..."
+            },
+            {
+                "command": "em.newInterface",
+                "title": "EM•Script - New Interface..."
+            },
+            {
                 "command": "em.newModule",
                 "title": "EM•Script - New Module..."
+            },
+            {
+                "command": "em.newTemplate",
+                "title": "EM•Script - New Template..."
             }
         ],
         "grammars": [
@@ -93,7 +105,19 @@
                     "when": "false"
                 },
                 {
+                    "command": "em.newComposite",
+                    "when": "false"
+                },
+                {
+                    "command": "em.newInterface",
+                    "when": "false"
+                },
+                {
                     "command": "em.newModule",
+                    "when": "false"
+                },
+                {
+                    "command": "em.newTemplate",
                     "when": "false"
                 }
             ],
@@ -104,7 +128,22 @@
                     "when": "resourceFilename =~ /^.+\\.em\\.ts$/"
                 },
                 {
+                    "command": "em.newComposite",
+                    "group": "ZZYem-script@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
+                    "command": "em.newInterface",
+                    "group": "ZZYem-script@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
                     "command": "em.newModule",
+                    "group": "ZZYem-script@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
+                    "command": "em.newTemplate",
                     "group": "ZZYem-script@2",
                     "when": "resourceFilename in ext.buckets"
                 }
