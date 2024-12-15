@@ -1,26 +1,39 @@
+import * as Ts from 'typescript'
 import * as Vsc from 'vscode'
 
 export class Provider implements Vsc.DocumentSemanticTokensProvider {
     provideDocumentSemanticTokens(doc: Vsc.TextDocument): Vsc.ProviderResult<Vsc.SemanticTokens> {
-        console.log('*** SemTok')
-        const builder = new Vsc.SemanticTokensBuilder(legend());
-        const pattern = /\b(em|em\$\w*)\b/g;
-        for (let line = 0; line < doc.lineCount; line++) {
-            const lineText = doc.lineAt(line).text;
-            let match;
-            while ((match = pattern.exec(lineText)) !== null) {
-                const start = match.index;
-                const length = match[0].length;
-                builder.push(
-                    new Vsc.Range(line, start, line, start + length),
-                    'em-token'
-                );
+        const sf = Ts.createSourceFile(
+            doc.fileName,
+            doc.getText(),
+            Ts.ScriptTarget.Latest,
+            /*setParentNodes*/ true
+        );
+        const builder = new Vsc.SemanticTokensBuilder(legend())
+        const visitNode = (node: Ts.Node): void => {
+            if (Ts.isIdentifier(node)) {
+                const name = node.text
+                let tokType = ''
+                if (name === 'em') tokType = 'em-ident'
+                else if (name === 'em$clone') tokType = 'em-special'
+                else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
+                else if (name.match(/^em\$_[CTU]$/)) tokType = 'em-special'
+                if (tokType) {
+                    const start = doc.positionAt(node.getStart())
+                    const end = doc.positionAt(node.getEnd())
+                    builder.push(
+                        new Vsc.Range(start, end),
+                        tokType
+                    )
+                }
             }
+            Ts.forEachChild(node, visitNode);
         }
-        return builder.build();
+        Ts.forEachChild(sf, visitNode)
+        return builder.build()
     }
 }
 
 export function legend(): Vsc.SemanticTokensLegend {
-    return new Vsc.SemanticTokensLegend(['em-token'], []);
+    return new Vsc.SemanticTokensLegend(['em-ident', 'em-domain', 'em-special'], []);
 }
