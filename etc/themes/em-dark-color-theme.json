@@ -1437,16 +1437,16 @@
     "semanticHighlighting": true,
     "semanticTokenColors": {
         "em-ident": {
-            "foreground": "#f99165",
-            "fontStyle": "bold"
+            "foreground": "#ff9d73",
+            "fontStyle": ""
         },
         "em-domain": {
             "foreground": "#d4efff",
             "fontStyle": "bold"
         },
         "em-special": {
-            "foreground": "#66cdb3",
-            "fontStyle": "bold"
+            "foreground": "#ff9d73",
+            "fontStyle": ""
         }
     }
 }
