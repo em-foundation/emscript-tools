@@ -156,6 +156,13 @@
                 }
             ]
         },
+        "semanticTokenScopes": [
+            {
+                "scopes": {
+                    "em-token": []
+                }
+            }
+        ],
         "themes": [
             {
                 "label": "EM•Script Dark",

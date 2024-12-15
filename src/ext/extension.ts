@@ -1,5 +1,6 @@
 import * as Cmd from './Cmd'
 import * as Path from 'path'
+import * as SemTok from './SemTok'
 import * as Utils from './Utils'
 import * as Vsc from 'vscode'
 
@@ -19,6 +20,9 @@ export async function activate(context: Vsc.ExtensionContext) {
     context.subscriptions.push(Vsc.commands.registerCommand("em.newInterface", Cmd.newInterface))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newModule", Cmd.newModule))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newTemplate", Cmd.newTemplate))
+
+    context.subscriptions.push(Vsc.languages.registerDocumentSemanticTokensProvider(
+        { language: 'em', scheme: 'file' }, new SemTok.Provider(), SemTok.legend()))
 
     Vsc.workspace.onDidSaveTextDocument((document) => {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
