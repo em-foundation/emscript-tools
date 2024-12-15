@@ -1434,6 +1434,7 @@
             }
         }
     ],
+    "semanticHighlighting": true,
     "semanticTokenColors": {
         "em-token": {
             "foreground": "#FF0000",

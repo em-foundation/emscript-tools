@@ -22,7 +22,7 @@ export async function activate(context: Vsc.ExtensionContext) {
     context.subscriptions.push(Vsc.commands.registerCommand("em.newTemplate", Cmd.newTemplate))
 
     context.subscriptions.push(Vsc.languages.registerDocumentSemanticTokensProvider(
-        { language: 'em', scheme: 'file' }, new SemTok.Provider(), SemTok.legend()))
+        { language: 'typescript', scheme: 'file' }, new SemTok.Provider(), SemTok.legend()))
 
     Vsc.workspace.onDidSaveTextDocument((document) => {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
