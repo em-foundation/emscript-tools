@@ -1437,7 +1437,7 @@
     "semanticHighlighting": true,
     "semanticTokenColors": {
         "em-ident": {
-            "foreground": "#ff9d73",
+            "foreground": "#90ffda",
             "fontStyle": ""
         },
         "em-domain": {
@@ -1446,7 +1446,7 @@
         },
         "em-special": {
             "foreground": "#ff9d73",
-            "fontStyle": ""
+            "fontStyle": "bold"
         }
     }
 }
