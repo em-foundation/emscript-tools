@@ -21,15 +21,15 @@ export function exec(): Map<string, any> {
         $$units.set(uid, uobj)
     }
     findUsed().forEach(uid => {
-        $$units.get(uid).em$_U.used()
+        $$units.get(uid).em$_U._used = true
     })
     const $$uarrBot = Array.from($$units.values())
     const $$uarrTop = Array.from($$units.values()).reverse()
-    $$uarrBot.forEach(u => { if ('em$init' in u) u.em$initM() })
-    $$uarrTop.forEach(u => { if ('em$configure' in u) u.em$configureM() })
+    $$uarrBot.forEach(u => { if ('em$init' in u) u.em$init() })
+    $$uarrTop.forEach(u => { if ('em$configure' in u) u.em$configure() })
     $$uarrTop.forEach(u => {
         if (!u.em$_U._used) return
-        if ('em$construct' in u) u.em$constructM()
+        if ('em$construct' in u) u.em$construct()
         $$used.add(u.em$_U.uid)
     })
     $$used.forEach(uid => {
@@ -43,7 +43,10 @@ export function exec(): Map<string, any> {
         }
     })
     const res = new Map<string, any>()
-    Array.from($$used.values()).reverse().forEach(uid => res.set(uid, $$units.get(uid)))
+    Array.from($$used.values()).reverse().forEach(uid => {
+        const ud = UnitMgr.units().get(uid)!
+        if (ud.kind == 'MODULE') res.set(uid, $$units.get(uid))
+    })
     return res
 }
 
@@ -85,7 +88,7 @@ function findUsed(): Set<string> {
     function dfs(uid: string) {
         if (used.has(uid)) return
         const ud = UnitMgr.units().get(uid)!
-        if (ud.kind != 'MODULE') return
+        if (ud.kind == 'TEMPLATE') return
         used.add(uid)
         ud.imports.forEach(imp => {
             dfs(imp)
