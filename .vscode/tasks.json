@@ -21,6 +21,21 @@
             "problemMatcher": {
                 "base": "$tsc"
             }
+        },
+        {
+            "label": "npm: watch",
+            "type": "npm",
+            "script": "watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "never",
+                "panel": "dedicated"
+            },
+            "group": "build",
+            "detail": "npm run build-cli -- --sourcemap --watch",
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
         }
     ]
 }
