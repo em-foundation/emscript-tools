@@ -2,7 +2,6 @@ import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Ts from 'typescript'
 
-import * as Out from './Out'
 import * as Session from './Session'
 import * as UnitMgr from './UnitMgr'
 
@@ -12,7 +11,7 @@ let curUidList: Array<string>
 let $$units = new Map<string, any>()
 let $$used = new Set<string>()
 
-export function exec(): void {
+export function exec(): Map<string, any> {
     for (const uid of curUidList) {
         const ud = UnitMgr.units().get(uid)!
         if (ud.kind == 'TEMPLATE') continue
@@ -43,7 +42,9 @@ export function exec(): void {
             $$used.add(cobj.prx.em$_U.uid)
         }
     })
-    console.log('$$used: ', $$used)
+    const res = new Map<string, any>()
+    Array.from($$used.values()).reverse().forEach(uid => res.set(uid, $$units.get(uid)))
+    return res
 }
 
 function expand(doneSet: Set<string>): Array<string> {
