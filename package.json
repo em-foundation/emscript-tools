@@ -159,9 +159,10 @@
         "semanticTokenScopes": [
             {
                 "scopes": {
-                    "em-ident": [],
                     "em-domain": [],
-                    "em-special": []
+                    "em-ident": [],
+                    "em-special": [],
+                    "em-unit": []
                 }
             }
         ],

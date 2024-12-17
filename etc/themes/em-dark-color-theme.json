@@ -1447,6 +1447,12 @@
         "em-special": {
             "foreground": "#ff9d73",
             "fontStyle": "bold"
+        },
+        "em-unit": {
+            "foreground": "#43c9a7",
+            /* "foreground": "#43c980", */
+            /* "foreground": "#06dc95", */
+            "fontStyle": ""
         }
     }
 }
