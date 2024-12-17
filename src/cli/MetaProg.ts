@@ -25,11 +25,11 @@ export function exec(): Map<string, any> {
     })
     const $$uarrBot = Array.from($$units.values())
     const $$uarrTop = Array.from($$units.values()).reverse()
-    $$uarrBot.forEach(u => { if ('em$initM' in u) u.em$initM() })
-    $$uarrTop.forEach(u => { if ('em$configureM' in u) u.em$configureM() })
+    $$uarrBot.forEach(u => { if ('em$init' in u) u.em$initM() })
+    $$uarrTop.forEach(u => { if ('em$configure' in u) u.em$configureM() })
     $$uarrTop.forEach(u => {
         if (!u.em$_U._used) return
-        if ('em$constructM' in u) u.em$constructM()
+        if ('em$construct' in u) u.em$constructM()
         $$used.add(u.em$_U.uid)
     })
     $$used.forEach(uid => {
