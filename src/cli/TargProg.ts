@@ -11,14 +11,13 @@ const unitTab = UnitMgr.units()
 
 let $$units: Map<string, any>
 
-function genBody(uid: string) {
-    Out.open(`${Session.getBuildDir()}/${uid}.cpp`)
+function genBody(ud: UnitMgr.Desc) {
+    Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
     Out.close()
 }
 
-function genHeader(uid: string) {
-    console.log(`${uid}.hpp`)
-    Out.open(`${Session.getBuildDir()}/${uid}.hpp`)
+function genHeader(ud: UnitMgr.Desc) {
+    Out.open(`${Session.getBuildDir()}/${ud.id}.hpp`)
     Out.close()
 }
 
@@ -32,14 +31,16 @@ function genMain() {
 
 function genUnit(uid: string) {
     unitGenSet.add(uid)
-    unitTab.get(uid)!.imports.forEach((iid) => {
+    const ud = unitTab.get(uid)!
+    ud.imports.forEach((iid) => {
         const iud = unitTab.get(iid)!
         if (iud.kind != 'INTERFACE') return
         if (unitGenSet.has(iid)) return
         unitGenSet.add(iid)
-        genHeader(iid)
+        genHeader(iud)
     })
-    genHeader(uid)
+    genHeader(ud)
+    genBody(ud)
 }
 
 export function generate(umap: Map<string, any>) {

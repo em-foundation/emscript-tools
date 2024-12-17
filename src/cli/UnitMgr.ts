@@ -1,14 +1,14 @@
 import * as Path from 'path'
 import * as Ts from 'typescript'
 
-let unitTab = new Map<string, UnitDesc>()
+let unitTab = new Map<string, Desc>()
 
-export type UnitKind = 'MODULE' | 'INTERFACE' | 'COMPOSITE' | 'TEMPLATE'
+export type Kind = 'MODULE' | 'INTERFACE' | 'COMPOSITE' | 'TEMPLATE'
 
-class UnitDesc {
+export class Desc {
     constructor(
         readonly id: string,
-        readonly kind: UnitKind,
+        readonly kind: Kind,
         readonly sf: Ts.SourceFile,
         private _imports: Map<string, string>
     ) { }
@@ -27,11 +27,11 @@ function cloneNode<T extends Ts.Node>(node: T): T {
     return cloned
 }
 
-export function create(sf: Ts.SourceFile): UnitDesc {
+export function create(sf: Ts.SourceFile): Desc {
     const uid = mkUid(sf.fileName)
     if (unitTab.has(uid)) return unitTab.get(uid)!
     const sobj = scan(sf)
-    const unit = new UnitDesc(uid, sobj.kind, sf, sobj.imps)
+    const unit = new Desc(uid, sobj.kind, sf, sobj.imps)
     // console.log(`create: ${uid}`)
     unitTab.set(uid, unit)
     return unit
@@ -55,7 +55,7 @@ function printSf(sf: Ts.SourceFile) {
 }
 
 interface ScanResult {
-    kind: UnitKind,
+    kind: Kind,
     imps: Map<string, string>
 }
 
@@ -75,7 +75,7 @@ function scan(sf: Ts.SourceFile): ScanResult {
         }
         else if (Ts.isVariableStatement(stmt)) {
             const m = stmt.getText(sf).match(/em\.declare\(['"](\w+)['"]/)
-            if (m) res.kind = m[1] as UnitKind
+            if (m) res.kind = m[1] as Kind
         }
     })
     return res
@@ -83,7 +83,7 @@ function scan(sf: Ts.SourceFile): ScanResult {
 
 interface TransResult {
     sf: Ts.SourceFile,
-    kind: UnitKind,
+    kind: Kind,
     imps: Map<string, string>
 }
 
@@ -115,7 +115,7 @@ function transform(sf: Ts.SourceFile): TransResult {
                 if (Ts.isVariableStatement(node)) {
                     const m = node.getText(sf).match(/em\.declare\(['"](\w+)['"]/)
                     if (m) {
-                        res.kind = m[1] as UnitKind
+                        res.kind = m[1] as Kind
                         const orig = node.declarationList.declarations[0]
                         const varDecl = Ts.factory.createVariableDeclaration(
                             orig.name,
@@ -156,6 +156,6 @@ function transform(sf: Ts.SourceFile): TransResult {
     return res
 }
 
-export function units(): ReadonlyMap<string, UnitDesc> {
+export function units(): ReadonlyMap<string, Desc> {
     return unitTab
 }
