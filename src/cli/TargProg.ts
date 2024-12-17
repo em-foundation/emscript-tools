@@ -13,17 +13,30 @@ let $$units: Map<string, any>
 
 function genBody(ud: UnitMgr.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
+    Out.addText(`#include "../${ud.id}.hpp"\n`)
     Out.close()
 }
 
 function genHeader(ud: UnitMgr.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.hpp`)
+    ud.imports.forEach((iid) => {
+        const iud = unitTab.get(iid)!
+        if (iud.kind != 'INTERFACE') return
+        Out.addText(`#include "../${iud.id}.hpp"\n`)
+    })
     Out.close()
 }
 
 function genMain() {
     Out.open(`${Session.getBuildDir()}/main.cpp`)
-    Out.print("void main() {\n%+")
+    Out.genTitle('MODULE HEADERS')
+    Array.from($$units.keys()).forEach(uid => Out.addText(`#include "../${uid}.hpp"\n`))
+    Array.from($$units.keys()).forEach(uid => {
+        Out.genTitle(`MODULE ${uid}`)
+        Out.addText(`#include "../${uid}.cpp"\n`)
+    })
+    Out.genTitle('MAIN ENTRY')
+    Out.print("static void em_main() {\n%+")
     Out.print("%-}\n")
     Out.addText("\n")
     Out.close()
