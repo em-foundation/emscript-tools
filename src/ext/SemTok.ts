@@ -15,9 +15,10 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 const name = node.text
                 let tokType = ''
                 if (name === 'em') tokType = 'em-ident'
+                if (name === '$$') tokType = 'em-ident'
                 else if (name === 'em$clone') tokType = 'em-special'
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
-                else if (name.match(/^em\$_[CITU]$/)) tokType = 'em-special'
+                else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
                 else if (name.match(/^em\$[a-z]/)) tokType = 'em-special'
                 if (tokType) {
                     const start = doc.positionAt(node.getStart())
