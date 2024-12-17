@@ -19,6 +19,7 @@ export async function activate(context: Vsc.ExtensionContext) {
     context.subscriptions.push(Vsc.commands.registerCommand("em.newComposite", Cmd.newComposite))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newInterface", Cmd.newInterface))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newModule", Cmd.newModule))
+    context.subscriptions.push(Vsc.commands.registerCommand("em.newProgram", Cmd.newProgram))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newTemplate", Cmd.newTemplate))
 
     context.subscriptions.push(Vsc.languages.registerDocumentSemanticTokensProvider(

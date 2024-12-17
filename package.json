@@ -60,6 +60,10 @@
                 "title": "EM•Script - New Module..."
             },
             {
+                "command": "em.newProgram",
+                "title": "EM•Script - New Program..."
+            },
+            {
                 "command": "em.newTemplate",
                 "title": "EM•Script - New Template..."
             }
@@ -117,6 +121,10 @@
                     "when": "false"
                 },
                 {
+                    "command": "em.newProgram",
+                    "when": "false"
+                },
+                {
                     "command": "em.newTemplate",
                     "when": "false"
                 }
@@ -139,6 +147,11 @@
                 },
                 {
                     "command": "em.newModule",
+                    "group": "ZZYem-script@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
+                    "command": "em.newProgram",
                     "group": "ZZYem-script@2",
                     "when": "resourceFilename in ext.buckets"
                 },
