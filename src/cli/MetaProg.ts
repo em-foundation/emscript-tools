@@ -158,13 +158,13 @@ function transpile(options: Ts.CompilerOptions) {
         Fs.mkdirSync(`${buildDir}/${Path.dirname(uid)}`, { recursive: true })
         Fs.writeFileSync(`${buildDir}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
         let src = transOut.outputText
-        src = src.replaceAll(/__em_script_1\.default\.declare\((.+)\)/g, `__em_script_1.default.declare($1, '${uid}')`)
-        src = src.replace('@$$em-script', '../em.lang/em-script')
+        src = src.replaceAll(/__emscript_1\.default\.declare\((.+)\)/g, `__emscript_1.default.declare($1, '${uid}')`)
+        src = src.replace('@$$emscript', '../em.lang/emscript')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em")).default`)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
     }
-    const emFile = 'em.lang/em-script'
+    const emFile = 'em.lang/emscript'
     const emInFile = `./workspace/em.core/${emFile}.ts`
     const emSrc = Fs.readFileSync(emInFile, 'utf-8')
     const emOut = Ts.transpileModule(emSrc, {

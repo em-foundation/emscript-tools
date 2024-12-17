@@ -6,7 +6,7 @@ import Vsc from "vscode";
 import * as JSON5 from 'json5'
 
 const EXT = ".em.ts"
-const EXTENSION_ID = "the-em-foundation.em-script"
+const EXTENSION_ID = "the-em-foundation.emscript"
 
 const loggerC = new class Logger {
     readonly output = Vsc.window.createOutputChannel('EM•Script', 'em-log')
@@ -129,7 +129,7 @@ export async function newUnit(uri: Vsc.Uri, uks: string, content: string) {
 export function updateConfig(): void {
     const file = Path.join(rootPath(), 'tsconfig.json')
     const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))
-    json.compilerOptions.paths = { "@$$em-script": ["./workspace/em.core/em.lang/em-script"] }
+    json.compilerOptions.paths = { "@$$emscript": ["./workspace/em.core/em.lang/emscript"] }
     let wdir = workPath()
     Fs.readdirSync(wdir).forEach(f1 => {
         let ppath = Path.join(wdir, f1);

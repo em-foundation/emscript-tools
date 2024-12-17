@@ -5,7 +5,7 @@ import * as Utils from './Utils'
 import * as Vsc from 'vscode'
 
 export async function activate(context: Vsc.ExtensionContext) {
-    console.log("em-script active")
+    console.log("emscript active")
     await refreshIcons()
     Utils.updateConfig()
     Utils.updateSettings('editor', 'tabCompletion', 'on')
@@ -45,9 +45,8 @@ async function refreshIcons() {
     await conf.update('associations.files', [
         { icon: 'emunit', extensions: ['.em.ts', '.em-ts'], format: 'svg' },
     ], Vsc.ConfigurationTarget.Workspace)
-    await conf.update('customIconFolderPath', Path.join(Vsc.extensions.getExtension('the-em-foundation.em-script')!.extensionPath, 'etc'))
+    await conf.update('customIconFolderPath', Path.join(Vsc.extensions.getExtension('the-em-foundation.emscript')!.extensionPath, 'etc'))
     Vsc.commands.executeCommand('vscode-icons.regenerateIcons')
     Vsc.commands.executeCommand('setContext', 'ext.buckets', bnames)
     Vsc.commands.executeCommand('setContext', 'ext.packages', pnames)
-
 }

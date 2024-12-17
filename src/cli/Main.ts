@@ -4,7 +4,7 @@ import * as Path from 'path'
 import * as Format from './Format'
 import * as Session from './Session'
 
-const CMD = new Commander.Command('em-script')
+const CMD = new Commander.Command('emscript')
 
 CMD
     .version("0.0.1")

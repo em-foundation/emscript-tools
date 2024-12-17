@@ -95,7 +95,7 @@ function transform(sf: Ts.SourceFile): TransResult {
                 if (Ts.isImportDeclaration(node)) {
                     const modSpecNode = node.moduleSpecifier
                     if (Ts.isStringLiteral(modSpecNode)) {
-                        let modSpec = modSpecNode.text.replace('@$$em-script', '../em.lang/em-script')
+                        let modSpec = modSpecNode.text.replace('@$$emscript', '../em.lang/emscript')
                         const iuMatch = modSpec.match(/^@(.+)\.em$/)
                         if (iuMatch) {
                             modSpec = modSpec.replace('@', '../')

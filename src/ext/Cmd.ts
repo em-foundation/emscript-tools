@@ -13,7 +13,7 @@ export function build(uri: Vsc.Uri, opts: string[] = []) {
 
 export async function newComposite(uri: Vsc.Uri) {
     const content = `
-import em from '@$$em-script'
+import em from '@$$emscript'
 export const em$_U = em.declare('COMPOSITE')
 
 `
@@ -23,7 +23,7 @@ export const em$_U = em.declare('COMPOSITE')
 
 export async function newInterface(uri: Vsc.Uri) {
     const content = `
-import em from '@$$em-script'
+import em from '@$$emscript'
 export const em$_U = em.declare('INTERFACE')
 
 export interface em$_I { }
@@ -34,7 +34,7 @@ export interface em$_I { }
 
 export async function newModule(uri: Vsc.Uri) {
     const content = `
-import em from '@$$em-script'
+import em from '@$$emscript'
 export const em$_U = em.declare('MODULE')
 
 const em$_C = { }
@@ -56,7 +56,7 @@ export default {
 
 export async function newProgram(uri: Vsc.Uri) {
     const content = `
-import em from '@$$em-script'
+import em from '@$$emscript'
 export const em$_U = em.declare('MODULE')
 
 const em$_C = { }
@@ -82,7 +82,7 @@ export default {
 
 export async function newTemplate(uri: Vsc.Uri) {
     const content = `
-import em from '@$$em-script'
+import em from '@$$emscript'
 export const em$_T = em.declare('TEMPLATE')
 
 namespace em$template {

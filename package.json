@@ -1,5 +1,5 @@
 {
-    "name": "em-script",
+    "name": "emscript",
     "displayName": "EM•Script",
     "description": "EM•Script platform tooling",
     "version": "0.0.1",
@@ -8,7 +8,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/em-foundation/em-script-tools"
+        "url": "https://github.com/em-foundation/emscript-tools"
     },
     "engines": {
         "vscode": "^1.80.0"
@@ -132,32 +132,32 @@
             "explorer/context": [
                 {
                     "command": "em.build",
-                    "group": "ZZZem-script@2",
+                    "group": "ZZZemscript@2",
                     "when": "resourceFilename =~ /^.+\\.em\\.ts$/"
                 },
                 {
                     "command": "em.newComposite",
-                    "group": "ZZYem-script@2",
+                    "group": "ZZYemscript@2",
                     "when": "resourceFilename in ext.buckets"
                 },
                 {
                     "command": "em.newInterface",
-                    "group": "ZZYem-script@2",
+                    "group": "ZZYemscript@2",
                     "when": "resourceFilename in ext.buckets"
                 },
                 {
                     "command": "em.newModule",
-                    "group": "ZZYem-script@2",
+                    "group": "ZZYemscript@2",
                     "when": "resourceFilename in ext.buckets"
                 },
                 {
                     "command": "em.newProgram",
-                    "group": "ZZYem-script@2",
+                    "group": "ZZYemscript@2",
                     "when": "resourceFilename in ext.buckets"
                 },
                 {
                     "command": "em.newTemplate",
-                    "group": "ZZYem-script@2",
+                    "group": "ZZYemscript@2",
                     "when": "resourceFilename in ext.buckets"
                 }
             ],
