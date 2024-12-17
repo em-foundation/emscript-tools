@@ -7,10 +7,12 @@
             "name": "Launch Extension",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "${workspaceFolder}/../em-script-content/",
+                "${workspaceFolder}/../emscript-content/",
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
-            "outFiles": ["${workspaceFolder}/out/**/*.js"],
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
             "preLaunchTask": "Build Extension"
         }
     ]
