@@ -13,6 +13,7 @@ export class Desc {
         private _imports: Map<string, string>
     ) { }
     addImport(impName: string, impUid: string) { this._imports.set(impName, impUid) }
+    get cname(): string { return this.id.replaceAll(/[./]/g, '_') }
     get imports(): ReadonlyMap<string, string> { return this._imports }
 }
 

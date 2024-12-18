@@ -3,6 +3,7 @@ import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Ts from 'typescript'
 
+import * as Ast from './Ast'
 import * as Out from './Out'
 import * as Session from './Session'
 import * as Unit from './Unit'
@@ -26,7 +27,15 @@ export function build() {
 
 function genBody(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
-    Out.addText(`#include "../${ud.id}.hpp"\n`)
+    Out.addText(`#include "../${ud.id}.hpp"\n\n`)
+    Out.print("namespace %1 {\n\n%+", ud.cname)
+    // const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
+    // Ast.printTree(em$targ)
+    // if (em$targ) {
+    //     console.log(ud.id + ':')
+    //     Ast.printChildren(em$targ)
+    // }
+    Out.print("\n%-};\n")
     Out.close()
 }
 
@@ -37,6 +46,18 @@ function genHeader(ud: Unit.Desc) {
         if (iud.kind != 'INTERFACE') return
         Out.addText(`#include "../${iud.id}.hpp"\n`)
     })
+    Out.print("\nnamespace %1 {\n\n%+", ud.cname)
+    const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
+    if (em$targ) {
+        console.log(ud.id, '-->')
+        Ast.printTree(em$targ)
+        em$targ.forEachChild(child => {
+            if (Ts.isVariableStatement(child)) {
+                genVarDecl(child.declarationList.declarations[0])
+            }
+        })
+    }
+    Out.print("\n%-};\n")
     Out.close()
 }
 
@@ -69,6 +90,11 @@ function genUnit(uid: string) {
     })
     genHeader(ud)
     genBody(ud)
+}
+
+function genVarDecl(decl: Ts.VariableDeclaration) {
+    // console.log((decl.name as Ts.Identifier).text)
+    // Ast.printTree(decl)
 }
 
 export function generate(umap: Map<string, any>) {

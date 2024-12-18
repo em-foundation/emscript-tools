@@ -2,6 +2,7 @@ import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Ts from 'typescript'
 
+import * as Ast from './Ast'
 import * as Session from './Session'
 import * as Unit from './Unit'
 
@@ -204,5 +205,8 @@ function tsortUnits(): Array<string> {
     }
     dfs(`${Session.getDistro().bucket}/BuildC`)
     dfs(Unit.mkUid(curUpath))
+    // const sf = units.get(Unit.mkUid(curUpath))!.sf
+    // const em$targ = Ast.findNamespace(sf, 'em$targ')
+    // em$targ!.forEachChild(node => console.log(Ts.SyntaxKind[node.kind]))
     return res
 }
