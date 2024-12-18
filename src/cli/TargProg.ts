@@ -15,6 +15,10 @@ let $$units: Map<string, any>
 export function build() {
     try {
         let proc = ChildProc.spawnSync('./build.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
+        if (proc.status != 0 || proc.stderr.length > 0) {
+            console.log(proc.status)
+            console.log(String(proc.stderr))
+        }
     } catch (err) {
         throw new Error('*** target build failed')
     }
