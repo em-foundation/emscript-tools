@@ -28,10 +28,20 @@ export function buildUnit(upath: string): void {
     MetaProg.parse(upath)
     const $$units = MetaProg.exec()
     TargProg.generate($$units)
+    TargProg.build()
 }
 
 export function getBuildDir(): string {
     return buildDir
+}
+
+export function getDistro(): { package: string, bucket: string } {
+    return { package: 'ti.cc23xx', bucket: 'ti.distro.cc23xx' }
+}
+
+export function getShellPath(): string {
+    // TODO -- infer path if necessary
+    return process.env['SHELL']!
 }
 
 export function getWorkDir(): string {

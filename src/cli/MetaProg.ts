@@ -39,9 +39,18 @@ export function exec(): Map<string, any> {
             if (cobj.$$em$config != 'proxy') return
             if (!cobj.bound) return // TODO: error message
             cobj.prx.em$_U._used = true
+            // CALL em$construct
             $$used.add(cobj.prx.em$_U.uid)
         }
     })
+    const cwd = process.cwd()
+    process.chdir(Session.getBuildDir())
+    $$uarrTop.forEach(u => {
+        if (!u.em$_U._used) return
+        if ('em$generate' in u) u.em$generate()
+    })
+    process.chdir(cwd)
+    // console.log($$used)
     const res = new Map<string, any>()
     Array.from($$used.values()).reverse().forEach(uid => {
         const ud = UnitMgr.units().get(uid)!
@@ -94,14 +103,19 @@ function findUsed(): Set<string> {
             dfs(imp)
         })
     }
+    dfs(`${Session.getDistro().bucket}/BuildC`)
     dfs(UnitMgr.mkUid(curUpath))
     return used
 }
 
 export function parse(upath: string): void {
     curUpath = upath
-    let workList = new Array<string>(Path.join(Session.getWorkDir(), upath))
-    let expandDoneSet = new Set<string>
+    const dist = Session.getDistro()
+    let workList = new Array<string>(
+        Path.join(Session.getWorkDir(), upath),
+        Path.join(Session.getWorkDir(), dist.package, dist.bucket, 'BuildC.em.ts'),
+    )
+    const expandDoneSet = new Set<string>
     const cfgHost: Ts.ParseConfigFileHost = {
         ...Ts.sys,
         onUnRecoverableConfigFileDiagnostic: (diagnostic) => {
@@ -188,6 +202,7 @@ function tsortUnits(): Array<string> {
         })
         res.push(uid)
     }
+    dfs(`${Session.getDistro().bucket}/BuildC`)
     dfs(UnitMgr.mkUid(curUpath))
     return res
 }

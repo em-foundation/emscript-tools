@@ -1,3 +1,4 @@
+import * as ChildProc from 'child_process'
 import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Ts from 'typescript'
@@ -10,6 +11,14 @@ const unitGenSet = new Set<string>()
 const unitTab = UnitMgr.units()
 
 let $$units: Map<string, any>
+
+export function build() {
+    try {
+        let proc = ChildProc.spawnSync('./build.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
+    } catch (err) {
+        throw new Error('*** target build failed')
+    }
+}
 
 function genBody(ud: UnitMgr.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
@@ -30,15 +39,17 @@ function genHeader(ud: UnitMgr.Desc) {
 function genMain() {
     Out.open(`${Session.getBuildDir()}/main.cpp`)
     Out.genTitle('MODULE HEADERS')
-    Array.from($$units.keys()).forEach(uid => Out.addText(`#include "../${uid}.hpp"\n`))
+    Array.from($$units.keys()).forEach(uid => Out.addText(`#include "${uid}.hpp"\n`))
     Array.from($$units.keys()).forEach(uid => {
         Out.genTitle(`MODULE ${uid}`)
-        Out.addText(`#include "../${uid}.cpp"\n`)
+        Out.addText(`#include "${uid}.cpp"\n`)
     })
     Out.genTitle('MAIN ENTRY')
     Out.print("static void em_main() {\n%+")
     Out.print("%-}\n")
     Out.addText("\n")
+    const dist = Session.getDistro()
+    Out.addText(`#include "${dist.bucket}/startup.c"\n`)
     Out.close()
 }
 
