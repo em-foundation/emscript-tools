@@ -3,7 +3,7 @@ import * as Path from 'path'
 import * as Ts from 'typescript'
 
 import * as Session from './Session'
-import * as UnitMgr from './UnitMgr'
+import * as Unit from './Unit'
 
 let curUpath: string
 let curUidList: Array<string>
@@ -13,7 +13,7 @@ let $$used = new Set<string>()
 
 export function exec(): Map<string, any> {
     for (const uid of curUidList) {
-        const ud = UnitMgr.units().get(uid)!
+        const ud = Unit.units().get(uid)!
         if (ud.kind == 'TEMPLATE') continue
         const upath = `${Session.getBuildDir()}/${uid}.em.js`
         let uobj: any = require(upath)
@@ -53,7 +53,7 @@ export function exec(): Map<string, any> {
     // console.log($$used)
     const res = new Map<string, any>()
     Array.from($$used.values()).reverse().forEach(uid => {
-        const ud = UnitMgr.units().get(uid)!
+        const ud = Unit.units().get(uid)!
         if (ud.kind == 'MODULE') res.set(uid, $$units.get(uid))
     })
     return res
@@ -61,7 +61,7 @@ export function exec(): Map<string, any> {
 
 function expand(doneSet: Set<string>): Array<string> {
     let res = new Array<string>
-    UnitMgr.units().forEach((ud, uid) => {
+    Unit.units().forEach((ud, uid) => {
         if (doneSet.has(uid)) return
         doneSet.add(uid)
         ud.sf.statements.forEach((stmt) => {
@@ -73,7 +73,7 @@ function expand(doneSet: Set<string>): Array<string> {
                 ud.addImport(m[1], `${uid}__${m[1]}`)
                 res.push(xpath)
                 const tuid = ud.imports.get(m[2])!
-                const tud = UnitMgr.units().get(tuid)!
+                const tud = Unit.units().get(tuid)!
                 // console.log(`generating ${xpath} using ${tud.id}`)
                 let lines = Array<string>(`// *** GENERATED UNIT CLONED FROM '${tud.id}'\n`)
                 for (let line of tud.sf.getText(tud.sf).split('\n')) {
@@ -96,7 +96,7 @@ function findUsed(): Set<string> {
     const used = new Set<string>()
     function dfs(uid: string) {
         if (used.has(uid)) return
-        const ud = UnitMgr.units().get(uid)!
+        const ud = Unit.units().get(uid)!
         if (ud.kind == 'TEMPLATE') return
         used.add(uid)
         ud.imports.forEach(imp => {
@@ -104,7 +104,7 @@ function findUsed(): Set<string> {
         })
     }
     dfs(`${Session.getDistro().bucket}/BuildC`)
-    dfs(UnitMgr.mkUid(curUpath))
+    dfs(Unit.mkUid(curUpath))
     return used
 }
 
@@ -146,14 +146,14 @@ export function parse(upath: string): void {
             getSourceFile: (fileName, languageVersion, onError) => {
                 if (fileName.endsWith(".em.ts") && Path.isAbsolute(fileName)) {
                     foundList.push(fileName)
-                    // console.log(`found: ${UnitMgr.mkUid(fileName)}`)
+                    // console.log(`found: ${Unit.mkUid(fileName)}`)
                 }
                 return baseHost.getSourceFile(fileName, languageVersion, onError)
             },
         }
         const prog = Ts.createProgram(workList, options, customHost)
         // console.log(prog.getRootFileNames())
-        for (const p of foundList) UnitMgr.create(prog.getSourceFile(p)!)
+        for (const p of foundList) Unit.create(prog.getSourceFile(p)!)
         workList = expand(expandDoneSet)
         // console.log(workList)
     }
@@ -164,7 +164,7 @@ export function parse(upath: string): void {
 function transpile(options: Ts.CompilerOptions) {
     const buildDir = Session.getBuildDir()
     for (const uid of curUidList) {
-        const ud = UnitMgr.units().get(uid)!
+        const ud = Unit.units().get(uid)!
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName
@@ -191,7 +191,7 @@ function transpile(options: Ts.CompilerOptions) {
 }
 
 function tsortUnits(): Array<string> {
-    const units = UnitMgr.units()
+    const units = Unit.units()
     const res = new Array<string>
     const visited = new Set<string>
     function dfs(uid: string) {
@@ -203,6 +203,6 @@ function tsortUnits(): Array<string> {
         res.push(uid)
     }
     dfs(`${Session.getDistro().bucket}/BuildC`)
-    dfs(UnitMgr.mkUid(curUpath))
+    dfs(Unit.mkUid(curUpath))
     return res
 }

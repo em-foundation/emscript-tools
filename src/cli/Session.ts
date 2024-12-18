@@ -1,8 +1,8 @@
 import * as Fs from 'fs'
 import * as Path from 'path'
 
-import * as MetaProg from './MetaProg'
-import * as TargProg from './TargProg'
+import * as Meta from './Meta'
+import * as Targ from './Targ'
 
 export enum Mode {
     BUILD,
@@ -25,10 +25,10 @@ export function activate(root: string, mode: Mode): void {
 }
 
 export function buildUnit(upath: string): void {
-    MetaProg.parse(upath)
-    const $$units = MetaProg.exec()
-    TargProg.generate($$units)
-    TargProg.build()
+    Meta.parse(upath)
+    const $$units = Meta.exec()
+    Targ.generate($$units)
+    Targ.build()
 }
 
 export function getBuildDir(): string {

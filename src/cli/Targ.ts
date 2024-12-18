@@ -5,10 +5,10 @@ import * as Ts from 'typescript'
 
 import * as Out from './Out'
 import * as Session from './Session'
-import * as UnitMgr from './UnitMgr'
+import * as Unit from './Unit'
 
 const unitGenSet = new Set<string>()
-const unitTab = UnitMgr.units()
+const unitTab = Unit.units()
 
 let $$units: Map<string, any>
 
@@ -24,13 +24,13 @@ export function build() {
     }
 }
 
-function genBody(ud: UnitMgr.Desc) {
+function genBody(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
     Out.addText(`#include "../${ud.id}.hpp"\n`)
     Out.close()
 }
 
-function genHeader(ud: UnitMgr.Desc) {
+function genHeader(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.hpp`)
     ud.imports.forEach((iid) => {
         const iud = unitTab.get(iid)!
