@@ -6,6 +6,7 @@ import * as Vsc from 'vscode'
 
 export async function activate(context: Vsc.ExtensionContext) {
     console.log("emscript active")
+
     await refreshIcons()
     Utils.updateConfig()
     Utils.updateSettings('editor', 'tabCompletion', 'on')
@@ -13,6 +14,12 @@ export async function activate(context: Vsc.ExtensionContext) {
     Utils.updateSettings('workbench', 'colorTheme', 'EM•Script Dark')
     Utils.updateSettings('files', 'associations', {
         "*.em.ts": "typescript",
+    })
+
+    Vsc.languages.setLanguageConfiguration('typescript', {
+        onEnterRules: [
+            { beforeText: /^\s+\|-/, action: { indentAction: Vsc.IndentAction.None, appendText: '|-> ' } },
+        ],
     })
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.build", Cmd.build))
