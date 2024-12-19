@@ -10,6 +10,7 @@ export class Desc {
         readonly id: string,
         readonly kind: Kind,
         readonly sf: Ts.SourceFile,
+        readonly tc: Ts.TypeChecker,
         private _imports: Map<string, string>
     ) { }
     addImport(impName: string, impUid: string) { this._imports.set(impName, impUid) }
@@ -28,11 +29,11 @@ function cloneNode<T extends Ts.Node>(node: T): T {
     return cloned
 }
 
-export function create(sf: Ts.SourceFile): Desc {
+export function create(sf: Ts.SourceFile, tc: Ts.TypeChecker): Desc {
     const uid = mkUid(sf.fileName)
     if (unitTab.has(uid)) return unitTab.get(uid)!
     const sobj = scan(sf)
-    const unit = new Desc(uid, sobj.kind, sf, sobj.imps)
+    const unit = new Desc(uid, sobj.kind, sf, tc, sobj.imps)
     // console.log(`create: ${uid}`)
     unitTab.set(uid, unit)
     return unit

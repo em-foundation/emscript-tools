@@ -4,14 +4,19 @@ import * as Path from 'path'
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
+import * as Decl from './Decl'
+import * as Expr from './Expr'
 import * as Out from './Out'
 import * as Session from './Session'
+import * as Stmt from './Stmt'
 import * as Unit from './Unit'
 
 const unitGenSet = new Set<string>()
 const unitTab = Unit.units()
 
 let $$units: Map<string, any>
+
+let curUnit: Unit.Desc
 
 export function build() {
     try {
@@ -27,7 +32,7 @@ export function build() {
 
 function genBody(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
-    Out.addText(`#include "../${ud.id}.hpp"\n\n`)
+    Out.addText(`#include <${ud.id}.hpp>\n\n`)
     Out.print("namespace %1 {\n\n%+", ud.cname)
     // const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
     // Ast.printTree(em$targ)
@@ -41,40 +46,54 @@ function genBody(ud: Unit.Desc) {
 
 function genHeader(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.hpp`)
+    Out.addText(`#ifndef ${ud.cname}__M\n`)
+    Out.addText(`#define ${ud.cname}__M\n`)
+    Out.addText('#include <emscript.hpp>\n\n')
     ud.imports.forEach((iid) => {
         const iud = unitTab.get(iid)!
         if (iud.kind != 'INTERFACE') return
-        Out.addText(`#include "../${iud.id}.hpp"\n`)
+        Out.addText(`#include <${iud.id}.hpp>\n`)
     })
     Out.print("\nnamespace %1 {\n\n%+", ud.cname)
     const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
     if (em$targ) {
-        console.log(ud.id, '-->')
-        Ast.printTree(em$targ)
+        // console.log(ud.id, '-->')
+        // Ast.printTypedTree(em$targ, ud.tc)
+        // Ast.printTree(em$targ)
         em$targ.forEachChild(child => {
-            if (Ts.isVariableStatement(child)) {
-                genVarDecl(child.declarationList.declarations[0])
+            if (Ts.isStatement(child)) {
+                Stmt.generate(child, ud)
             }
+            else {
+                console.log(`unexpected kind: ${Ts.SyntaxKind[child.kind]}`)
+            }
+            // if (Ts.isVariableStatement(child)) {
+            //     genVarDecl(child.declarationList.declarations[0])
+            // }
+            // else if (Ts.isTypeAliasDeclaration(child)) {
+            //     genTypeDecl(child)
+            // }
         })
     }
-    Out.print("\n%-};\n")
+    Out.print("\n%-};\n\n")
+    Out.addText(`#endif // ${ud.cname}__M\n`)
     Out.close()
 }
 
 function genMain() {
     Out.open(`${Session.getBuildDir()}/main.cpp`)
     Out.genTitle('MODULE HEADERS')
-    Array.from($$units.keys()).forEach(uid => Out.addText(`#include "${uid}.hpp"\n`))
+    Array.from($$units.keys()).forEach(uid => Out.addText(`#include <${uid}.hpp>\n`))
     Array.from($$units.keys()).forEach(uid => {
         Out.genTitle(`MODULE ${uid}`)
-        Out.addText(`#include "${uid}.cpp"\n`)
+        Out.addText(`#include <${uid}.cpp>\n`)
     })
     Out.genTitle('MAIN ENTRY')
     Out.print("static void em_main() {\n%+")
     Out.print("%-}\n")
     Out.addText("\n")
     const dist = Session.getDistro()
-    Out.addText(`#include "${dist.bucket}/startup.c"\n`)
+    Out.addText(`#include <${dist.bucket}/startup.c>\n`)
     Out.close()
 }
 
@@ -92,10 +111,19 @@ function genUnit(uid: string) {
     genBody(ud)
 }
 
-function genVarDecl(decl: Ts.VariableDeclaration) {
-    // console.log((decl.name as Ts.Identifier).text)
-    // Ast.printTree(decl)
-}
+// function genTypeDecl(decl: Ts.TypeAliasDeclaration) {
+//     Out.print("%t// typedef %1\n", (decl.name as Ts.Identifier).text)
+// }
+// 
+// function genVarDecl(decl: Ts.VariableDeclaration) {
+//     Out.print("%t// const %1", (decl.name as Ts.Identifier).text)
+//     if (decl.initializer) {
+//         Out.print(" = ")
+//         Expr.generate(decl.initializer)
+//     }
+//     // console.log((decl.name as Ts.Identifier).text)
+//     // Ast.printTree(decl)
+// }
 
 export function generate(umap: Map<string, any>) {
     $$units = umap
