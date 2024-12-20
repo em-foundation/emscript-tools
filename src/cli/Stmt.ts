@@ -18,6 +18,22 @@ export function generate(stmt: Ts.Statement) {
     else if (Ts.isBlock(stmt)) {
         stmt.statements.forEach(s => generate(s))
     }
+    else if (Ts.isForStatement(stmt)) {
+        let init = ''
+        if (stmt.initializer) {
+            if (Ts.isVariableDeclarationList(stmt.initializer)) {
+                init = Decl.makeVarDecl(stmt.initializer.declarations[0])
+            }
+            else if (Ts.isExpression(stmt.initializer)) {
+                init = Expr.make(stmt.initializer)
+            }
+        }
+        let cond = stmt.condition ? Expr.make(stmt.condition) : ''
+        let incr = stmt.incrementor ? Expr.make(stmt.incrementor) : ''
+        Out.print("%tfor (%1; %2; %3) {%+\n", init, cond, incr)
+        generate(stmt.statement)
+        Out.print("%-%t}\n")
+    }
     else if (Ts.isWhileStatement(stmt)) {
         Out.print("%twhile (%1) {%+\n", Expr.make(stmt.expression))
         generate(stmt.statement)

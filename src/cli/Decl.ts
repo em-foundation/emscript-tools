@@ -41,3 +41,10 @@ export function generate(decl: Ts.Declaration) {
         Ast.fail('Decl', decl)
     }
 }
+
+export function makeVarDecl(decl: Ts.VariableDeclaration): string {
+    const dn = (decl.name as Ts.Identifier).text
+    const ts = decl.type ? Type.make(decl.type) : 'auto'
+    const init = Expr.make(decl.initializer!)
+    return `${ts} ${dn} = ${init}`
+}
