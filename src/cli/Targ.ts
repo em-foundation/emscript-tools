@@ -11,12 +11,17 @@ import * as Session from './Session'
 import * as Stmt from './Stmt'
 import * as Unit from './Unit'
 
+export interface Context {
+    gen: 'BODY' | 'HEADER'
+    ud: Unit.Desc
+}
+
 const unitGenSet = new Set<string>()
 const unitTab = Unit.units()
 
 let $$units: Map<string, any>
 
-let curUnit: Unit.Desc
+let curCtx: Context = { gen: 'HEADER' } as Context
 
 export function build() {
     try {
@@ -30,18 +35,26 @@ export function build() {
     }
 }
 
+export function context(): Context {
+    return curCtx
+}
+
 function genBody(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
     Out.addText(`#include <${ud.id}.hpp>\n\n`)
     Out.print("namespace %1 {\n\n%+", ud.cname)
-    // const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
-    // Ast.printTree(em$targ)
-    // if (em$targ) {
-    //     console.log(ud.id + ':')
-    //     Ast.printChildren(em$targ)
-    // }
+    const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
+    if (em$targ) genFxns(em$targ)
     Out.print("\n%-};\n")
     Out.close()
+}
+
+function genFxns(node: Ts.Node) {
+    node.forEachChild(child => {
+        if (Ts.isFunctionDeclaration(child)) {
+            Decl.generate(child)
+        }
+    })
 }
 
 function genHeader(ud: Unit.Desc) {
@@ -56,25 +69,7 @@ function genHeader(ud: Unit.Desc) {
     })
     Out.print("\nnamespace %1 {\n\n%+", ud.cname)
     const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
-    if (em$targ) {
-        // console.log(ud.id, '-->')
-        // Ast.printTypedTree(em$targ, ud.tc)
-        // Ast.printTree(em$targ)
-        em$targ.forEachChild(child => {
-            if (Ts.isStatement(child)) {
-                Stmt.generate(child, ud)
-            }
-            else {
-                console.log(`unexpected kind: ${Ts.SyntaxKind[child.kind]}`)
-            }
-            // if (Ts.isVariableStatement(child)) {
-            //     genVarDecl(child.declarationList.declarations[0])
-            // }
-            // else if (Ts.isTypeAliasDeclaration(child)) {
-            //     genTypeDecl(child)
-            // }
-        })
-    }
+    if (em$targ) genStmts(em$targ)
     Out.print("\n%-};\n\n")
     Out.addText(`#endif // ${ud.cname}__M\n`)
     Out.close()
@@ -97,9 +92,21 @@ function genMain() {
     Out.close()
 }
 
+function genStmts(node: Ts.Node) {
+    node.forEachChild(child => {
+        if (Ts.isStatement(child)) {
+            Stmt.generate(child)
+        }
+        else {
+            console.log(`unexpected kind: ${Ts.SyntaxKind[child.kind]}`)
+        }
+    })
+}
+
 function genUnit(uid: string) {
     unitGenSet.add(uid)
     const ud = unitTab.get(uid)!
+    curCtx.ud = ud
     ud.imports.forEach((iid) => {
         const iud = unitTab.get(iid)!
         if (iud.kind != 'INTERFACE') return
@@ -108,22 +115,10 @@ function genUnit(uid: string) {
         genHeader(iud)
     })
     genHeader(ud)
+    curCtx.gen = 'BODY'
     genBody(ud)
+    curCtx.gen = 'HEADER'
 }
-
-// function genTypeDecl(decl: Ts.TypeAliasDeclaration) {
-//     Out.print("%t// typedef %1\n", (decl.name as Ts.Identifier).text)
-// }
-// 
-// function genVarDecl(decl: Ts.VariableDeclaration) {
-//     Out.print("%t// const %1", (decl.name as Ts.Identifier).text)
-//     if (decl.initializer) {
-//         Out.print(" = ")
-//         Expr.generate(decl.initializer)
-//     }
-//     // console.log((decl.name as Ts.Identifier).text)
-//     // Ast.printTree(decl)
-// }
 
 export function generate(umap: Map<string, any>) {
     $$units = umap
