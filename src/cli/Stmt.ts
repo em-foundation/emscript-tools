@@ -15,6 +15,14 @@ export function generate(stmt: Ts.Statement) {
     else if (Ts.isExpressionStatement(stmt)) {
         Out.print("%t%1;\n", Expr.make(stmt.expression))
     }
+    else if (Ts.isBlock(stmt)) {
+        stmt.statements.forEach(s => generate(s))
+    }
+    else if (Ts.isWhileStatement(stmt)) {
+        Out.print("%twhile (%1) {%+\n", Expr.make(stmt.expression))
+        generate(stmt.statement)
+        Out.print("%-%t}\n")
+    }
     else {
         Ast.fail('Stmt', stmt)
     }
