@@ -17,6 +17,16 @@ export function make(expr: Ts.Node): string {
         const op = expr.operatorToken.getText(Targ.context().ud.sf)
         return `${e1} ${op} ${e2}`
     }
+    else if (Ts.isPostfixUnaryExpression(expr)) {
+        const e = make(expr.operand)
+        const op = Ts.tokenToString(expr.operator)
+        return `${e}${op}`
+    }
+    else if (Ts.isPrefixUnaryExpression(expr)) {
+        const e = make(expr.operand)
+        const op = Ts.tokenToString(expr.operator)
+        return `${op}${e}`
+    }
     else if (Ts.isParenthesizedExpression(expr)) {
         const e = make(expr.expression)
         return `(${e})`
