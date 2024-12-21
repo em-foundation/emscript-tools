@@ -34,7 +34,6 @@ export function create(sf: Ts.SourceFile, tc: Ts.TypeChecker): Desc {
     if (unitTab.has(uid)) return unitTab.get(uid)!
     const sobj = scan(sf)
     const unit = new Desc(uid, sobj.kind, sf, tc, sobj.imps)
-    // console.log(`create: ${uid}`)
     unitTab.set(uid, unit)
     return unit
 }

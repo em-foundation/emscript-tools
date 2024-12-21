@@ -100,7 +100,7 @@ export function mkUpath(uri: Vsc.Uri): string {
     const un = Path.basename(uri.fsPath, EXT)
     const bn = Path.basename(Path.dirname(uri.fsPath))
     const pn = Path.basename(Path.dirname(Path.dirname(uri.fsPath)))
-    return `${pn}/${bn}/${un}.em`
+    return `${pn}/${bn}/${un}.em.ts`
 }
 
 export function rootPath(): string {

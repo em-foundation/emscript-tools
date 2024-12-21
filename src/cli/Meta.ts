@@ -153,11 +153,9 @@ export function parse(upath: string): void {
             },
         }
         const prog = Ts.createProgram(workList, options, customHost)
-        // console.log(prog.getRootFileNames())
         const tc = prog.getTypeChecker()
         for (const p of foundList) Unit.create(prog.getSourceFile(p)!, tc)
         workList = expand(expandDoneSet)
-        // console.log(workList)
     }
     curUidList = tsortUnits()
     transpile(options)
