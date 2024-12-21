@@ -70,7 +70,7 @@ function scan(sf: Ts.SourceFile): ScanResult {
                 let modSpec = modSpecNode.text
                 const iuMatch = modSpec.match(/^@(.+)\.em$/)
                 if (iuMatch) {
-                    const inMatch = stmt.importClause!.getText(sf).match(/\W*(\w+)$/)
+                    const inMatch = stmt.importClause!.getText(sf).match(/([\w_$]+)$/)
                     res.imps.set(inMatch![1], iuMatch[1])
                 }
             }

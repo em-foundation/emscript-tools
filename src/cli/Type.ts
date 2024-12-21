@@ -10,6 +10,9 @@ export function make(type: Ts.TypeNode): string {
     if (Ts.isTypeReferenceNode(type)) {
         res = type.getText(Targ.context().ud.sf).replaceAll('.', '::')
     }
+    else if (Ts.isTypeQueryNode(type)) {
+        res = type.getText(Targ.context().ud.sf).replaceAll('.', '::')
+    }
     else {
         Ast.fail('Type', type)
     }

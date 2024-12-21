@@ -5,7 +5,7 @@ import * as Decl from './Decl'
 import * as Expr from './Expr'
 import * as Out from './Out'
 
-export function generate(stmt: Ts.Statement) {
+export function generate(stmt: Ts.Statement, tab: boolean = true) {
     if (Ts.isVariableStatement(stmt)) {
         Decl.generate(stmt.declarationList.declarations[0])
     }
@@ -17,6 +17,16 @@ export function generate(stmt: Ts.Statement) {
     }
     else if (Ts.isBlock(stmt)) {
         stmt.statements.forEach(s => generate(s))
+    }
+    else if (Ts.isIfStatement(stmt)) {
+        Out.print("%tif (%1) {%+\n", Expr.make(stmt.expression))
+        generate(stmt.thenStatement)
+        Out.print("%-%t}\n")
+        if (stmt.elseStatement) {
+            Out.print("%telse {%+\n")
+            generate(stmt.elseStatement)
+            Out.print("%-%t}\n")
+        }
     }
     else if (Ts.isForStatement(stmt)) {
         let init = ''

@@ -19,13 +19,24 @@ export function generate(decl: Ts.Declaration) {
         const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
         Out.print("%t%1%2 %3%4;\n", cs, ts, dn, init)
     }
+    else if (Ts.isParameter(decl)) {
+        const pn = (decl.name as Ts.Identifier).text
+        const ts = decl.type ? Type.make(decl.type) : 'auto'
+        const init = decl.initializer && isHdr ? ` = ${Expr.make(decl.initializer)}` : ''
+        Out.print("%1 %2%3", ts, pn, init)
+    }
     else if (Ts.isFunctionDeclaration(decl)) {
         const isHdr = (Targ.context().gen == 'HEADER')
         const es = isHdr ? 'extern ' : ''
         const ts = (decl.type) ? Type.make(decl.type) : 'void'
         const name = decl.name!.text
         Out.print("%t%1%2 %3(", es, ts, name)
-        decl.parameters.forEach(par => generate(par))
+        let sep = ''
+        decl.parameters.forEach(par => {
+            Out.addText(sep)
+            generate(par)
+            sep = ', '
+        })
         Out.addText(')')
         if (isHdr) {
             Out.addText(';\n')
