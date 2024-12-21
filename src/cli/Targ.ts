@@ -88,8 +88,27 @@ function genMain() {
         Out.genTitle(`MODULE ${uid}`)
         Out.addText(`#include <${uid}.cpp>\n`)
     })
+    Out.genTitle('EXIT FUNCTIONS')
+    Out.print('static void em__done() {\n%+')
+    Out.print('%tvolatile int dummy = 0xCAFE;\n')
+    Out.print('%twhile (dummy) ;\n')
+    Out.print('%-}\n')
+    Out.print('static void em__fail() {\n%+')
+    Out.print('%tem__done();\n')
+    Out.print('%-}\n')
+    Out.print('static void em__halt() {\n%+')
+    Out.print('%tem__done();\n')
+    Out.print('%-}\n')
     Out.genTitle('MAIN ENTRY')
-    Out.print("static void em_main() {\n%+")
+    Out.print('extern "C" int main() {\n%+')
+    for (let [uid, uobj] of Array.from($$units.entries()).reverse()) {
+        if ('em$run' in uobj) {
+            const ud = unitTab.get(uid)!
+            Out.print('%t%1::em$run();\n', ud.cname)
+            break
+        }
+    }
+    Out.print('%tem__halt();\n')
     Out.print("%-}\n")
     Out.addText("\n")
     const dist = Session.getDistro()
@@ -127,6 +146,7 @@ function genUnit(uid: string) {
 
 export function generate(umap: Map<string, any>) {
     $$units = umap
+
     for (let k of umap.keys()) genUnit(k)
     genMain()
 }
