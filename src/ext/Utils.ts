@@ -35,7 +35,6 @@ export function build(upath: string) {
     proc.stderr.setEncoding('utf8')
     proc.stderr.on('data', (data => loggerC.addErr(data)))
     proc.on('close', (stat => {
-        loggerC.addInfo('done.')
         loggerC.addBreak(true)
     }))
     proc.on('error', (err) => {

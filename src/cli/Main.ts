@@ -1,4 +1,5 @@
 import * as Commander from 'commander'
+import * as ChildProc from 'child_process'
 import * as Path from 'path'
 
 import * as Format from './Format'
@@ -14,6 +15,7 @@ CMD
 CMD
     .command('build')
     .description('build a unit')
+    .option('-l --load', 'load after build', false)
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doBuild(opts))
 CMD
@@ -38,6 +40,7 @@ function doBuild(opts: any): void {
     printSizes(stdout)
     const dt = ((Date.now() - t0) / 1000).toFixed(2)
     console.log(`${curTab}done in ${dt} seconds`)
+    if (opts.load) doLoad()
 }
 
 function doClean(opts: any): void {
@@ -47,6 +50,16 @@ function doClean(opts: any): void {
 
 function doFormat(opts: any): void {
     Format.exec(opts.unit)
+}
+
+function doLoad() {
+    console.log('loading ...')
+    let proc = ChildProc.spawnSync('./load.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
+    if (proc.status != 0) {
+        console.error('*** loader failed')
+        process.exit(1)
+    }
+    console.log('done')
 }
 
 function getRoot() {
