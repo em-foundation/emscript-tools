@@ -13,6 +13,9 @@ export function make(type: Ts.TypeNode): string {
     else if (Ts.isTypeQueryNode(type)) {
         res = type.getText(Targ.context().ud.sf).replaceAll('.', '::')
     }
+    else if (type.kind === Ts.SyntaxKind.VoidKeyword) {
+        res = 'void'
+    }
     else {
         Ast.fail('Type', type)
     }
