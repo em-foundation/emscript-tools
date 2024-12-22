@@ -145,9 +145,8 @@ function genUnit(uid: string) {
     curCtx.gen = 'HEADER'
 }
 
-export function generate(umap: Map<string, any>) {
-    $$units = umap
-
-    for (let k of umap.keys()) genUnit(k)
+export function generate() {
+    $$units = Session.getUnits()
+    for (let k of $$units.keys()) genUnit(k)
     genMain()
 }

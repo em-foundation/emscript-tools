@@ -1,9 +1,6 @@
 import * as Fs from 'fs'
 import * as Path from 'path'
 
-import * as Meta from './Meta'
-import * as Targ from './Targ'
-
 export enum Mode {
     BUILD,
     CLEAN,
@@ -16,22 +13,14 @@ let projDir: string
 let workDir: string
 let buildDir: string
 
+let $$units = new Map<string, any>()
+
 export function activate(root: string, mode: Mode): void {
     projDir = root
     workDir = Path.join(projDir, 'workspace').replaceAll(/\\/g, '/')
     buildDir = Path.join(workDir, '.emscript').replaceAll(/\\/g, '/')
     process.chdir(projDir)
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
-}
-
-export function buildMeta(upath: string): Map<string, any> {
-    Meta.parse(upath)
-    return Meta.exec()
-}
-
-export function buildTarg($$units: Map<string, any>): string {
-    Targ.generate($$units)
-    return Targ.build()
 }
 
 export function getBuildDir(): string {
@@ -47,6 +36,14 @@ export function getShellPath(): string {
     return process.env['SHELL']!
 }
 
+export function getUnits(): typeof $$units {
+    return $$units
+}
+
 export function getWorkDir(): string {
     return workDir
+}
+
+export function setUnits(umap: typeof $$units) {
+    $$units = umap
 }

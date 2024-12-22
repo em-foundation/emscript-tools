@@ -3,7 +3,9 @@ import * as ChildProc from 'child_process'
 import * as Path from 'path'
 
 import * as Format from './Format'
+import * as Meta from './Meta'
 import * as Session from './Session'
+import * as Targ from './Targ'
 
 let curTab = ""
 
@@ -33,14 +35,24 @@ CMD.parse(process.argv)
 function doBuild(opts: any): void {
     let t0 = Date.now()
     Session.activate(getRoot(), Session.Mode.BUILD)
-    console.log(`${curTab}building META ...`)
-    const $$units = Session.buildMeta(opts.unit)
-    console.log(`${curTab}building TARG ...`)
-    const stdout = Session.buildTarg($$units)
-    printSizes(stdout)
+    doBuildMeta(opts.unit)
+    doBuildTarg()
     const dt = ((Date.now() - t0) / 1000).toFixed(2)
     console.log(`${curTab}done in ${dt} seconds`)
     if (opts.load) doLoad()
+}
+
+function doBuildMeta(upath: string) {
+    console.log(`${curTab}building META ...`)
+    Meta.parse(upath)
+    Meta.exec()
+}
+
+function doBuildTarg() {
+    console.log(`${curTab}building TARG ...`)
+    Targ.generate()
+    const stdout = Targ.build()
+    printSizes(stdout)
 }
 
 function doClean(opts: any): void {

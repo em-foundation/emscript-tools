@@ -12,7 +12,7 @@ let curUidList: Array<string>
 let $$units = new Map<string, any>()
 let $$used = new Set<string>()
 
-export function exec(): Map<string, any> {
+export function exec() {
     for (const uid of curUidList) {
         const ud = Unit.units().get(uid)!
         if (ud.kind == 'TEMPLATE') continue
@@ -57,7 +57,7 @@ export function exec(): Map<string, any> {
         const ud = Unit.units().get(uid)!
         if (ud.kind == 'MODULE') res.set(uid, $$units.get(uid))
     })
-    return res
+    Session.setUnits($$units)
 }
 
 function expand(doneSet: Set<string>): Array<string> {
