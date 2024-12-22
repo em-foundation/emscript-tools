@@ -57,7 +57,7 @@ export function exec() {
         const ud = Unit.units().get(uid)!
         if (ud.kind == 'MODULE') res.set(uid, $$units.get(uid))
     })
-    Session.setUnits($$units)
+    Session.setUnits(res)
 }
 
 function expand(doneSet: Set<string>): Array<string> {
