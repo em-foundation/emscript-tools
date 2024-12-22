@@ -44,6 +44,10 @@ export function getWorkDir(): string {
     return workDir
 }
 
+export function mkUid(upath: string): string {
+    return `${Path.basename(Path.dirname(upath))}/${Path.basename(upath, '.em.ts')}`
+}
+
 export function setUnits(umap: typeof $$units) {
     $$units = umap
 }

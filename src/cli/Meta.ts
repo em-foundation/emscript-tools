@@ -105,7 +105,7 @@ function findUsed(): Set<string> {
         })
     }
     dfs(`${Session.getDistro().bucket}/BuildC`)
-    dfs(Unit.mkUid(curUpath))
+    dfs(Session.mkUid(curUpath))
     return used
 }
 
@@ -203,9 +203,6 @@ function tsortUnits(): Array<string> {
         res.push(uid)
     }
     dfs(`${Session.getDistro().bucket}/BuildC`)
-    dfs(Unit.mkUid(curUpath))
-    // const sf = units.get(Unit.mkUid(curUpath))!.sf
-    // const em$targ = Ast.findNamespace(sf, 'em$targ')
-    // em$targ!.forEachChild(node => console.log(Ts.SyntaxKind[node.kind]))
+    dfs(Session.mkUid(curUpath))
     return res
 }

@@ -1,6 +1,8 @@
 import * as Path from 'path'
 import * as Ts from 'typescript'
 
+import * as Session from './Session'
+
 let unitTab = new Map<string, Desc>()
 
 export type Kind = 'MODULE' | 'INTERFACE' | 'COMPOSITE' | 'TEMPLATE'
@@ -30,16 +32,12 @@ function cloneNode<T extends Ts.Node>(node: T): T {
 }
 
 export function create(sf: Ts.SourceFile, tc: Ts.TypeChecker): Desc {
-    const uid = mkUid(sf.fileName)
+    const uid = Session.mkUid(sf.fileName)
     if (unitTab.has(uid)) return unitTab.get(uid)!
     const sobj = scan(sf)
     const unit = new Desc(uid, sobj.kind, sf, tc, sobj.imps)
     unitTab.set(uid, unit)
     return unit
-}
-
-export function mkUid(upath: string): string {
-    return `${Path.basename(Path.dirname(upath))}/${Path.basename(upath, '.em.ts')}`
 }
 
 function printNode(node: Ts.Node) {
