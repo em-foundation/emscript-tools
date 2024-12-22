@@ -1,5 +1,7 @@
 import * as Commander from 'commander'
 import * as ChildProc from 'child_process'
+import * as Crypto from 'crypto'
+import * as Fs from 'fs'
 import * as Path from 'path'
 
 import * as Format from './Format'
@@ -57,7 +59,8 @@ function doBuildTarg(upath: string) {
     Targ.generate()
     const stdout = Targ.build()
     console.log(`[TARG]`)
-    printSizes(stdout)
+    printSha32()
+    printSize(stdout)
 }
 
 function doClean(opts: any): void {
@@ -83,7 +86,13 @@ function getRoot() {
     return Path.resolve(CMD.opts().root)
 }
 
-function printSizes(stdout: string) {
+function printSha32() {
+    const txt = Fs.readFileSync(Path.join(Session.getBuildDir(), '.out', 'main.out.hex'), 'utf-8')
+    const hash = Crypto.createHash('sha256').update(txt).digest('hex').slice(0, 8)
+    console.log(`    image sha32: ${hash}`)
+}
+
+function printSize(stdout: string) {
     const lines = stdout.split('\n').filter(ln => ln.match(/^\s*\d/))
     const map = new Map<string, number>([
         ['.text', 0],
