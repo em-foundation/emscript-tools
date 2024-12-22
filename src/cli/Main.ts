@@ -6,6 +6,7 @@ import * as Format from './Format'
 import * as Meta from './Meta'
 import * as Session from './Session'
 import * as Targ from './Targ'
+import * as Unit from './Unit'
 
 let curTab = ""
 
@@ -36,22 +37,26 @@ function doBuild(opts: any): void {
     let t0 = Date.now()
     Session.activate(getRoot(), Session.Mode.BUILD)
     doBuildMeta(opts.unit)
-    doBuildTarg()
+    doBuildTarg(opts.unit)
     const dt = ((Date.now() - t0) / 1000).toFixed(2)
     console.log(`${curTab}done in ${dt} seconds`)
-    if (opts.load) doLoad()
+    if (opts.load) doLoad(opts.unit)
 }
 
 function doBuildMeta(upath: string) {
-    console.log(`${curTab}building META ...`)
+    console.log(`building '${Session.mkUid(upath)}' ...`)
     Meta.parse(upath)
     Meta.exec()
+    console.log(`[META]`)
+    const unitCnt = Unit.units().size
+    const usedCnt = Session.getUnits().size
+    console.log(`    parsed ${unitCnt} units, translated ${usedCnt} units`)
 }
 
-function doBuildTarg() {
-    console.log(`${curTab}building TARG ...`)
+function doBuildTarg(upath: string) {
     Targ.generate()
     const stdout = Targ.build()
+    console.log(`[TARG]`)
     printSizes(stdout)
 }
 
@@ -64,8 +69,8 @@ function doFormat(opts: any): void {
     Format.exec(opts.unit)
 }
 
-function doLoad() {
-    console.log('loading ...')
+function doLoad(upath: string) {
+    console.log(`loading '${Session.mkUid(upath)}'...`)
     let proc = ChildProc.spawnSync('./load.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
     if (proc.status != 0) {
         console.error('*** loader failed')
