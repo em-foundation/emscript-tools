@@ -15,6 +15,10 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
     else if (Ts.isExpressionStatement(stmt)) {
         Out.print("%t%1;\n", Expr.make(stmt.expression))
     }
+    else if (Ts.isReturnStatement(stmt)) {
+        const retval = stmt.expression ? ` ${Expr.make(stmt.expression)}` : ''
+        Out.print("%treturn%1;\n", retval)
+    }
     else if (Ts.isBlock(stmt)) {
         stmt.statements.forEach(s => generate(s))
     }

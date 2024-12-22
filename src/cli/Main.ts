@@ -49,7 +49,7 @@ function doBuildMeta(upath: string) {
     console.log(`building '${Session.mkUid(upath)}' ...`)
     Meta.parse(upath)
     Meta.exec()
-    console.log(`[META]`)
+    printDom('meta')
     const unitCnt = Unit.units().size
     const usedCnt = Session.getUnits().size
     console.log(`    parsed ${unitCnt} units, translated ${usedCnt} units`)
@@ -58,7 +58,7 @@ function doBuildMeta(upath: string) {
 function doBuildTarg(upath: string) {
     Targ.generate()
     const stdout = Targ.build()
-    console.log(`[TARG]`)
+    printDom('targ')
     printSha32()
     printSize(stdout)
 }
@@ -84,6 +84,10 @@ function doLoad(upath: string) {
 
 function getRoot() {
     return Path.resolve(CMD.opts().root)
+}
+
+function printDom(dom: string) {
+    console.log(`  em$${dom} {}`)
 }
 
 function printSha32() {
