@@ -24,11 +24,14 @@ export function activate(root: string, mode: Mode): void {
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
 }
 
-export function buildUnit(upath: string): void {
+export function buildMeta(upath: string): Map<string, any> {
     Meta.parse(upath)
-    const $$units = Meta.exec()
+    return Meta.exec()
+}
+
+export function buildTarg($$units: Map<string, any>): string {
     Targ.generate($$units)
-    Targ.build()
+    return Targ.build()
 }
 
 export function getBuildDir(): string {
