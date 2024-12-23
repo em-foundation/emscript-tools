@@ -3,9 +3,12 @@ import * as Ts from 'typescript'
 import * as Ast from './Ast'
 import * as Targ from './Targ'
 
-export function make(expr: Ts.Node): string {
+export function make(expr: Ts.Expression): string {
     const sf = Targ.context().ud.sf
-    if (Ts.isLiteralExpression(expr)) {
+    if (Ts.isNumericLiteral(expr)) {
+        return expr.getText(sf).replaceAll("_", "'")
+    }
+    else if (Ts.isLiteralExpression(expr)) {
         return expr.getText(sf)
     }
     else if (Ts.isIdentifier(expr)) {
