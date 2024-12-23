@@ -1,6 +1,7 @@
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
+import * as Config from './Config'
 import * as Targ from './Targ'
 
 export function make(expr: Ts.Expression): string {
@@ -30,6 +31,9 @@ export function make(expr: Ts.Expression): string {
             else {
                 return sa[1]
             }
+        }
+        else if (Config.getKind(expr.expression) != 'NONE') {
+            return sa.join('.')
         }
         else {
             return sa.join('::')

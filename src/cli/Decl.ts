@@ -20,13 +20,10 @@ export function generate(decl: Ts.Declaration) {
     else if (Ts.isVariableDeclaration(decl)) {
         const dn = (decl.name as Ts.Identifier).text
         if (dn == 'em$_U') return
-        const tc = Targ.context().ud.tc
-        const type = tc.getTypeAtLocation(decl.name)
-        const sym = type.getSymbol()
-        if (sym) switch (tc.getFullyQualifiedName(sym)) {
-            case 'em.param':
-                Config.genParam(decl, dn)
-                return
+        const kind = Config.getKind(decl.name)
+        if (kind == 'PARAM') {
+            Config.genParam(decl, dn)
+            return
         }
         const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : 'static const '
         const ts = decl.type ? Type.make(decl.type) : 'auto'
