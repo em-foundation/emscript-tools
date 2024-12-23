@@ -101,6 +101,13 @@ function genMain() {
     Out.print('%-}\n')
     Out.genTitle('MAIN ENTRY')
     Out.print('extern "C" int main() {\n%+')
+    for (let [uid, uobj] of Array.from($$units.entries())) {
+        if ('em$startup' in uobj) {
+            const ud = unitTab.get(uid)!
+            Out.print('%t%1::em$startup();\n', ud.cname)
+            break
+        }
+    }
     for (let [uid, uobj] of Array.from($$units.entries()).reverse()) {
         if ('em$run' in uobj) {
             const ud = unitTab.get(uid)!
