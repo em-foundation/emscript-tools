@@ -12,13 +12,21 @@ let curUidList: Array<string>
 let $$units = new Map<string, any>()
 let $$used = new Set<string>()
 
+function call(fn: string, u: any) {
+    if (fn in u) {
+        u[fn]()
+    }
+    else if (u.em$meta && fn in u.em$meta) {
+        u.em$meta[fn]()
+    }
+}
+
 export function exec() {
     for (const uid of curUidList) {
         const ud = Unit.units().get(uid)!
         if (ud.kind == 'TEMPLATE') continue
         const upath = `${Session.getBuildDir()}/${uid}.em.js`
         let uobj: any = require(upath)
-        if (ud.kind == 'MODULE') uobj = uobj.default
         $$units.set(uid, uobj)
     }
     findUsed().forEach(uid => {
@@ -26,11 +34,11 @@ export function exec() {
     })
     const $$uarrBot = Array.from($$units.values())
     const $$uarrTop = Array.from($$units.values()).reverse()
-    $$uarrBot.forEach(u => { if ('em$init' in u) u.em$init() })
-    $$uarrTop.forEach(u => { if ('em$configure' in u) u.em$configure() })
+    $$uarrBot.forEach(u => call('em$init', u))
+    $$uarrTop.forEach(u => call('em$configure', u))
     $$uarrTop.forEach(u => {
         if (!u.em$_U._used) return
-        if ('em$construct' in u) u.em$construct()
+        call('em$construct', u)
         $$used.add(u.em$_U.uid)
     })
     $$used.forEach(uid => {
@@ -48,7 +56,7 @@ export function exec() {
     process.chdir(Session.getBuildDir())
     $$uarrTop.forEach(u => {
         if (!u.em$_U._used) return
-        if ('em$generate' in u) u.em$generate()
+        call('em$generate', u)
     })
     process.chdir(cwd)
     // console.log($$used)

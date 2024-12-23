@@ -44,8 +44,9 @@ function genBody(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
     Out.addText(`#include <${ud.id}.hpp>\n\n`)
     Out.print("namespace %1 {\n\n%+", ud.cname)
-    const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
-    if (em$targ) genFxns(em$targ)
+    genFxns(ud.sf)
+    // const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
+    //if (em$targ) genFxns(em$targ)
     Out.print("\n%-};\n")
     Out.close()
 }
