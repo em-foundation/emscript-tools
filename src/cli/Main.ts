@@ -21,6 +21,7 @@ CMD
     .command('build')
     .description('build a unit')
     .option('-l --load', 'load after build', false)
+    .option('-m --meta', 'meta-program only', false)
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doBuild(opts))
 CMD
@@ -39,6 +40,7 @@ CMD.parse(process.argv)
 function doBuild(opts: any): void {
     Session.activate(getRoot(), Session.Mode.BUILD)
     doBuildMeta(opts.unit)
+    if (opts.meta) return
     doBuildTarg(opts.unit)
     const dt = mkDelta()
     console.log(`${curTab}done in ${dt} seconds`)

@@ -37,18 +37,8 @@ export async function newModule(uri: Vsc.Uri) {
 import em from '@$$emscript'
 export const em$_U = em.declare('MODULE')
 
-const em$_C = { }
+export namespace em$meta { }
 
-namespace em$meta { }
-
-namespace em$targ { }
-
-export default {
-    em$_U, 
-    // em$_C,
-    // ...em$meta,
-    // ...em$targ,
-}
 
 `
     await Utils.newUnit(uri, 'module', content.trim())
@@ -59,22 +49,10 @@ export async function newProgram(uri: Vsc.Uri) {
 import em from '@$$emscript'
 export const em$_U = em.declare('MODULE')
 
-const em$_C = { }
-
-namespace em$meta { }
-
-namespace em$targ {
-    export function em$run() {
-        em.halt()
-    }
+export function em$run() {
+    em.halt()
 }
 
-export default {
-    em$_U, 
-    // em$_C,
-    // ...em$meta,
-    ...em$targ,
-}
 
 `
     await Utils.newUnit(uri, 'module', content.trim())
