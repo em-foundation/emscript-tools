@@ -33,14 +33,14 @@ CMD
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doFormat(opts))
 
+let t0 = Date.now()
 CMD.parse(process.argv)
 
 function doBuild(opts: any): void {
-    let t0 = Date.now()
     Session.activate(getRoot(), Session.Mode.BUILD)
     doBuildMeta(opts.unit)
     doBuildTarg(opts.unit)
-    const dt = ((Date.now() - t0) / 1000).toFixed(2)
+    const dt = mkDelta()
     console.log(`${curTab}done in ${dt} seconds`)
     if (opts.load) doLoad(opts.unit)
 }
@@ -49,16 +49,16 @@ function doBuildMeta(upath: string) {
     console.log(`building '${Session.mkUid(upath)}' ...`)
     Meta.parse(upath)
     Meta.exec()
-    printDom('meta')
     const unitCnt = Unit.units().size
     const usedCnt = Session.getUnits().size
-    console.log(`    parsed ${unitCnt} units, translated ${usedCnt} units`)
+    const dt = mkDelta()
+    console.log(`    executed 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units in ${dt} seconds`)
 }
 
 function doBuildTarg(upath: string) {
     Targ.generate()
+    console.log(`compiling 'main.cpp' ...`)
     const stdout = Targ.build()
-    printDom('targ')
     printSha32()
     printSize(stdout)
 }
@@ -86,8 +86,8 @@ function getRoot() {
     return Path.resolve(CMD.opts().root)
 }
 
-function printDom(dom: string) {
-    console.log(`  em$${dom} {}`)
+function mkDelta(): string {
+    return ((Date.now() - t0) / 1000).toFixed(2)
 }
 
 function printSha32() {
