@@ -45,8 +45,6 @@ function genBody(ud: Unit.Desc) {
     Out.addText(`#include <${ud.id}.hpp>\n\n`)
     Out.print("namespace %1 {\n\n%+", ud.cname)
     genFxns(ud.sf)
-    // const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
-    //if (em$targ) genFxns(em$targ)
     Out.print("\n%-};\n")
     Out.close()
 }
@@ -75,8 +73,7 @@ function genHeader(ud: Unit.Desc) {
         if (key == 'em$_R') return
         Out.print(`%tnamespace %1 = %2;\n`, key, iud.cname)
     })
-    const em$targ = Ast.findNamespace(ud.sf, 'em$targ')
-    if (em$targ) genStmts(em$targ)
+    genStmts(ud.sf)
     Out.print("\n%-};\n\n")
     Out.addText(`#endif // ${ud.cname}__M\n`)
     Out.close()
@@ -122,9 +119,6 @@ function genStmts(node: Ts.Node) {
     node.forEachChild(child => {
         if (Ts.isStatement(child)) {
             Stmt.generate(child)
-        }
-        else {
-            console.log(`unexpected kind: ${Ts.SyntaxKind[child.kind]}`)
         }
     })
 }

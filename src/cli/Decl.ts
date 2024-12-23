@@ -9,12 +9,16 @@ import * as Type from './Type'
 
 export function generate(decl: Ts.Declaration) {
     const isHdr = Targ.context().gen == 'HEADER'
-    if (Ts.isTypeAliasDeclaration(decl)) {
+    if (Ts.isImportDeclaration(decl) || Ts.isModuleDeclaration(decl)) {
+        // handled elsewhere
+    }
+    else if (Ts.isTypeAliasDeclaration(decl)) {
         Out.print("%ttypedef %1 %2;\n", Type.make(decl.type), (decl.name as Ts.Identifier).text)
     }
     else if (Ts.isVariableDeclaration(decl)) {
-        const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : isHdr ? 'static const ' : 'const '
         const dn = (decl.name as Ts.Identifier).text
+        if (dn == 'em$_U') return
+        const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : isHdr ? 'static const ' : 'const '
         const ts = decl.type ? Type.make(decl.type) : 'auto'
         const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
         Out.print("%t%1%2 %3%4;\n", cs, ts, dn, init)
