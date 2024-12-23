@@ -83,14 +83,18 @@ function expand(doneSet: Set<string>): Array<string> {
                 res.push(xpath)
                 const tuid = ud.imports.get(m[2])!
                 const tud = Unit.units().get(tuid)!
-                // console.log(`generating ${xpath} using ${tud.id}`)
                 let lines = Array<string>(`// *** GENERATED UNIT CLONED FROM '${tud.id}'\n`)
-                for (let line of tud.sf.getText(tud.sf).split('\n')) {
-                    if (line.indexOf('em$_T = em.declare') != -1) continue
-                    if (line.indexOf('export function em$clone') != -1) {
-                        lines.push('export default { ...em$template.em$clone }')
+                lines.push("import em from '@$$emscript'")
+                lines.push("export const em$_U = em.declare('MODULE')")
+                let found = false
+                for (let line of tud.sf.getText(tud.sf).split('\n').slice(2)) {
+                    if (line.startsWith('export namespace em$template')) {
+                        lines.push('// namespace em$template\n')
+                        found = true
                         continue
                     }
+                    if (found && line.startsWith('export const em$_U')) continue
+                    if (found && line.startsWith('}')) break
                     lines.push(line)
                 }
                 Fs.mkdirSync(Path.dirname(xpath), { recursive: true })
@@ -183,7 +187,7 @@ function transpile(options: Ts.CompilerOptions) {
         src = src.replaceAll(/__emscript_1\.default\.declare\((.+)\)/g, `__emscript_1.default.declare($1, '${uid}')`)
         src = src.replace('@$$emscript', '../em.lang/emscript')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
-        src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em")).default`)
+        src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em"))`)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
     }
     const emFile = 'em.lang/emscript'

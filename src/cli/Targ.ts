@@ -64,12 +64,13 @@ function genHeader(ud: Unit.Desc) {
     Out.addText('#include <emscript.hpp>\n\n')
     ud.imports.forEach((iid) => {
         const iud = unitTab.get(iid)!
-        // if (iud.kind != 'INTERFACE') return
+        if (iud.kind == 'TEMPLATE') return
         Out.addText(`#include <${iud.id}.hpp>\n`)
     })
     Out.print("\nnamespace %1 {\n\n%+", ud.cname)
     ud.imports.forEach((iid, key) => {
         const iud = unitTab.get(iid)!
+        if (iud.kind == 'TEMPLATE') return
         if (key == 'em$_R') return
         Out.print(`%tnamespace %1 = %2;\n`, key, iud.cname)
     })
