@@ -1,9 +1,11 @@
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
+import * as Config from './Config'
 import * as Expr from './Expr'
 import * as Out from './Out'
 import * as Stmt from './Stmt'
+import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
@@ -18,7 +20,15 @@ export function generate(decl: Ts.Declaration) {
     else if (Ts.isVariableDeclaration(decl)) {
         const dn = (decl.name as Ts.Identifier).text
         if (dn == 'em$_U') return
-        const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : isHdr ? 'static const ' : 'const '
+        const tc = Targ.context().ud.tc
+        const type = tc.getTypeAtLocation(decl.name)
+        const sym = type.getSymbol()
+        if (sym) switch (tc.getFullyQualifiedName(sym)) {
+            case 'em.param':
+                Config.genParam(decl, dn)
+                return
+        }
+        const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : 'static const '
         const ts = decl.type ? Type.make(decl.type) : 'auto'
         const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
         Out.print("%t%1%2 %3%4;\n", cs, ts, dn, init)

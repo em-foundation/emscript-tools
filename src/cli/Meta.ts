@@ -43,8 +43,8 @@ export function exec() {
     })
     $$used.forEach(uid => {
         const uobj = $$units.get(uid)!
-        for (const p in uobj.em$_C) {
-            const cobj = uobj.em$_C[p]
+        for (const p in uobj) {
+            const cobj = uobj[p]
             if (cobj.$$em$config != 'proxy') return
             if (!cobj.bound) return // TODO: error message
             cobj.prx.em$_U._used = true
