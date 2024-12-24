@@ -172,6 +172,7 @@
         "semanticTokenScopes": [
             {
                 "scopes": {
+                    "em-debug": [],
                     "em-domain": [],
                     "em-ident": [],
                     "em-special": [],
