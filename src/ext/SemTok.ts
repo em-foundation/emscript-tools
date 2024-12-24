@@ -46,7 +46,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 else if (unitSet.has(name)) tokType = 'em-unit'
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
                 else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
-                else if (name.match(/^em\$(clone|configure|construct|init|run|startup)/)) tokType = 'em-special'
+                else if (name.match(/^em\$(clone|configure|construct|fail|halt|init|ready|reset|run|startup)/)) tokType = 'em-special'
                 else if (name.match(/^em\$/)) tokType = 'em-wrong'
                 if (tokType) addTok(doc, builder, node, tokType)
             }
