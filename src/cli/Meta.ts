@@ -93,7 +93,7 @@ function expand(doneSet: Set<string>): Array<string> {
                         found = true
                         continue
                     }
-                    if (found && line.startsWith('export const em$_U')) continue
+                    if (found && line.indexOf('export const em$_U') != -1) continue
                     if (found && line.startsWith('}')) break
                     lines.push(line)
                 }

@@ -20,13 +20,12 @@ export function make(expr: Ts.Expression): string {
         if (sa[0] == 'em$_R') {
             if (sa[sa.length - 1] == '$$') {
                 const mod = sa[1].match(/([A-Za-z]+)/)![1]
-                const reg = sa[2]
                 let idx = ''
                 if (sa.length == 5) {
                     const e = sa[3].match(/\[(.+)\]/)![1]
                     idx = ` + (${e}) * 4`
                 }
-                return `*em::$reg32(${mod}_BASE + ${mod}_O_${reg}${idx})`
+                return `*em::$reg32(${sa[1]}_BASE + ${mod}_O_${sa[2]}${idx})`
             }
             else {
                 return sa[1]
