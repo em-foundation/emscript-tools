@@ -11,7 +11,7 @@ import * as Type from './Type'
 
 export function generate(decl: Ts.Declaration) {
     const isHdr = Targ.context().gen == 'HEADER'
-    if (Ts.isImportDeclaration(decl) || Ts.isModuleDeclaration(decl)) {
+    if (Ts.isImportDeclaration(decl) || Ts.isModuleDeclaration(decl) || Ts.isInterfaceDeclaration(decl)) {
         // handled elsewhere
     }
     else if (Ts.isTypeAliasDeclaration(decl)) {
