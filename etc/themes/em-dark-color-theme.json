@@ -1457,6 +1457,10 @@
             /* "foreground": "#43c980", */
             /* "foreground": "#06dc95", */
             "fontStyle": ""
-        }
+        },
+        "em-wrong": {
+            "foreground": "#888888",
+            "fontStyle": "strikethrough"
+        },
     }
 }

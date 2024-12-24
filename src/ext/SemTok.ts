@@ -46,7 +46,8 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 else if (unitSet.has(name)) tokType = 'em-unit'
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
                 else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
-                else if (name.match(/^em\$[a-z]/)) tokType = 'em-special'
+                else if (name.match(/^em\$(clone|configure|construct|init|run|startup)/)) tokType = 'em-special'
+                else if (name.match(/^em\$/)) tokType = 'em-wrong'
                 if (tokType) addTok(doc, builder, node, tokType)
             }
             else if (Ts.isPropertyAccessExpression(node)) {
@@ -68,5 +69,5 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
 }
 
 export function legend(): Vsc.SemanticTokensLegend {
-    return new Vsc.SemanticTokensLegend(['em-debug', 'em-domain', 'em-ident', 'em-special', 'em-unit'], []);
+    return new Vsc.SemanticTokensLegend(['em-debug', 'em-domain', 'em-ident', 'em-special', 'em-unit', 'em-wrong'], []);
 }
