@@ -38,31 +38,24 @@ let t0 = Date.now()
 CMD.parse(process.argv)
 
 function doBuild(opts: any): void {
+    const upath = opts.unit
     Session.activate(getRoot(), Session.Mode.BUILD)
-    doBuildMeta(opts.unit)
-    if (opts.meta) return
-    doBuildTarg(opts.unit)
-    const dt = mkDelta()
-    console.log(`${curTab}done in ${dt} seconds`)
-    if (opts.load) doLoad(opts.unit)
-}
-
-function doBuildMeta(upath: string) {
     console.log(`building '${Session.mkUid(upath)}' ...`)
     Meta.parse(upath)
     Meta.exec()
     const unitCnt = Unit.units().size
     const usedCnt = Session.getUnits().size
-    const dt = mkDelta()
-    console.log(`    executed 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units in ${dt} seconds`)
-}
-
-function doBuildTarg(upath: string) {
+    const t1 = mkDelta()
     Targ.generate()
+    console.log(`    executed 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units in ${t1} seconds`)
+    if (opts.meta) return
     console.log(`compiling 'main.cpp' ...`)
     const stdout = Targ.build()
     printSha32()
     printSize(stdout)
+    const t2 = mkDelta()
+    console.log(`${curTab}done in ${t2} seconds`)
+    if (opts.load) doLoad(opts.unit)
 }
 
 function doClean(opts: any): void {
