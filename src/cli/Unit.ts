@@ -18,6 +18,7 @@ export class Desc {
     addImport(impName: string, impUid: string) { this._imports.set(impName, impUid) }
     get cname(): string { return this.id.replaceAll(/[./]/g, '_') }
     get imports(): ReadonlyMap<string, string> { return this._imports }
+    isMetaOnly(): boolean { return this.kind == 'COMPOSITE' || this.kind == 'TEMPLATE' }
 }
 
 function cloneNode<T extends Ts.Node>(node: T): T {
