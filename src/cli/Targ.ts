@@ -74,6 +74,7 @@ function genHeader(ud: Unit.Desc) {
         Out.addText(`#include <${iud.id}.hpp>\n`)
     })
     Out.print("\nnamespace %1 {\n\n%+", ud.cname)
+    Out.print("%tnamespace $$ = %1;\n", ud.cname)
     ud.imports.forEach((iid, key) => {
         if (key == 'em$_R') return
         const iud = unitTab.get(iid)!
@@ -88,8 +89,11 @@ function genHeader(ud: Unit.Desc) {
 
 function genMain() {
     Out.open(`${Session.getBuildDir()}/main.cpp`)
+    Out.addText('#include <emscript.hpp>\n')
     Out.genTitle('MODULE HEADERS')
     Array.from($$units.keys()).forEach(uid => Out.addText(`#include <${uid}.hpp>\n`))
+    Out.genTitle('PROXY BINDINGS')
+    Array.from($$units.keys()).forEach(uid => genProxies(uid))
     Array.from($$units.keys()).forEach(uid => {
         Out.genTitle(`MODULE ${uid}`)
         Out.addText(`#include <${uid}.cpp>\n`)
@@ -127,6 +131,24 @@ function genMain() {
     const dist = Session.getDistro()
     Out.addText(`#include <${dist.bucket}/startup.c>\n`)
     Out.close()
+}
+
+function genProxies(uid: string) {
+    const ud = unitTab.get(uid)!
+    const uobj = $$units.get(uid)
+    ud.sf.statements.forEach(stmt => {
+        if (!Ts.isVariableStatement(stmt)) return
+        const decl = stmt.declarationList.declarations[0]
+        const txt = decl.getText(ud.sf)
+        if (txt.indexOf('new em.proxy<') == -1) return
+        const pn = (decl.name as Ts.Identifier).text
+        const pobj = uobj[pn]
+        const did = pobj.prx.em$_U.uid
+        const dud = unitTab.get(did)!
+        // Out.print('namespace %1 { };\n', dud.cname)
+        Out.print('namespace %1 { namespace %2 = %3; };\n', ud.cname, pn, dud.cname)
+    })
+
 }
 
 function genStmts(node: Ts.Node) {

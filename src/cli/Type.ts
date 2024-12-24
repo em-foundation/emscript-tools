@@ -6,12 +6,13 @@ import * as Targ from './Targ'
 import * as Unit from './Unit'
 
 export function make(type: Ts.TypeNode): string {
+    const txt = type.getText(Targ.context().ud.sf)
     let res = ""
     if (Ts.isTypeReferenceNode(type)) {
-        res = type.getText(Targ.context().ud.sf).replaceAll('.', '::')
+        res = txt.replaceAll('.', '::')
     }
     else if (Ts.isTypeQueryNode(type)) {
-        res = type.getText(Targ.context().ud.sf).replaceAll('.', '::')
+        res = txt.replaceAll('.', '::')
     }
     else if (type.kind === Ts.SyntaxKind.VoidKeyword) {
         res = 'void'

@@ -4,7 +4,7 @@ import * as Out from './Out'
 import * as Session from './Session'
 import * as Targ from './Targ'
 
-export type Kind = 'NONE' | 'PARAM'
+export type Kind = 'NONE' | 'PARAM' | 'PROXY'
 
 export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
@@ -22,6 +22,7 @@ export function getKind(node: Ts.Node): Kind {
     const sym = type.getSymbol()
     if (sym) switch (tc.getFullyQualifiedName(sym)) {
         case 'em.param': return 'PARAM'
+        case 'em.proxy': return 'PROXY'
     }
     return 'NONE'
 }
