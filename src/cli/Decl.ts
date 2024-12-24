@@ -5,7 +5,6 @@ import * as Config from './Config'
 import * as Expr from './Expr'
 import * as Out from './Out'
 import * as Stmt from './Stmt'
-import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
@@ -18,7 +17,9 @@ export function generate(decl: Ts.Declaration) {
         Out.print("%ttypedef %1 %2;\n", Type.make(decl.type), (decl.name as Ts.Identifier).text)
     }
     else if (Ts.isVariableDeclaration(decl)) {
-        if (decl.getText(Targ.context().ud.sf).indexOf('em$clone') != -1) return
+        const txt = decl.getText(Targ.context().ud.sf)
+        if (txt.indexOf('em$clone') != -1) return
+
         const dn = (decl.name as Ts.Identifier).text
         if (dn == 'em$_U') return
         switch (Config.getKind(decl.name)) {
@@ -65,6 +66,10 @@ export function generate(decl: Ts.Declaration) {
     else {
         Ast.fail('Decl', decl)
     }
+}
+
+function mkDelegate(decl: Ts.VariableDeclaration): string {
+    return ''
 }
 
 export function makeVarDecl(decl: Ts.VariableDeclaration): string {
