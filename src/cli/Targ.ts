@@ -5,6 +5,7 @@ import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
 import * as Decl from './Decl'
+import * as Err from './Err'
 import * as Expr from './Expr'
 import * as Out from './Out'
 import * as Session from './Session'
@@ -103,27 +104,22 @@ function genMain() {
     Out.print('%tvolatile int dummy = 0xCAFE;\n')
     Out.print('%twhile (dummy) ;\n')
     Out.print('%-}\n')
+    const ubot = Array.from($$units.entries())
+    const utop = ubot.reverse()
     Out.print('static void em__fail() {\n%+')
+    genSpecial(ubot, 'em$fail', 'FIRST')
     Out.print('%tem__done();\n')
     Out.print('%-}\n')
     Out.print('static void em__halt() {\n%+')
+    genSpecial(ubot, 'em$halt', 'FIRST')
     Out.print('%tem__done();\n')
     Out.print('%-}\n')
     Out.genTitle('MAIN ENTRY')
     Out.print('extern "C" int main() {\n%+')
-    for (let [uid, uobj] of Array.from($$units.entries())) {
-        if ('em$startup' in uobj) {
-            const ud = unitTab.get(uid)!
-            Out.print('%t%1::em$startup();\n', ud.cname)
-        }
-    }
-    for (let [uid, uobj] of Array.from($$units.entries()).reverse()) {
-        if ('em$run' in uobj) {
-            const ud = unitTab.get(uid)!
-            Out.print('%t%1::em$run();\n', ud.cname)
-            break
-        }
-    }
+    genSpecial(ubot, 'em$reset', 'FIRST')
+    genSpecial(ubot, 'em$startup', 'ALL')
+    genSpecial(ubot, 'em$ready', 'FIRST')
+    genSpecial(utop, 'em$run', 'FIRST')
     Out.print('%tem__halt();\n')
     Out.print("%-}\n")
     Out.addText("\n")
@@ -143,10 +139,20 @@ function genProxies(uid: string) {
         const pn = (decl.name as Ts.Identifier).text
         const pobj = uobj[pn]
         const did = pobj.prx.em$_U.uid
-        const dud = unitTab.get(did)!
-        Out.print('namespace %1 { namespace %2 = %3; };\n', ud.cname, pn, dud.cname)
+        const dud = unitTab.get(did)
+        if (dud) Out.print('namespace %1 { namespace %2 = %3; };\n', ud.cname, pn, dud.cname)
+        else Err.fail(`unbound proxy: ${uid}.${pn}`)
     })
+}
 
+function genSpecial(ulist: Array<[string, any]>, name: string, card: 'ALL' | 'FIRST') {
+    for (let [uid, uobj] of ulist) {
+        if (name in uobj) {
+            const ud = unitTab.get(uid)!
+            Out.print('%t%1::%2();\n', ud.cname, name)
+            if (card == 'FIRST') return
+        }
+    }
 }
 
 function genStmts(node: Ts.Node) {
@@ -160,14 +166,15 @@ function genStmts(node: Ts.Node) {
 function genUnit(uid: string) {
     unitGenSet.add(uid)
     const ud = unitTab.get(uid)!
-    curCtx.ud = ud
     ud.imports.forEach((iid) => {
         const iud = unitTab.get(iid)!
         if (iud.kind != 'INTERFACE') return
         if (unitGenSet.has(iid)) return
         unitGenSet.add(iid)
+        curCtx.ud = unitTab.get(iid)!
         genHeader(iud)
     })
+    curCtx.ud = ud
     genHeader(ud)
     curCtx.gen = 'BODY'
     genBody(ud)

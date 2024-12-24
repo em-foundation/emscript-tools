@@ -12,6 +12,9 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isLiteralExpression(expr)) {
         return expr.getText(sf)
     }
+    else if (expr.kind === Ts.SyntaxKind.FalseKeyword || expr.kind === Ts.SyntaxKind.TrueKeyword) {
+        return expr.getText(sf)
+    }
     else if (Ts.isIdentifier(expr)) {
         return expr.getText(sf)
     }
