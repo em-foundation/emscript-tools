@@ -3,6 +3,7 @@ import * as Path from 'path'
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
+import * as Err from './Err'
 import * as Session from './Session'
 import * as Unit from './Unit'
 
@@ -10,13 +11,14 @@ let curUpath: string
 let curUidList: Array<string>
 
 let $$units = new Map<string, any>()
-let $$used = new Set<string>()
 
 function call(fn: string, u: any) {
     if (fn in u) {
+        // console.log(`call ${u.em$_U.uid}.${fn}`)  // TODO logging
         u[fn]()
     }
     else if (u.em$meta && fn in u.em$meta) {
+        // console.log(`call ${u.em$_U.uid}.${fn}`) // TODO logging
         u.em$meta[fn]()
     }
 }
@@ -29,39 +31,55 @@ export function exec() {
         let uobj: any = require(upath)
         $$units.set(uid, uobj)
     }
-    findUsed().forEach(uid => {
-        $$units.get(uid).em$_U._used = true
-    })
     const $$uarrBot = Array.from($$units.values())
     const $$uarrTop = Array.from($$units.values()).reverse()
     $$uarrBot.forEach(u => call('em$init', u))
     $$uarrTop.forEach(u => call('em$configure', u))
-    $$uarrTop.forEach(u => {
-        if (!u.em$_U._used) return
-        call('em$construct', u)
-        $$used.add(u.em$_U.uid)
+    $$uarrTop[0].em$_U._used = true // main unit
+    $$units.get(`${Session.getDistro().bucket}/BuildC`).em$_U._used = true
+    const workSet = new Set<string>()
+    $$units.forEach((uobj, uid) => {
+        if (uobj.em$_U._used) workSet.add(uid)
     })
-    $$used.forEach(uid => {
-        const uobj = $$units.get(uid)!
-        for (const p in uobj) {
-            const cobj = uobj[p]
-            if (cobj.$$em$config != 'proxy') return
-            if (!cobj.bound) return // TODO: error message
-            cobj.prx.em$_U._used = true
-            // CALL em$construct
-            $$used.add(cobj.prx.em$_U.uid)
-        }
+    const usedSet = new Set<string>()
+    const nextSet = new Set<string>()
+    while (workSet.size > 0) {
+        workSet.forEach
+        nextSet.clear()
+        workSet.forEach(uid => {
+            if (usedSet.has(uid)) return
+            const ud = Unit.units().get(uid)!
+            if (ud.kind == 'TEMPLATE') return
+            usedSet.add(uid)
+            if (ud.kind == 'COMPOSITE') return
+            ud.imports.forEach(iid => {
+                nextSet.add(iid)
+            })
+            const uobj = $$units.get(uid)!
+            for (const p in uobj) {
+                const cobj = uobj[p]
+                if (cobj.$$em$config != 'proxy') continue
+                if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
+                nextSet.add(cobj.prx.em$_U.uid)
+            }
+        })
+        workSet.clear()
+        nextSet.forEach(uid => workSet.add(uid))
+    }
+    $$uarrTop.forEach(u => {
+        if (!usedSet.has(u.em$_U.uid)) return
+        call('em$construct', u)
+        usedSet.add(u.em$_U.uid)
     })
     const cwd = process.cwd()
     process.chdir(Session.getBuildDir())
     $$uarrTop.forEach(u => {
-        if (!u.em$_U._used) return
+        if (!usedSet.has(u.em$_U.uid)) return
         call('em$generate', u)
     })
     process.chdir(cwd)
-    // console.log($$used)
     const res = new Map<string, any>()
-    Array.from($$used.values()).reverse().forEach(uid => {
+    usedSet.forEach(uid => {
         const ud = Unit.units().get(uid)!
         if (ud.kind == 'MODULE') res.set(uid, $$units.get(uid))
     })
@@ -103,22 +121,6 @@ function expand(doneSet: Set<string>): Array<string> {
         })
     })
     return res
-}
-
-function findUsed(): Set<string> {
-    const used = new Set<string>()
-    function dfs(uid: string) {
-        if (used.has(uid)) return
-        const ud = Unit.units().get(uid)!
-        if (ud.kind == 'TEMPLATE') return
-        used.add(uid)
-        ud.imports.forEach(imp => {
-            dfs(imp)
-        })
-    }
-    dfs(`${Session.getDistro().bucket}/BuildC`)
-    dfs(Session.mkUid(curUpath))
-    return used
 }
 
 export function parse(upath: string): void {
