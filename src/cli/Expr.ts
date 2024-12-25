@@ -1,6 +1,7 @@
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
+import * as Err from './Err'
 import * as Config from './Config'
 import * as Targ from './Targ'
 
@@ -42,6 +43,8 @@ export function make(expr: Ts.Expression): string {
         }
     }
     else if (Ts.isCallExpression(expr)) {
+        const dbg = mkDbg(expr.expression)
+        if (dbg) return `${dbg}${make(expr.arguments[0])})`
         let res = make(expr.expression) + '('
         let sep = ''
         expr.arguments.forEach(arg => {
@@ -51,6 +54,11 @@ export function make(expr: Ts.Expression): string {
         })
         res += ')'
         return res
+    }
+    else if (Ts.isElementAccessExpression(expr)) {
+        const dbg = mkDbg(expr)
+        if (!dbg) Err.fail(`unknown element access`)
+        return dbg!
     }
     else if (Ts.isBinaryExpression(expr)) {
         const e1 = make(expr.left)
@@ -82,4 +90,23 @@ export function make(expr: Ts.Expression): string {
         Ast.fail('Expr', expr)
         return ''
     }
+}
+
+function mkDbg(expr: Ts.Expression): string | null {
+    if (!Ts.isElementAccessExpression(expr)) return null
+    const sf = Targ.context().ud.sf
+    const txt = expr.expression.getText(sf)
+    if (txt != 'em.$') return null
+    const dbg = expr.argumentExpression.getText(sf)
+    const m = dbg.match(/^'\%\%([a-d])([-+:]?)'$/)
+    const id = m![1].charCodeAt(0) - 'a'.charCodeAt(0)
+    const op = m![2]
+    const fxnMap = new Map<string, string>([
+        ['-', 'minus'],
+        ['+', 'plus'],
+        [':', 'mark'],
+        ['', 'pulse'],
+    ])
+    const suf = op == ':' ? ', ' : ')'
+    return `em_lang_Debug::${fxnMap.get(op)}(${id}${suf}`
 }
