@@ -58,6 +58,12 @@ export function make(expr: Ts.Expression): string {
         const op = expr.operatorToken.getText(Targ.context().ud.sf)
         return `${e1} ${op} ${e2}`
     }
+    else if (Ts.isConditionalExpression(expr)) {
+        const ec = make(expr.condition)
+        const e1 = make(expr.whenTrue)
+        const e2 = make(expr.whenFalse)
+        return `${ec} ? ${e1} : ${e2}`
+    }
     else if (Ts.isPostfixUnaryExpression(expr)) {
         const e = make(expr.operand)
         const op = Ts.tokenToString(expr.operator)

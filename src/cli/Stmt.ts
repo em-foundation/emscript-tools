@@ -4,6 +4,7 @@ import * as Ast from './Ast'
 import * as Decl from './Decl'
 import * as Expr from './Expr'
 import * as Out from './Out'
+import * as Targ from './Targ'
 
 export function generate(stmt: Ts.Statement, tab: boolean = true) {
     if (Ts.isVariableStatement(stmt)) {
@@ -18,6 +19,9 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
     else if (Ts.isReturnStatement(stmt)) {
         const retval = stmt.expression ? ` ${Expr.make(stmt.expression)}` : ''
         Out.print("%treturn%1;\n", retval)
+    }
+    else if (Ts.isBreakOrContinueStatement(stmt)) {
+        Out.print("%t%1;\n", stmt.getText(Targ.context().ud.sf))
     }
     else if (Ts.isBlock(stmt)) {
         stmt.statements.forEach(s => generate(s))
@@ -51,6 +55,20 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
     else if (Ts.isWhileStatement(stmt)) {
         Out.print("%twhile (%1) {%+\n", Expr.make(stmt.expression))
         generate(stmt.statement)
+        Out.print("%-%t}\n")
+    }
+    else if (Ts.isSwitchStatement(stmt)) {
+        Out.print("%tswitch (%1) {%+\n", Expr.make(stmt.expression))
+        stmt.caseBlock.clauses.forEach(clause => {
+            if (clause.kind == Ts.SyntaxKind.CaseClause) {
+                Out.print("%tcase %1:%+\n", Expr.make(clause.expression))
+            }
+            else {
+                Out.print("%tdefault:%+\n")
+            }
+            clause.statements.forEach(s => generate(s))
+            Out.print("%-")
+        })
         Out.print("%-%t}\n")
     }
     else {
