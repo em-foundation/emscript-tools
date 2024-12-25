@@ -1,6 +1,8 @@
 import * as Ts from 'typescript'
 import * as Vsc from 'vscode'
 
+import * as Ast from '../cli/Ast'
+
 function addTok(doc: Vsc.TextDocument, builder: Vsc.SemanticTokensBuilder, node: Ts.Node, tokType: string) {
     const start = doc.positionAt(node.getStart())
     const end = doc.positionAt(node.getEnd())
@@ -49,6 +51,15 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 else if (name.match(/^em\$(clone|configure|construct|fail|generate|halt|init|ready|reset|run|startup)/)) tokType = 'em-special'
                 else if (name.match(/^em\$/)) tokType = 'em-wrong'
                 if (tokType) addTok(doc, builder, node, tokType)
+            }
+            else if (Ts.isElementAccessExpression(node)) {
+                const txt = node.expression.getText(sf)
+                if (txt != 'em.$') {
+                    Ts.forEachChild(node, visitNode);
+                    return
+                }
+                visitNode(node.expression)
+                addTok(doc, builder, node.argumentExpression, 'em-debug')
             }
             else if (Ts.isPropertyAccessExpression(node)) {
                 const txt = node.getText(sf)
