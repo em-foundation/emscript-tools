@@ -7,6 +7,7 @@ import * as Targ from './Targ'
 
 export function make(expr: Ts.Expression): string {
     const sf = Targ.context().ud.sf
+    const tc = Targ.context().ud.tc
     if (Ts.isNumericLiteral(expr)) {
         return expr.getText(sf).replaceAll("_", "'")
     }
@@ -39,11 +40,10 @@ export function make(expr: Ts.Expression): string {
             return sa.join('.')
         }
         else {
-            const tc = Targ.context().ud.tc
-            const type = tc.getTypeAtLocation(expr.expression)
-            const sym = type.getSymbol()
             let join_ch = '::'
-            if (sym) switch (tc.getFullyQualifiedName(sym)) {
+            const tn = Ast.getTypeName(tc, expr.expression)
+            console.log(`${tn}: ${expr.getText(sf)}`)
+            switch (tn) {
                 case 'Text_t':
                     join_ch = '.'
             }
@@ -65,8 +65,10 @@ export function make(expr: Ts.Expression): string {
     }
     else if (Ts.isElementAccessExpression(expr)) {
         const dbg = mkDbg(expr)
-        if (!dbg) Err.fail(`unknown element access`)
-        return dbg!
+        if (dbg) return dbg
+        const e = make(expr.expression)
+        const i = make(expr.argumentExpression)
+        return `${e}[${i}]`
     }
     else if (Ts.isBinaryExpression(expr)) {
         const e1 = make(expr.left)
