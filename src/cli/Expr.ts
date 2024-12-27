@@ -40,14 +40,9 @@ export function make(expr: Ts.Expression): string {
             return sa.join('.')
         }
         else {
-            let join_ch = '::'
-            const tn = Ast.getTypeName(tc, expr.expression)
-            console.log(`${tn}: ${expr.getText(sf)}`)
-            switch (tn) {
-                case 'Text_t':
-                    join_ch = '.'
-            }
-            return sa.join(join_ch)
+            const tn = Ast.getTypeExpr(tc, expr.expression)
+            let re = /^Text_t/
+            return sa.join(tn.match(re) ? '.' : '::')
         }
     }
     else if (Ts.isCallExpression(expr)) {

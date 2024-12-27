@@ -15,10 +15,8 @@ export function findNamespace(sf: Ts.SourceFile, name: string): Ts.ModuleBlock |
     return null
 }
 
-export function getTypeName(tc: Ts.TypeChecker, node: Ts.Node): string {
-    const type = tc.getTypeAtLocation(node)
-    const sym = type.getSymbol()
-    return sym ? tc.getFullyQualifiedName(sym) : '<unknown>'
+export function getTypeExpr(tc: Ts.TypeChecker, node: Ts.Node): string {
+    return tc.typeToString(tc.getTypeAtLocation(node));
 }
 
 export function printChildren(node: Ts.Node, indent: string = '  '): void {
