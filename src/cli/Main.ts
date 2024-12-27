@@ -4,6 +4,7 @@ import * as Crypto from 'crypto'
 import * as Fs from 'fs'
 import * as Path from 'path'
 
+import * as Ast from './Ast'
 import * as Format from './Format'
 import * as Meta from './Meta'
 import * as Session from './Session'
@@ -33,6 +34,11 @@ CMD
     .description('format a unit')
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doFormat(opts))
+CMD
+    .command('parse')
+    .description('display AST for a unit')
+    .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
+    .action((opts: any) => doParse(opts))
 
 let t0 = Date.now()
 CMD.parse(process.argv)
@@ -77,6 +83,15 @@ function doLoad(upath: string) {
     console.log('done')
 }
 
+function doParse(opts: any): void {
+    const upath = opts.unit
+    Session.activate(getRoot(), Session.Mode.BUILD)
+    const uid = Session.mkUid(upath)
+    console.log(`parsing '${uid}' ...`)
+    Meta.parse(upath)
+    const sf = Unit.units().get(uid!)?.sf!
+    sf.statements.forEach(stmt => Ast.printTree(stmt, '    '))
+}
 function getRoot() {
     return Path.resolve(CMD.opts().root)
 }
