@@ -39,7 +39,15 @@ export function make(expr: Ts.Expression): string {
             return sa.join('.')
         }
         else {
-            return sa.join('::')
+            const tc = Targ.context().ud.tc
+            const type = tc.getTypeAtLocation(expr.expression)
+            const sym = type.getSymbol()
+            let join_ch = '::'
+            if (sym) switch (tc.getFullyQualifiedName(sym)) {
+                case 'Text_t':
+                    join_ch = '.'
+            }
+            return sa.join(join_ch)
         }
     }
     else if (Ts.isCallExpression(expr)) {
