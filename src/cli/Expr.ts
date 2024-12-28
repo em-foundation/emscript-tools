@@ -41,7 +41,7 @@ export function make(expr: Ts.Expression): string {
         }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
-            let re = /^(Buffer_t|Text_t)/
+            let re = /^(\$\$Buffer|\$\$Text)/
             return sa.join(tn.match(re) ? '.' : '::')
         }
     }
