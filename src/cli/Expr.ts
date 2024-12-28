@@ -41,13 +41,15 @@ export function make(expr: Ts.Expression): string {
         }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
-            let re = /^Text_t/
+            let re = /^(Buffer_t|Text_t)/
             return sa.join(tn.match(re) ? '.' : '::')
         }
     }
     else if (Ts.isCallExpression(expr)) {
         const dbg = mkDbg(expr.expression)
         if (dbg) return `${dbg}${make(expr.arguments[0])})`
+        const textVal = mkTextVal(expr)
+        if (textVal) return textVal
         let res = make(expr.expression) + '('
         let sep = ''
         expr.arguments.forEach(arg => {
@@ -114,4 +116,15 @@ function mkDbg(expr: Ts.Expression): string | null {
     ])
     const suf = op == ':' ? ', ' : ')'
     return `em_lang_Debug::${fxnMap.get(op)}(${id}${suf}`
+}
+
+function mkTextVal(expr: Ts.CallExpression): string | null {
+    if (!Ts.isPropertyAccessExpression(expr.expression)) return null
+    const sf = Targ.context().ud.sf
+    const txt = expr.expression.getText(sf)
+    if (txt != 'em.text_t') return null
+    const arg0 = expr.arguments[0]
+    if (!Ts.isStringLiteral(arg0)) return null
+    const lit = arg0.text.replace(/\n/g, "\\n")
+    return `em::text_t("${lit}", ${arg0.text.length})`
 }

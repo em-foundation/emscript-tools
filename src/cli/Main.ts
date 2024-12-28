@@ -21,6 +21,7 @@ CMD
 CMD
     .command('build')
     .description('build a unit')
+    .option('-a --ast', 'display AST', false)
     .option('-l --load', 'load after build', false)
     .option('-m --meta', 'meta-program only', false)
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
@@ -45,6 +46,10 @@ CMD.parse(process.argv)
 
 function doBuild(opts: any): void {
     const upath = opts.unit
+    if (opts.ast) {
+        doParse(opts)
+        return
+    }
     Session.activate(getRoot(), Session.Mode.BUILD)
     console.log(`building '${Session.mkUid(upath)}' ...`)
     Meta.parse(upath)
