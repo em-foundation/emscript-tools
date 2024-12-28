@@ -1,10 +1,11 @@
 import * as Ts from 'typescript'
 
+import * as Ast from './Ast'
 import * as Out from './Out'
 import * as Session from './Session'
 import * as Targ from './Targ'
 
-export type Kind = 'NONE' | 'PARAM' | 'PROXY'
+export type Kind = 'NONE' | 'PARAM' | 'PROXY' | 'TABLE'
 
 export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
@@ -17,13 +18,10 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
 }
 
 export function getKind(node: Ts.Node): Kind {
-    const tc = Targ.context().ud.tc
-    const type = tc.getTypeAtLocation(node)
-    const sym = type.getSymbol()
-    if (sym) switch (tc.getFullyQualifiedName(sym)) {
-        case 'em.param': return 'PARAM'
-        case 'em.proxy': return 'PROXY'
-    }
+    const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
+    if (te.startsWith('param')) return 'PARAM'
+    if (te.startsWith('proxy')) return 'PROXY'
+    if (te.startsWith('Table<')) return 'TABLE'
     return 'NONE'
 }
 
