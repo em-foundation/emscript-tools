@@ -19,11 +19,13 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
 
 export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
+    const acc = cobj.access
+    const cs = acc == 'ro' ? 'static const ' : ''
     const len = cobj.elems.length
     const txt = decl.getText(Targ.context().ud.sf)
     const m = txt.match(/\<(.+)\>/)
-    const ts = `em::table_RW<${m![1].replaceAll('.', '::')}, ${len}>`
-    Out.print("%t%1 %2 = {\n%+", ts, dn)
+    const ts = `em::table_${acc}<${m![1].replaceAll('.', '::')}, ${len}>`
+    Out.print("%t%1%2 %3 = {\n%+", cs, ts, dn)
     for (let i = 0; i < len; i++) {
         Out.print("%t%1,\n", cobj.elems[i])
     }
