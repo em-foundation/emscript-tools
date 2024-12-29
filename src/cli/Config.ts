@@ -17,6 +17,19 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     Out.print("%t%1%2 %3 = %4;\n", cs, ts, dn, init)
 }
 
+export function genTable(decl: Ts.VariableDeclaration, dn: string) {
+    const cobj = getObj(dn)
+    const len = cobj.elems.length
+    const txt = decl.getText(Targ.context().ud.sf)
+    const m = txt.match(/\<(.+)\>/)
+    const ts = `em::table_RW<${m![1].replaceAll('.', '::')}, ${len}>`
+    Out.print("%t%1 %2 = {\n%+", ts, dn)
+    for (let i = 0; i < len; i++) {
+        Out.print("%t%1,\n", cobj.elems[i])
+    }
+    Out.print("%-%t};\n")
+}
+
 export function getKind(node: Ts.Node): Kind {
     const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
     if (te.startsWith('em$param_t')) return 'PARAM'

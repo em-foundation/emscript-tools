@@ -28,6 +28,9 @@ export function generate(decl: Ts.Declaration) {
                 return
             case 'PROXY':
                 return
+            case 'TABLE':
+                Config.genTable(decl, dn)
+                return
         }
         const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : 'static const '
         const ts = decl.type ? Type.make(decl.type) : 'auto'
