@@ -13,7 +13,7 @@ import * as Stmt from './Stmt'
 import * as Unit from './Unit'
 
 export interface Context {
-    gen: 'BODY' | 'HEADER'
+    gen: 'BODY' | 'HDR' | 'MAIN' | 'UNK'
     ud: Unit.Desc
 }
 
@@ -22,7 +22,7 @@ const unitTab = Unit.units()
 
 let $$units: Map<string, any>
 
-let curCtx: Context = { gen: 'HEADER' } as Context
+let curCtx: Context = { gen: 'UNK' } as Context
 
 export function build(): string {
     try {
@@ -48,6 +48,15 @@ function genBody(ud: Unit.Desc) {
     genFxns(ud.sf)
     Out.print("\n%-};\n")
     Out.close()
+}
+
+function genConfigs(ud: Unit.Desc) {
+    curCtx.ud = ud
+    curCtx.gen = 'MAIN'
+    Out.print("namespace %1 {\n%+", ud.cname)
+    genStmts(ud.sf)
+    Out.print("%-};\n", ud.cname)
+    curCtx.gen = 'UNK'
 }
 
 function genFxns(node: Ts.Node) {
@@ -98,6 +107,7 @@ function genMain() {
     Array.from($$units.keys()).forEach(uid => {
         Out.genTitle(`MODULE ${uid}`)
         Out.addText(`#include <${uid}.cpp>\n`)
+        genConfigs(unitTab.get(uid)!)
     })
     Out.genTitle('EXIT FUNCTIONS')
     Out.print('static void em__done() {\n%+')
@@ -175,10 +185,11 @@ function genUnit(uid: string) {
         genHeader(iud)
     })
     curCtx.ud = ud
+    curCtx.gen = 'HDR'
     genHeader(ud)
     curCtx.gen = 'BODY'
     genBody(ud)
-    curCtx.gen = 'HEADER'
+    curCtx.gen = 'UNK'
 }
 
 export function generate() {
@@ -186,3 +197,7 @@ export function generate() {
     for (let k of $$units.keys()) genUnit(k)
     genMain()
 }
+
+export function isBody() { return curCtx.gen == 'BODY' }
+export function isHdr() { return curCtx.gen == 'HDR' }
+export function isMain() { return curCtx.gen == 'MAIN' }

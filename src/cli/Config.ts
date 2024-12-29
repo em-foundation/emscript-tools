@@ -11,25 +11,30 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
     const txt = decl.getText(Targ.context().ud.sf)
     const m = txt.match(/\<(.+)\>/)
-    const cs = 'static const '
+    const cs = Targ.isHdr() ? 'extern const ' : 'const '
     const ts = `em::param<${m![1].replaceAll('.', '::')}>`
-    const init = String(cobj.val)
-    Out.print("%t%1%2 %3 = %4;\n", cs, ts, dn, init)
+    const init = Targ.isMain() ? ` = ${String(cobj.val)}` : ''
+    Out.print("%t%1%2 %3%4;\n", cs, ts, dn, init)
 }
 
 export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
     const acc = cobj.access
-    const cs = acc == 'ro' ? 'static const ' : ''
+    const es = Targ.isHdr() ? 'extern ' : ''
+    const cs = acc == 'ro' ? 'const ' : ''
     const len = cobj.elems.length
     const txt = decl.getText(Targ.context().ud.sf)
     const m = txt.match(/\<(.+)\>/)
     const ts = `em::table_${acc}<${m![1].replaceAll('.', '::')}, ${len}>`
-    Out.print("%t%1%2 %3 = {\n%+", cs, ts, dn)
-    for (let i = 0; i < len; i++) {
-        Out.print("%t%1,\n", cobj.elems[i])
+    Out.print("%t%1%2%3 %4", es, cs, ts, dn)
+    if (Targ.isMain()) {
+        Out.print(" = {%+\n")
+        for (let i = 0; i < len; i++) {
+            Out.print("%t%1,\n", cobj.elems[i])
+        }
+        Out.print("%-%t}")
     }
-    Out.print("%-%t};\n")
+    Out.print(";\n")
 }
 
 export function getKind(node: Ts.Node): Kind {

@@ -9,7 +9,7 @@ import * as Targ from './Targ'
 import * as Type from './Type'
 
 export function generate(decl: Ts.Declaration) {
-    const isHdr = Targ.context().gen == 'HEADER'
+    if (Targ.isMain() && !Ts.isVariableDeclaration(decl)) return
     if (Ts.isImportDeclaration(decl) || Ts.isModuleDeclaration(decl) || Ts.isInterfaceDeclaration(decl)) {
         // handled elsewhere
     }
@@ -19,7 +19,6 @@ export function generate(decl: Ts.Declaration) {
     else if (Ts.isVariableDeclaration(decl)) {
         const txt = decl.getText(Targ.context().ud.sf)
         if (txt.indexOf('em$clone') != -1) return
-
         const dn = (decl.name as Ts.Identifier).text
         if (dn == 'em$_U') return
         switch (Config.getKind(decl.name)) {
@@ -32,6 +31,7 @@ export function generate(decl: Ts.Declaration) {
                 Config.genTable(decl, dn)
                 return
         }
+        if (Targ.isMain()) return
         const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : 'static const '
         const ts = decl.type ? Type.make(decl.type) : 'auto'
         const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
@@ -40,12 +40,11 @@ export function generate(decl: Ts.Declaration) {
     else if (Ts.isParameter(decl)) {
         const pn = (decl.name as Ts.Identifier).text
         const ts = decl.type ? Type.make(decl.type) : 'auto'
-        const init = decl.initializer && isHdr ? ` = ${Expr.make(decl.initializer)}` : ''
+        const init = decl.initializer && Targ.isHdr() ? ` = ${Expr.make(decl.initializer)}` : ''
         Out.print("%1 %2%3", ts, pn, init)
     }
     else if (Ts.isFunctionDeclaration(decl)) {
-        const isHdr = (Targ.context().gen == 'HEADER')
-        const es = isHdr ? 'extern ' : ''
+        const es = Targ.isHdr() ? 'extern ' : ''
         const ts = (decl.type) ? Type.make(decl.type) : 'void'
         const name = decl.name!.text
         Out.print("%t%1%2 %3(", es, ts, name)
@@ -56,7 +55,7 @@ export function generate(decl: Ts.Declaration) {
             sep = ', '
         })
         Out.addText(')')
-        if (isHdr) {
+        if (Targ.isHdr()) {
             Out.addText(';\n')
             return
         }

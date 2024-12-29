@@ -15,6 +15,9 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
         }
         Decl.generate(stmt.declarationList.declarations[0])
     }
+    else if (Targ.isMain()) {
+        return
+    }
     else if (Ts.isDeclarationStatement(stmt)) {
         Decl.generate(stmt)
     }
