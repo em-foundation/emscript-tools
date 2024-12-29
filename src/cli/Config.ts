@@ -19,9 +19,9 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
 
 export function getKind(node: Ts.Node): Kind {
     const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
-    if (te.startsWith('param')) return 'PARAM'
-    if (te.startsWith('proxy')) return 'PROXY'
-    if (te.startsWith('Table<')) return 'TABLE'
+    if (te.startsWith('em$param_t')) return 'PARAM'
+    if (te.startsWith('em$proxy_t')) return 'PROXY'
+    if (te.startsWith('em$table_t')) return 'TABLE'
     return 'NONE'
 }
 
