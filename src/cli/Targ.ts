@@ -145,7 +145,7 @@ function genProxies(uid: string) {
         if (!Ts.isVariableStatement(stmt)) return
         const decl = stmt.declarationList.declarations[0]
         const txt = decl.getText(ud.sf)
-        if (!txt.match(/em\.(proxy|delegate)/)) return
+        if (!txt.match(/em\.(Proxy|Delegate)/)) return
         const pn = (decl.name as Ts.Identifier).text
         const pobj = uobj[pn]
         const did = pobj.prx.em$_U.uid
