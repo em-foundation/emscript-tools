@@ -106,6 +106,11 @@ function mkDbg(expr: Ts.Expression, txt: string): string | null {
     if (!Ts.isElementAccessExpression(expr)) return null
     const sf = Targ.context().ud.sf
     if (!txt.startsWith('em.$')) return null
+    if (txt.startsWith('em.$reg')) {
+        const m = txt.match(/^em\.(.+)\[/)
+        const addr = make(expr.argumentExpression)
+        return `*em::${m![1]}(${addr})`
+    }
     const dbg = expr.argumentExpression.getText(sf)
     const m = dbg.match(/^'\%\%([a-d])([-+:]?)'$/)
     const id = m![1].charCodeAt(0) - 'a'.charCodeAt(0)
