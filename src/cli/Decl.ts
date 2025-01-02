@@ -22,6 +22,12 @@ export function generate(decl: Ts.Declaration) {
         const dn = (decl.name as Ts.Identifier).text
         if (dn == 'em$_U') return
         switch (Config.getKind(decl.name)) {
+            case 'ARRAY_P':
+                Config.genArrayProto(decl, dn)
+                return
+            case 'ARRAY_V':
+                Config.genArrayVal(decl, dn)
+                return
             case 'PARAM':
                 Config.genParam(decl, dn)
                 return

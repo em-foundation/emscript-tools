@@ -8,20 +8,21 @@ import * as Targ from './Targ'
 export function make(expr: Ts.Expression): string {
     const sf = Targ.context().ud.sf
     const tc = Targ.context().ud.tc
+    const txt = expr.getText(sf)
     if (Ts.isNumericLiteral(expr)) {
-        return expr.getText(sf).replaceAll("_", "'")
+        return txt.replaceAll("_", "'")
     }
     else if (Ts.isLiteralExpression(expr)) {
-        return expr.getText(sf)
+        return txt
     }
     else if (expr.kind === Ts.SyntaxKind.FalseKeyword || expr.kind === Ts.SyntaxKind.TrueKeyword) {
-        return expr.getText(sf)
+        return txt
     }
     else if (Ts.isIdentifier(expr)) {
-        return expr.getText(sf)
+        return txt
     }
     else if (Ts.isPropertyAccessExpression(expr)) {
-        const sa = expr.getText(Targ.context().ud.sf).split('.')
+        const sa = txt.split('.')
         if (sa[0] == 'em$_R') {
             if (sa[sa.length - 1] == '$$') {
                 const mod = sa[1].match(/([A-Za-z]+)/)![1]
@@ -46,10 +47,12 @@ export function make(expr: Ts.Expression): string {
         }
     }
     else if (Ts.isCallExpression(expr)) {
-        const dbg = mkDbg(expr.expression)
+        const dbg = mkDbg(expr.expression, txt)
         if (dbg) return `${dbg}${make(expr.arguments[0])})`
-        const textVal = mkTextVal(expr)
+        const textVal = mkTextVal(expr, txt)
         if (textVal) return textVal
+        const makeCall = mkMakeCall(expr, txt)
+        if (makeCall) return makeCall
         let res = make(expr.expression) + '('
         let sep = ''
         expr.arguments.forEach(arg => {
@@ -61,7 +64,7 @@ export function make(expr: Ts.Expression): string {
         return res
     }
     else if (Ts.isElementAccessExpression(expr)) {
-        const dbg = mkDbg(expr)
+        const dbg = mkDbg(expr, txt)
         if (dbg) return dbg
         const e = make(expr.expression)
         const i = make(expr.argumentExpression)
@@ -99,11 +102,10 @@ export function make(expr: Ts.Expression): string {
     }
 }
 
-function mkDbg(expr: Ts.Expression): string | null {
+function mkDbg(expr: Ts.Expression, txt: string): string | null {
     if (!Ts.isElementAccessExpression(expr)) return null
     const sf = Targ.context().ud.sf
-    const txt = expr.expression.getText(sf)
-    if (txt != 'em.$') return null
+    if (!txt.startsWith('em.$')) return null
     const dbg = expr.argumentExpression.getText(sf)
     const m = dbg.match(/^'\%\%([a-d])([-+:]?)'$/)
     const id = m![1].charCodeAt(0) - 'a'.charCodeAt(0)
@@ -118,10 +120,14 @@ function mkDbg(expr: Ts.Expression): string | null {
     return `em_lang_Debug::${fxnMap.get(op)}(${id}${suf}`
 }
 
-function mkTextVal(expr: Ts.CallExpression): string | null {
+function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
+    if (!txt.endsWith('.$make()')) return null
     if (!Ts.isPropertyAccessExpression(expr.expression)) return null
-    const sf = Targ.context().ud.sf
-    const txt = expr.expression.getText(sf)
+    return `${make(expr.expression.expression)}::$make()`
+}
+
+function mkTextVal(expr: Ts.CallExpression, txt: string): string | null {
+    if (!Ts.isPropertyAccessExpression(expr.expression)) return null
     if (txt != 'em.text_t') return null
     const arg0 = expr.arguments[0]
     if (!Ts.isStringLiteral(arg0)) return null
