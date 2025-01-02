@@ -13,13 +13,25 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
     const len = cobj.$len
     const ts = 'em::u8'
-    Out.print("%tstruct %1 {\n%+", dn)
-    Out.print("%tstatic constexpr em::u16 $len = %1;\n", len)
-    Out.print("%tstatic %1 $make() { return %1(); }\n", dn)
-    Out.print("%t%1 items[%2] = {0};\n", "em::u8", len, ts)
-    Out.print("%t%1& operator[](em::u16 index) { return items[index]; }\n", ts)
-    Out.print("%tconst %1& operator[](em::u16 index) const { return items[index]; }\n", ts)
-    Out.print("%-%t};\n")
+    Out.addText(`
+    struct Buf {
+        static constexpr em::u16 $len = ${len};
+        static ${dn} $make() { return Buf(); }
+        ${ts} items[${len}] = {0};
+        ${ts} &operator[](em::u16 index) { return items[index]; }
+        const ${ts} &operator[](em::u16 index) const { return items[index]; }
+        struct Iter {
+            ${ts} *ptr_;
+            Iter(${ts} *ptr) : ptr_(ptr) {}
+            ${ts} &operator*() { return *ptr_; }
+            Iter &operator++() { ++ptr_; return *this; }
+            bool operator==(const Iter &other) const { return ptr_ == other.ptr_; }
+            bool operator!=(const Iter &other) const { return ptr_ != other.ptr_; }
+        };
+        Iter begin() { return Iter(&items[0]); }
+        Iter end() { return Iter(&items[5]); }
+    };
+`)
 }
 
 export function genArrayVal(decl: Ts.VariableDeclaration, dn: string) {
