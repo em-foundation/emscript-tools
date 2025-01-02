@@ -12,6 +12,16 @@ export function make(expr: Ts.Expression): string {
     if (Ts.isNumericLiteral(expr)) {
         return txt.replaceAll("_", "'")
     }
+    else if (Ts.isStringLiteral(expr)) {
+        const etxt = expr.text
+        const sval = JSON.stringify(etxt)
+        if (etxt.startsWith('#') && etxt.length == 2) {
+            return `'${sval.slice(2, -1)}'`
+        }
+        else {
+            return sval
+        }
+    }
     else if (Ts.isLiteralExpression(expr)) {
         return txt
     }
