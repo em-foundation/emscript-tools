@@ -38,7 +38,7 @@ export function generate(decl: Ts.Declaration) {
                 return
         }
         if (Targ.isMain()) return
-        const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : 'static const '
+        const cs = ((decl.parent.flags & Ts.NodeFlags.Const) == 0) ? '' : 'const '
         const ts = decl.type ? Type.make(decl.type) : 'auto'
         const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
         Out.print("%t%1%2 %3%4;\n", cs, ts, dn, init)

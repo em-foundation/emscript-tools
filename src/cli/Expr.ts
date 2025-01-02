@@ -73,6 +73,14 @@ export function make(expr: Ts.Expression): string {
         res += ')'
         return res
     }
+    else if (Ts.isTaggedTemplateExpression(expr)) {
+        const tag = expr.tag.getText(sf)
+        const ts = expr.template.getText(sf)
+        switch (tag) {
+            case 'em.$C': return `'${ts.slice(1, -1)}'`
+        }
+        return `<< UNKNOWN >>`
+    }
     else if (Ts.isElementAccessExpression(expr)) {
         const dbg = mkDbg(expr, txt)
         if (dbg) return dbg
@@ -143,9 +151,12 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
 
 function mkTextVal(expr: Ts.CallExpression, txt: string): string | null {
     if (!Ts.isPropertyAccessExpression(expr.expression)) return null
-    if (txt != 'em.text_t') return null
+    if (txt.startsWith('em.char_t')) {
+
+    }
+    if (!txt.startsWith('em.text_t')) return null
     const arg0 = expr.arguments[0]
     if (!Ts.isStringLiteral(arg0)) return null
-    const lit = arg0.text.replace(/\n/g, "\\n")
-    return `em::text_t("${lit}", ${arg0.text.length})`
+    const lit = JSON.stringify(arg0.text)
+    return `em::text_t(${lit}, ${arg0.text.length})`
 }
