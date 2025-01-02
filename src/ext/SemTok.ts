@@ -63,7 +63,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             }
             else if (Ts.isPropertyAccessExpression(node)) {
                 const txt = node.getText(sf)
-                if (!txt.match(/^em\.(fail|halt)/)) {
+                if (!txt.match(/^em\.(fail|halt|\$reg)/)) {
                     Ts.forEachChild(node, visitNode);
                     return
                 }
