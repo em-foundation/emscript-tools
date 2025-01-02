@@ -75,9 +75,14 @@ export function make(expr: Ts.Expression): string {
     }
     else if (Ts.isTaggedTemplateExpression(expr)) {
         const tag = expr.tag.getText(sf)
-        const ts = expr.template.getText(sf)
-        switch (tag) {
-            case 'em.$C': return `'${ts.slice(1, -1)}'`
+        const ts = expr.template.getText(sf).slice(1, -1)
+        if (tag == 'em.$C') {
+            return `'${ts}'`
+        }
+        if (tag == 'em.$T') {
+            const js = JSON.parse(`"${ts}"`)
+            console.log(JSON.stringify(JSON.parse(`"${ts}"`)))
+            return `em::text_t(${JSON.stringify(js)}, ${(js as string).length})`
         }
         return `<< UNKNOWN >>`
     }
