@@ -42,7 +42,7 @@ export function make(expr: Ts.Expression): string {
         }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
-            let re = /^em\$(buffer|text)/
+            let re = /^em\$(ArrayVal|buffer|text)/
             return sa.join(tn.match(re) ? '.' : '::')
         }
     }
