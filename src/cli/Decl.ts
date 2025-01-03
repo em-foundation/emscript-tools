@@ -80,9 +80,10 @@ function mkDelegate(decl: Ts.VariableDeclaration): string {
     return ''
 }
 
-export function makeVarDecl(decl: Ts.VariableDeclaration): string {
+export function makeVarDecl(decl: Ts.VariableDeclaration, isForOf: boolean): string {
     const dn = (decl.name as Ts.Identifier).text
     const ts = decl.type ? Type.make(decl.type) : 'auto'
-    const init = Expr.make(decl.initializer!)
-    return `${ts} ${dn} = ${init}`
+    const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
+    const ref = isForOf ? '&' : ''
+    return `${ts}${ref} ${dn}${init}`
 }
