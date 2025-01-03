@@ -53,7 +53,7 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
         let init = ''
         if (stmt.initializer) {
             if (Ts.isVariableDeclarationList(stmt.initializer)) {
-                init = Decl.makeVarDecl(stmt.initializer.declarations[0], false)
+                init = Decl.makeVarDecl(stmt.initializer.declarations[0])
             }
             else if (Ts.isExpression(stmt.initializer)) {
                 init = Expr.make(stmt.initializer)
@@ -69,9 +69,11 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
         let init = ''
         if (stmt.initializer) {
             if (Ts.isVariableDeclarationList(stmt.initializer)) {
-                init = Decl.makeVarDecl(stmt.initializer.declarations[0], true)
+                const agg_type = Ast.getTypeExpr(Targ.context().ud.tc, stmt.expression)
+                init = Decl.makeVarDecl(stmt.initializer.declarations[0], agg_type)
             }
         }
+
         let expr = Expr.make(stmt.expression)
         Out.print("%tfor (%1: %2) {%+\n", init, expr)
         generate(stmt.statement)

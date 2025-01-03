@@ -82,7 +82,6 @@ export function make(expr: Ts.Expression): string {
         }
         if (tag == 'em.$T') {
             const js = JSON.parse(`"${ts}"`)
-            console.log(JSON.stringify(JSON.parse(`"${ts}"`)))
             return `em::text_t(${JSON.stringify(js)}, ${(js as string).length})`
         }
         return `<< UNKNOWN >>`

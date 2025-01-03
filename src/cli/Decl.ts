@@ -80,10 +80,10 @@ function mkDelegate(decl: Ts.VariableDeclaration): string {
     return ''
 }
 
-export function makeVarDecl(decl: Ts.VariableDeclaration, isForOf: boolean): string {
+export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = ''): string {
     const dn = (decl.name as Ts.Identifier).text
     const ts = decl.type ? Type.make(decl.type) : 'auto'
     const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
-    const ref = isForOf ? '&' : ''
+    const ref = agg_type.startsWith('em$ArrayVal') ? '&' : ''
     return `${ts}${ref} ${dn}${init}`
 }
