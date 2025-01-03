@@ -20,6 +20,12 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
         ${ts} items[${len}] = {0};
         ${ts} &operator[](em::u16 index) { return items[index]; }
         const ${ts} &operator[](em::u16 index) const { return items[index]; }
+        struct Ptr {
+            ${ts}& $$;
+            constexpr Ptr(${ts}& v) : $$ (v) {}
+            void $inc() { $$ = *(reinterpret_cast<${ts}*>($$) + 1); }
+        };
+        Ptr $ptr() { return Ptr(items[0]); }
         struct Iter {
             ${ts} *ptr_;
             Iter(${ts} *ptr) : ptr_(ptr) {}
@@ -32,6 +38,35 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
         Iter end() { return Iter(&items[5]); }
     };
 `)
+
+    /*
+        struct Buf {
+            static constexpr em::u16 $len = 5;
+            static Buf $make() { return Buf(); }
+            em::u8 items[5] = {0};
+            em::u8 &operator[](em::u16 index) { return items[index]; }
+            const em::u8 &operator[](em::u16 index) const { return items[index]; }
+            struct Ptr {
+                em::u8& $$;
+                constexpr Ptr(em::u8& v) : $$ (v) {}
+                void $inc() { $$ = *(reinterpret_cast<em::u8*>($$) + 1); }
+            };
+            Ptr $ptr() { return Ptr(items[0]); }
+            struct Iter {
+                em::u8 *ptr_;
+                Iter(em::u8 *ptr) : ptr_(ptr) {}
+                em::u8 &operator*() { return *ptr_; }
+                Iter &operator++() { ++ptr_; return *this; }
+                bool operator==(const Iter &other) const { return ptr_ == other.ptr_; }
+                bool operator!=(const Iter &other) const { return ptr_ != other.ptr_; }
+            };
+            Iter begin() { return Iter(&items[0]); }
+            Iter end() { return Iter(&items[5]); }
+        };
+    
+    */
+
+
 }
 
 export function genArrayVal(decl: Ts.VariableDeclaration, dn: string) {
