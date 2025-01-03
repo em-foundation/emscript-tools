@@ -4,6 +4,7 @@ import * as Ast from './Ast'
 import * as Err from './Err'
 import * as Config from './Config'
 import * as Targ from './Targ'
+import * as Type from './Type'
 
 export function make(expr: Ts.Expression): string {
     const sf = Targ.context().ud.sf
@@ -104,6 +105,11 @@ export function make(expr: Ts.Expression): string {
         const e1 = make(expr.whenTrue)
         const e2 = make(expr.whenFalse)
         return `${ec} ? ${e1} : ${e2}`
+    }
+    else if (Ts.isAsExpression(expr)) {
+        const t = Type.make(expr.type)
+        const e = make(expr.expression)
+        return `static_cast<${t}>(${e})`
     }
     else if (Ts.isPostfixUnaryExpression(expr)) {
         const e = make(expr.operand)
