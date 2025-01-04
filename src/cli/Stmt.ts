@@ -24,7 +24,7 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
     else if (Ts.isExpressionStatement(stmt)) {
         if (Ts.isStringLiteral(stmt.expression)) {
             const txt = stmt.getText(Targ.context().ud.sf)
-            Out.print("%t%1;\n", txt.slice(1, -1))
+            Out.print("%t%1; //^^\n", txt.slice(1, -1))
             return
         }
         Out.print("%t%1;\n", Expr.make(stmt.expression))
