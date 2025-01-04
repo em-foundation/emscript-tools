@@ -20,12 +20,7 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
         ${ts} items[${len}] = {0};
         ${ts} &operator[](em::u16 index) { return items[index]; }
         const ${ts} &operator[](em::u16 index) const { return items[index]; }
-        struct Ptr {
-            ${ts}& $$;
-            constexpr Ptr(${ts}& v) : $$ (v) {}
-            void $inc() { $$ = *(reinterpret_cast<${ts}*>($$) + 1); }
-        };
-        Ptr $ptr() { return Ptr(items[0]); }
+        em::ptr_t<${ts}> $ptr() { return em::ptr_t<${ts}>(&items[0]); }
         struct Iter {
             ${ts} *ptr_;
             Iter(${ts} *ptr) : ptr_(ptr) {}
