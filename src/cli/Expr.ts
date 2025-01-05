@@ -55,7 +55,7 @@ export function make(expr: Ts.Expression): string {
             const tn = Ast.getTypeExpr(tc, expr.expression)
             if (tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
             if (tn.startsWith('em$ptr') && sa[1] == '$$') return `*(${sa[0]})`
-            let re = /^em\$(ArrayVal|buffer|ptr|text)/
+            let re = /^em\$(ArrayVal|buffer|frame|ptr|text)/
             return sa.join(tn.match(re) ? '.' : '::')
         }
     }
@@ -110,7 +110,7 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isAsExpression(expr)) {
         const t = Type.make(expr.type)
         const e = make(expr.expression)
-        return `static_cast<${t}>(${e})`
+        return `(${t})(${e})`
     }
     else if (Ts.isPostfixUnaryExpression(expr)) {
         const e = make(expr.operand)
