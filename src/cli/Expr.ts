@@ -79,10 +79,10 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isTaggedTemplateExpression(expr)) {
         const tag = expr.tag.getText(sf)
         const ts = expr.template.getText(sf).slice(1, -1)
-        if (tag == 'em.$C') {
+        if (tag.endsWith('c$')) {
             return `'${ts}'`
         }
-        if (tag == 'em.$T') {
+        if (tag.endsWith('t$')) {
             const js = JSON.parse(`"${ts}"`)
             return `em::text_t(${JSON.stringify(js)}, ${(js as string).length})`
         }
