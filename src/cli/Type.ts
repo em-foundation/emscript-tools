@@ -7,6 +7,7 @@ import * as Unit from './Unit'
 
 const builtins = new Set<string>([
     'bool_t',
+    'frame_t',
     'i8',
     'i16',
     'i32',
