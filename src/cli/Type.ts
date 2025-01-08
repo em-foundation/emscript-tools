@@ -14,6 +14,7 @@ const builtins = new Set<string>([
     'u8',
     'u16',
     'u32',
+    'volatile_t'
 ])
 
 export function make(type: Ts.TypeNode): string {
