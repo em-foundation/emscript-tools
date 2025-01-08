@@ -1,6 +1,7 @@
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
+import * as Expr from './Expr'
 import * as Out from './Out'
 import * as Session from './Session'
 import * as Targ from './Targ'
@@ -73,10 +74,9 @@ export function genArrayVal(decl: Ts.VariableDeclaration, dn: string) {
 
 export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
-    const txt = decl.getText(Targ.context().ud.sf)
-    const m = txt.match(/\<(.+)\>/)
+    const call = decl.initializer! as Ts.CallExpression
     const cs = Targ.isHdr() ? 'extern const ' : 'const '
-    const ts = `em::param<${m![1].replaceAll('.', '::')}>`
+    const ts = `em::param<${Type.make(call.typeArguments![0])}>`
     const init = Targ.isMain() ? ` = ${String(cobj.val)}` : ''
     Out.print("%t%1%2 %3%4;\n", cs, ts, dn, init)
 }
