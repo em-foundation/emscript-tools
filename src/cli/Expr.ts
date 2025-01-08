@@ -54,8 +54,8 @@ export function make(expr: Ts.Expression): string {
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
             if (tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
-            if (tn.startsWith('em$ptr') && sa[1] == '$$') return `*(${sa[0]})`
-            let re = /^em\$(ArrayVal|buffer|frame|ptr|text)/
+            if (tn.startsWith('ptr_t') && sa[1] == '$$') return `*(${sa[0]})`
+            let re = /^(ptr_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
             return sa.join(tn.match(re) ? '.' : '::')
         }
     }
