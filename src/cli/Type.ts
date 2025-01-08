@@ -10,21 +10,23 @@ const builtins = new Set<string>([
     'i8',
     'i16',
     'i32',
+    'ptr_t',
     'u8',
     'u16',
     'u32',
 ])
 
 export function make(type: Ts.TypeNode): string {
-    const txt = type.getText(Targ.context().ud.sf)
-    if (builtins.has(txt)) return `em::${txt}`
     let res = ""
     if (Ts.isTypeReferenceNode(type)) {
-        res = txt.replaceAll('.', '::')
+        let tn = type.typeName.getText(Targ.context().ud.sf)
+        if (builtins.has(tn)) tn = `em.${tn}`
+        res = tn.replaceAll('.', '::') + makeArgs(type.typeArguments)
     }
-    else if (Ts.isTypeQueryNode(type)) {
-        res = txt.replaceAll('.', '::')
-    }
+    // else if (Ts.isTypeQueryNode(type)) {
+    //     console.log(txt)
+    //     res = txt.replaceAll('.', '::')
+    // }
     else if (type.kind === Ts.SyntaxKind.VoidKeyword) {
         res = 'void'
     }
@@ -32,4 +34,16 @@ export function make(type: Ts.TypeNode): string {
         Ast.fail('Type', type)
     }
     return res
+}
+
+function makeArgs(args: Ts.NodeArray<Ts.TypeNode> | undefined): string {
+    if (!args) return ''
+    let res = '<'
+    let sep = ''
+    args.forEach(a => {
+        res += `${sep}${make(a)}`
+        sep = ', '
+    })
+    return res + '>'
+
 }
