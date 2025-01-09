@@ -49,6 +49,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
                 else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
                 else if (name.match(/^em\$(clone|configure|construct|fail|generate|halt|init|ready|reset|run|startup)/)) tokType = 'em-special'
+                else if (name.match(/^fail|halt|printf$/)) tokType = 'em-debug'
                 else if (name.match(/^em\$/)) tokType = 'em-wrong'
                 if (tokType) addTok(doc, builder, node, tokType)
             }
@@ -63,7 +64,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             }
             else if (Ts.isPropertyAccessExpression(node)) {
                 const txt = node.getText(sf)
-                if (!txt.match(/^em\.(fail|halt|\$reg)/)) {
+                if (!txt.match(/^em\.(fail|halt|printf|\$reg)/)) {
                     Ts.forEachChild(node, visitNode);
                     return
                 }

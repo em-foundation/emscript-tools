@@ -1438,7 +1438,7 @@
     "semanticTokenColors": {
         "em-debug": {
             "foreground": "#ff4040",
-            "fontStyle": "bold"
+            "fontStyle": ""
         },
         "em-domain": {
             "foreground": "#d4efff",
