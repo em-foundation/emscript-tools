@@ -62,6 +62,8 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isCallExpression(expr)) {
         const dbg = mkDbg(expr.expression, txt)
         if (dbg) return `${dbg}${make(expr.arguments[0])})`
+        const printf = mkPrintf(expr)
+        if (printf) return printf
         const textVal = mkTextVal(expr, txt)
         if (textVal) return textVal
         const makeCall = mkMakeCall(expr, txt)
@@ -159,6 +161,24 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
     if (!txt.endsWith('.$make()')) return null
     if (!Ts.isPropertyAccessExpression(expr.expression)) return null
     return `${make(expr.expression.expression)}::$make()`
+}
+
+function mkPrintf(expr: Ts.CallExpression): string | null {
+    if (!Ts.isTaggedTemplateExpression(expr.expression)) return null
+    const texpr = expr.expression
+    const sf = Targ.context().ud.sf
+    const tag = texpr.tag.getText(sf)
+    if (!tag.endsWith('printf')) return null
+    const ts = JSON.stringify(texpr.template.getText(sf).slice(1, -1))
+    const len = (JSON.parse(ts) as string).length
+    const fmt = `em::text_t(${ts}, ${len})`
+    let res = `em_lang_Console::print(${fmt}`
+    let sep = ''
+    expr.arguments.forEach(e => {
+        res += sep + make(e)
+        sep = ', '
+    })
+    return res + ')'
 }
 
 function mkTextVal(expr: Ts.CallExpression, txt: string): string | null {
