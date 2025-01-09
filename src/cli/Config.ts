@@ -15,13 +15,14 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
     const len = cobj.$len
     const ts = 'em::u8'
     Out.addText(`
-    struct Buf {
+    struct ${dn} {
         static constexpr em::u16 $len = ${len};
-        static ${dn} $make() { return Buf(); }
+        static ${dn} $make() { return ${dn}(); }
         ${ts} items[${len}] = {0};
         ${ts} &operator[](em::u16 index) { return items[index]; }
         const ${ts} &operator[](em::u16 index) const { return items[index]; }
         em::frame_t<${ts}> $frame(em::i16 beg, em::u16 len = 0) { return em::frame_t<${ts}>::create(items, ${len}, beg, len); }
+        operator em::frame_t<${ts}>() { return $frame(0, 0); }
         em::ptr_t<${ts}> $ptr() { return em::ptr_t<${ts}>(&items[0]); }
         struct Iter {
             ${ts} *ptr_;
