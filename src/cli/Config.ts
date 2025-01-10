@@ -1,6 +1,7 @@
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
+import * as Err from './Err'
 import * as Expr from './Expr'
 import * as Out from './Out'
 import * as Session from './Session'
@@ -115,6 +116,8 @@ export function getKind(node: Ts.Node): Kind {
 function getObj(name: string): any {
     const $$units = Session.getUnits()
     const uobj = $$units.get(Targ.context().ud.id)!
-    return uobj[name]
+    let cobj = uobj[name]
+    if (!cobj) cobj = uobj.em$decls[name]
+    if (!cobj) Err.fail(`no object corresponding to '${name}'`)
+    return cobj
 }
-

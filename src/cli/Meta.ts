@@ -175,13 +175,80 @@ export function parse(upath: string): void {
     transpile(options)
 }
 
+import * as ts from 'typescript'
+
 function transpile(options: Ts.CompilerOptions) {
     const buildDir = Session.getBuildDir()
+
+    const addTopLevelExport: ts.TransformerFactory<ts.SourceFile> = () => {
+        return (root) => {
+            const decls: ts.PropertyAssignment[] = [];
+
+            const updatedStatements = root.statements.map((stmt) => {
+                if (ts.isVariableStatement(stmt)) {
+                    const isExported = stmt.modifiers?.some(
+                        (mod) => mod.kind === ts.SyntaxKind.ExportKeyword
+                    );
+
+                    if (!isExported) {
+                        stmt.declarationList.declarations.forEach((decl) => {
+                            if (ts.isIdentifier(decl.name)) {
+                                decls.push(
+                                    ts.factory.createPropertyAssignment(
+                                        decl.name,
+                                        ts.factory.createIdentifier(decl.name.text)
+                                    )
+                                );
+                            }
+                        });
+                    }
+                }
+                return stmt;
+            });
+
+            // Add the `em$decls` export at the end of the file
+            const emDeclsConst = ts.factory.createVariableStatement(
+                [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                ts.factory.createVariableDeclarationList(
+                    [
+                        ts.factory.createVariableDeclaration(
+                            ts.factory.createIdentifier("em$decls"),
+                            undefined,
+                            undefined,
+                            ts.factory.createObjectLiteralExpression(decls, true)
+                        ),
+                    ],
+                    ts.NodeFlags.Const
+                )
+            );
+
+            const emDeclsExport = ts.factory.createExportDeclaration(
+                undefined,
+                false,
+                ts.factory.createNamedExports([
+                    ts.factory.createExportSpecifier(
+                        false, // isTypeOnly
+                        undefined, // propertyName (no alias)
+                        ts.factory.createIdentifier("em$decls") // name
+                    ),
+                ]),
+                undefined
+            );
+
+            return ts.factory.updateSourceFile(root, [
+                ...updatedStatements,
+                emDeclsConst,
+                emDeclsExport,
+            ]);
+        };
+    };
+
     for (const uid of curUidList) {
         const ud = Unit.units().get(uid)!
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
-            fileName: ud.sf.fileName
+            fileName: ud.sf.fileName,
+            transformers: { before: [addTopLevelExport] },
         })
         Fs.mkdirSync(`${buildDir}/${Path.dirname(uid)}`, { recursive: true })
         Fs.writeFileSync(`${buildDir}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
@@ -197,7 +264,8 @@ function transpile(options: Ts.CompilerOptions) {
     const emSrc = Fs.readFileSync(emInFile, 'utf-8')
     const emOut = Ts.transpileModule(emSrc, {
         compilerOptions: options,
-        fileName: emInFile
+        fileName: emInFile,
+        transformers: { before: [addTopLevelExport] },
     })
     Fs.mkdirSync(`${buildDir}/${Path.dirname(emFile)}`, { recursive: true })
     Fs.writeFileSync(`${buildDir}/${emFile}.js.map`, emOut.sourceMapText!, 'utf-8')
