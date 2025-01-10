@@ -14,7 +14,7 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
     if (!Targ.isHdr()) return
     const cobj = getObj(dn)
     const len = cobj.$len
-    const ts = 'em::u8'
+    const ts = cobj.$base.$cname
     Out.addText(`
     struct ${dn} {
         static constexpr em::u16 $len = ${len};
