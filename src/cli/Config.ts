@@ -108,7 +108,7 @@ export function getKind(node: Ts.Node): Kind {
     // if (te.startsWith('em$ArrayVal')) return 'ARRAY_V'
     if (te.startsWith('em$param_t')) return 'PARAM'
     if (te.startsWith('em$proxy_t')) return 'PROXY'
-    if (te.startsWith('em$table_t')) return 'TABLE'
+    if (te.startsWith('table_t<')) return 'TABLE'
     return 'NONE'
 }
 
