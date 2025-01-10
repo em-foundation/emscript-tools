@@ -146,6 +146,7 @@ function mkDbg(expr: Ts.Expression, txt: string): string | null {
         return `*em::${m![1]}(${addr})`
     }
     const dbg = expr.argumentExpression.getText(sf)
+    if (dbg.startsWith("'%%>")) return 'em_lang_Console::wr('
     const m = dbg.match(/^'\%\%([a-d])([-+:]?)'$/)
     const id = m![1].charCodeAt(0) - 'a'.charCodeAt(0)
     const op = m![2]
