@@ -6,6 +6,8 @@ import * as Config from './Config'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
+let unescapeJs = require('unescape-js')
+
 export function make(expr: Ts.Expression): string {
     const sf = Targ.context().ud.sf
     const tc = Targ.context().ud.tc
@@ -169,9 +171,9 @@ function mkPrintf(expr: Ts.CallExpression): string | null {
     const sf = Targ.context().ud.sf
     const tag = texpr.tag.getText(sf)
     if (!tag.endsWith('printf')) return null
-    const ts = JSON.stringify(texpr.template.getText(sf).slice(1, -1))
-    const len = (JSON.parse(ts) as string).length
-    const fmt = `em::text_t(${ts}, ${len})`
+    const ts = texpr.template.getText(sf).slice(1, -1)
+    const len = (unescapeJs(ts) as string).length
+    const fmt = `em::text_t("${ts}", ${len})`
     let res = `em_lang_Console::print(${fmt}`
     let sep = ''
     expr.arguments.forEach(e => {
@@ -190,5 +192,5 @@ function mkTextVal(expr: Ts.CallExpression, txt: string): string | null {
     const arg0 = expr.arguments[0]
     if (!Ts.isStringLiteral(arg0)) return null
     const lit = JSON.stringify(arg0.text)
-    return `em::text_t(${lit}, ${arg0.text.length})`
+    return `em::text_t(${lit}, ${arg0.text.length})` // TODO unescapeJs
 }
