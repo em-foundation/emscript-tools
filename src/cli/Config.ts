@@ -89,9 +89,8 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     const es = Targ.isHdr() ? 'extern ' : ''
     const cs = acc == 'ro' ? 'const ' : ''
     const len = cobj.elems.length
-    const txt = decl.getText(Targ.context().ud.sf)
-    const m = txt.match(/\<(.+)\>/)
-    const ts = `em::table_${acc}<${m![1].replaceAll('.', '::')}, ${len}>`
+    const call = decl.initializer! as Ts.CallExpression
+    const ts = `em::table_${acc}<${Type.make(call.typeArguments![0])}, ${len}>`
     Out.print("%t%1%2%3 %4", es, cs, ts, dn)
     if (Targ.isMain()) {
         Out.print(" = {%+\n")
