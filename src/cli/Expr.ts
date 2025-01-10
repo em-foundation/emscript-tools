@@ -175,11 +175,7 @@ function mkPrintf(expr: Ts.CallExpression): string | null {
     const len = (unescapeJs(ts) as string).length
     const fmt = `em::text_t("${ts}", ${len})`
     let res = `em_lang_Console::print(${fmt}`
-    let sep = ''
-    expr.arguments.forEach(e => {
-        res += sep + make(e)
-        sep = ', '
-    })
+    expr.arguments.forEach(e => res += ', ' + make(e))
     return res + ')'
 }
 
