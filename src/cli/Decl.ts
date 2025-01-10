@@ -71,6 +71,12 @@ export function generate(decl: Ts.Declaration) {
         }
         Out.print('%-%t}\n')
     }
+    else if (Ts.isEnumDeclaration(decl)) {
+        const name = decl.name!.text
+        Out.print("%tenum %1: em::u8 {\n%+%t", name)
+        decl.members.forEach(e => Out.addText(`${e.getText(Targ.context().ud.sf)}, `))
+        Out.print("\n%-%t};\n")
+    }
     else {
         Ast.fail('Decl', decl)
     }
