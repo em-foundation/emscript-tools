@@ -111,7 +111,7 @@ export function make(expr: Ts.Expression): string {
         const e2 = make(expr.whenFalse)
         return `${ec} ? ${e1} : ${e2}`
     }
-    else if (Ts.isAsExpression(expr)) {
+    else if (Ts.isTypeAssertionExpression(expr)) {
         const t = Type.make(expr.type)
         const e = make(expr.expression)
         return t == Type.UNKNOWN ? e : `(${t})(${e})`
