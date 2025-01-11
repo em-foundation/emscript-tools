@@ -79,7 +79,8 @@ export function exec() {
     })
     process.chdir(cwd)
     const res = new Map<string, any>()
-    usedSet.forEach(uid => {
+    curUidList.forEach(uid => {
+        if (!usedSet.has(uid)) return
         const ud = Unit.units().get(uid)!
         if (ud.kind == 'MODULE') res.set(uid, $$units.get(uid))
     })
