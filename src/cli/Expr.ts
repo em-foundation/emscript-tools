@@ -114,7 +114,7 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isAsExpression(expr)) {
         const t = Type.make(expr.type)
         const e = make(expr.expression)
-        return `(${t})(${e})`
+        return t == Type.UNKNOWN ? e : `(${t})(${e})`
     }
     else if (Ts.isPostfixUnaryExpression(expr)) {
         const e = make(expr.operand)
@@ -189,5 +189,6 @@ function mkTextVal(expr: Ts.CallExpression, txt: string): string | null {
     const arg0 = expr.arguments[0]
     if (!Ts.isStringLiteral(arg0)) return null
     const lit = JSON.stringify(arg0.text)
-    return `em::text_t(${lit}, ${arg0.text.length})` // TODO unescapeJs
+    const len = (unescapeJs(lit) as string).length
+    return `em::text_t(${lit}, ${len})` // TODO unescapeJs
 }

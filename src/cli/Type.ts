@@ -19,6 +19,8 @@ const builtins = new Set<string>([
     'volatile_t'
 ])
 
+export const UNKNOWN = '<<UNKNOWN>>'
+
 export function make(type: Ts.TypeNode): string {
     let res = ""
     if (Ts.isTypeReferenceNode(type)) {
@@ -32,6 +34,9 @@ export function make(type: Ts.TypeNode): string {
     // }
     else if (type.kind === Ts.SyntaxKind.VoidKeyword) {
         res = 'void'
+    }
+    else if (type.kind === Ts.SyntaxKind.UnknownKeyword) {
+        res = UNKNOWN
     }
     else {
         Ast.fail('Type', type)
