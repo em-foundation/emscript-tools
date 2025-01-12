@@ -95,7 +95,7 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     if (Targ.isMain()) {
         Out.print(" = {%+\n")
         for (let i = 0; i < len; i++) {
-            Out.print("%t%1,\n", cobj.elems[i])
+            printVal(cobj.elems[i])
         }
         Out.print("%-%t}")
     }
@@ -119,4 +119,16 @@ function getObj(name: string): any {
     if (!cobj) cobj = uobj.em$decls[name]
     if (!cobj) Err.fail(`no object corresponding to '${name}'`)
     return cobj
+}
+
+function printVal(val: any) {
+    if (typeof val === 'number') {
+        Out.print("%t%1,\n", val)
+    }
+    else if (typeof val === 'object' && val?.constructor?.name === 'em$text_t') {
+        Out.print("%t%1,\n", Expr.mkTextVal(val.str))
+    }
+    else {
+        Out.print("%t<<UNKNOWN VALUE>>,\n")
+    }
 }

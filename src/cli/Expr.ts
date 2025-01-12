@@ -56,7 +56,7 @@ export function make(expr: Ts.Expression): string {
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
             if (tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
-            if (tn.startsWith('ptr_t') && sa[1] == '$$') return `*(${sa[0]})`
+            if ((tn.startsWith('ptr_t') || tn.startsWith('ref_t')) && sa[1] == '$$') return `*(${sa[0]})`
             let re = /^(frame_t|ptr_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
             return sa.join(tn.match(re) ? '.' : '::')
         }
@@ -66,7 +66,7 @@ export function make(expr: Ts.Expression): string {
         if (dbg) return `${dbg}${make(expr.arguments[0])})`
         const printf = mkPrintf(expr)
         if (printf) return printf
-        const textVal = mkTextVal(expr, txt)
+        const textVal = mkText(expr, txt)
         if (textVal) return textVal
         const makeCall = mkMakeCall(expr, txt)
         if (makeCall) return makeCall
@@ -180,7 +180,7 @@ function mkPrintf(expr: Ts.CallExpression): string | null {
     return res + ')'
 }
 
-function mkTextVal(expr: Ts.CallExpression, txt: string): string | null {
+function mkText(expr: Ts.CallExpression, txt: string): string | null {
     if (!Ts.isPropertyAccessExpression(expr.expression)) return null
     if (txt.startsWith('em.char_t')) {
 
@@ -190,5 +190,10 @@ function mkTextVal(expr: Ts.CallExpression, txt: string): string | null {
     if (!Ts.isStringLiteral(arg0)) return null
     const lit = JSON.stringify(arg0.text)
     const len = (unescapeJs(lit) as string).length
-    return `em::text_t(${lit}, ${len})` // TODO unescapeJs
+    return `em::text_t(${lit}, ${len})`
+}
+
+export function mkTextVal(txt: string): string {
+    const len = (unescapeJs(txt) as string).length
+    return `em::text_t(${JSON.stringify(txt)}, ${len})`
 }
