@@ -309,25 +309,22 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
         }
 
         function getSizeOfNode(node: Ts.TypeNode): number {
-            if (Ts.isTypeReferenceNode(node) && Ts.isIdentifier(node.typeName)) {
-                const typeName = node.typeName.text
-                if (primitiveSizes[typeName] !== undefined) {
-                    return primitiveSizes[typeName]
-                }
-                if (aliasSizes[typeName] !== undefined) {
-                    return aliasSizes[typeName]
-                }
-            } else if (Ts.isTypeLiteralNode(node)) {
-                return node.members.reduce((size, member) => {
-                    if (Ts.isPropertySignature(member) && member.type) {
-                        return size + getSizeOfNode(member.type)
+            if (Ts.isTypeReferenceNode(node)) {
+                if (Ts.isIdentifier(node.typeName) && node.typeName.text === "struct_t") {
+                    if (node.typeArguments && node.typeArguments[0] && Ts.isTypeLiteralNode(node.typeArguments[0])) {
+                        const innerType = node.typeArguments[0]
+                        return getSizeOfNode(innerType)
                     }
-                    console.error("*** Unsupported struct-like member")
-                    return Number.NaN
-                }, 0)
+                } else if (Ts.isIdentifier(node.typeName)) {
+                    const typeName = node.typeName.text
+                    if (primitiveSizes[typeName] !== undefined) {
+                        return primitiveSizes[typeName]
+                    }
+                    if (aliasSizes[typeName] !== undefined) {
+                        return aliasSizes[typeName]
+                    }
+                }
             }
-            Ast.printTree(node)
-            console.error("*** Unsupported type for $sizeof")
             return Number.NaN
         }
 
@@ -342,50 +339,8 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
             return Ts.visitEachChild(node, visit, context)
         }
 
-        // Pass 1: Collect alias sizes
         collectAliasSizes(sourceFile)
 
-        // Pass 2: Replace $sizeof<T>
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
     }
 }
-
-// function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
-//     return (context) => (sourceFile) => {
-//         const primitiveSizes: Record<string, number> = {
-//             i16: 2,
-//             u8: 1,
-//             bool_t: 1
-//         }
-//         function getSizeOfNode(node: Ts.TypeNode): number {
-//             if (Ts.isTypeReferenceNode(node) && Ts.isIdentifier(node.typeName)) {
-//                 const typeName = node.typeName.text
-//                 if (primitiveSizes[typeName] !== undefined) {
-//                     return primitiveSizes[typeName]
-//                 }
-//             } else if (Ts.isTypeLiteralNode(node)) {
-//                 return node.members.reduce((size, member) => {
-//                     if (Ts.isPropertySignature(member) && member.type) {
-//                         return size + getSizeOfNode(member.type)
-//                     }
-//                     console.error("*** Unsupported struct-like member")
-//                     return Number.NaN
-//                 }, 0)
-//             }
-//             console.error("*** Unsupported type for $sizeof")
-//             return Number.NaN
-//         }
-//         function visit(node: Ts.Node): Ts.Node {
-//             if (Ts.isExpressionWithTypeArguments(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$sizeof") {
-//                 const typeArg = node.typeArguments?.[0]
-//                 if (typeArg && Ts.isTypeNode(typeArg)) {
-//                     const size = getSizeOfNode(typeArg)
-//                     return Ts.factory.createNumericLiteral(size)
-//                 }
-//             }
-//             return Ts.visitEachChild(node, visit, context)
-//         }
-//         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
-//     }
-// }
-// 
