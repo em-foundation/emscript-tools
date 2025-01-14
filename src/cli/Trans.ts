@@ -10,11 +10,13 @@ const primitiveSizes: Record<string, number> = {
     u32: 4,
 }
 const aliasSizes: Record<string, number> = {}
+const aliasTypes: Record<string, Ts.TypeNode> = {}
 
-export function collectAliasSizes(node: Ts.Node): void {
+export function collectAliasInfo(node: Ts.Node): void {
     if (Ts.isTypeAliasDeclaration(node) && Ts.isIdentifier(node.name)) {
         const aliasName = node.name.text
         if (node.type) {
+            aliasTypes[aliasName] = node.type
             const size = getSizeOfNode(node.type)
             if (!Number.isNaN(size)) {
                 aliasSizes[aliasName] = size
@@ -41,7 +43,7 @@ export function collectAliasSizes(node: Ts.Node): void {
             }
         }
     }
-    Ts.forEachChild(node, collectAliasSizes)
+    Ts.forEachChild(node, collectAliasInfo)
 }
 
 export const exportTransformer: Ts.TransformerFactory<Ts.SourceFile> = () => {
@@ -101,6 +103,32 @@ export const exportTransformer: Ts.TransformerFactory<Ts.SourceFile> = () => {
     }
 }
 
+function getDefaultValueForType(type: Ts.TypeNode | undefined): Ts.Expression | undefined {
+    if (type) {
+        if (Ts.isTypeReferenceNode(type)) {
+            const typeName = type.typeName.getText()
+            if (typeName === "bool_t") {
+                return Ts.factory.createFalse()
+            }
+            if (["i8", "i16", "i32", "u8", "u16", "u32"].includes(typeName)) {
+                return Ts.factory.createNumericLiteral("0")
+            }
+            if (Ts.isIdentifier(type.typeName)) {
+                const structName = type.typeName.text
+                return Ts.factory.createCallExpression(
+                    Ts.factory.createPropertyAccessExpression(
+                        Ts.factory.createIdentifier(structName),
+                        Ts.factory.createIdentifier("$make")
+                    ),
+                    [],
+                    []
+                )
+            }
+        }
+    }
+    return undefined
+}
+
 function getSizeOfNode(node: Ts.TypeNode): number {
     if (Ts.isTypeReferenceNode(node)) {
         if (Ts.isIdentifier(node.typeName)) {
@@ -115,6 +143,17 @@ function getSizeOfNode(node: Ts.TypeNode): number {
     }
     return Number.NaN
 }
+
+function resolveTypeAlias(type: Ts.TypeNode | undefined): Ts.TypeNode | undefined {
+    if (type && Ts.isTypeReferenceNode(type)) {
+        const aliasName = type.typeName.getText()
+        if (aliasTypes[aliasName]) {
+            return aliasTypes[aliasName]
+        }
+    }
+    return type
+}
+
 
 export function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
@@ -163,13 +202,30 @@ export function structTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                                 )
                             ])
                         )
+                        const updatedMembers = node.members.map((member) => {
+                            if (Ts.isPropertyDeclaration(member) && !member.initializer) {
+                                const fieldType = resolveTypeAlias(member.type)
+                                const defaultValue = getDefaultValueForType(fieldType)
+                                if (defaultValue !== undefined) {
+                                    return Ts.factory.updatePropertyDeclaration(
+                                        member,
+                                        member.modifiers,
+                                        member.name,
+                                        member.questionToken,
+                                        member.type,
+                                        defaultValue
+                                    )
+                                }
+                            }
+                            return member
+                        })
                         return Ts.factory.updateClassDeclaration(
                             node,
                             node.modifiers,
                             node.name,
                             node.typeParameters,
                             undefined,
-                            [...node.members, makeMethod]
+                            [...updatedMembers, makeMethod]
                         )
                     }
                 }

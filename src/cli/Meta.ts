@@ -181,7 +181,7 @@ function transpile(options: Ts.CompilerOptions) {
     const buildDir = Session.getBuildDir()
     for (const uid of curUidList) {
         const ud = Unit.units().get(uid)!
-        Trans.collectAliasSizes(ud.sf)
+        Trans.collectAliasInfo(ud.sf)
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName,
