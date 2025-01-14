@@ -13,6 +13,7 @@ const builtins = new Set<string>([
     'i16',
     'i32',
     'ptr_t',
+    'ref_t',
     'u8',
     'u16',
     'u32',
