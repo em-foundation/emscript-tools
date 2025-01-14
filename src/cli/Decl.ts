@@ -72,10 +72,21 @@ export function generate(decl: Ts.Declaration) {
         Out.print('%-%t}\n')
     }
     else if (Ts.isEnumDeclaration(decl)) {
-        const name = decl.name!.text
-        Out.print("%tenum %1: em::u8 {\n%+%t", name)
+        Out.print("%tenum %1: em::u8 {\n%+%t", decl.name!.text)
         decl.members.forEach(e => Out.addText(`${e.getText(Targ.context().ud.sf)}, `))
         Out.print("\n%-%t};\n")
+    }
+    else if (Ts.isClassDeclaration(decl) && decl.heritageClauses) {
+        // console.log(decl.heritageClauses[0].getText(Targ.context().ud.sf))
+        Out.print("%tstruct %1 {\n%+", decl.name!.text)
+        decl.members.forEach(e => generate(e))
+        Out.print("%-%t};\n")
+    }
+    else if (Ts.isPropertyDeclaration(decl)) {
+        const pn = (decl.name as Ts.Identifier).text
+        const ts = Type.make(decl.type!)
+        const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
+        Out.print("%t%1 %2%3;\n", ts, pn, init)
     }
     else {
         Ast.fail('Decl', decl)
