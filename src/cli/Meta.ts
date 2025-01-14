@@ -292,6 +292,7 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
             u16: 2,
             u32: 4,
         }
+
         const aliasSizes: Record<string, number> = {}
 
         function collectAliasSizes(node: Ts.Node): void {
@@ -303,29 +304,44 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                         aliasSizes[aliasName] = size
                     }
                 }
-            } else {
-                Ts.forEachChild(node, collectAliasSizes)
             }
+
+            // Detect classes extending $struct and treat them as aliases
+            if (Ts.isClassDeclaration(node)) {
+                const extendsClause = node.heritageClauses?.find(
+                    (clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword
+                )
+
+                if (extendsClause) {
+                    const extendsType = extendsClause.types[0]
+                    if (Ts.isExpressionWithTypeArguments(extendsType) &&
+                        Ts.isIdentifier(extendsType.expression) &&
+                        extendsType.expression.text === "$struct") {
+
+                        // Class extends $struct, treat it as a type alias for size computation
+                        const className = node.name!.text
+                        let size = 0
+                        for (const member of node.members) {
+                            if (Ts.isPropertyDeclaration(member) && member.type) {
+                                size += getSizeOfNode(member.type)
+                            }
+                        }
+                        aliasSizes[className] = size
+                    }
+                }
+            }
+
+            Ts.forEachChild(node, collectAliasSizes)
         }
 
         function getSizeOfNode(node: Ts.TypeNode): number {
             if (Ts.isTypeReferenceNode(node)) {
-                if (Ts.isIdentifier(node.typeName) && node.typeName.text === "struct_t") {
-                    if (node.typeArguments && node.typeArguments[0] && Ts.isTypeLiteralNode(node.typeArguments[0])) {
-                        const innerType = node.typeArguments[0]
-                        let size = 0
-                        for (const member of innerType.members) {
-                            if (Ts.isPropertySignature(member) && member.type) {
-                                size += getSizeOfNode(member.type)
-                            }
-                        }
-                        return size
-                    }
-                } else if (Ts.isIdentifier(node.typeName)) {
+                if (Ts.isIdentifier(node.typeName)) {
                     const typeName = node.typeName.text
                     if (primitiveSizes[typeName] !== undefined) {
                         return primitiveSizes[typeName]
                     }
+
                     if (aliasSizes[typeName] !== undefined) {
                         return aliasSizes[typeName]
                     }
@@ -339,7 +355,7 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                 const typeArg = node.typeArguments?.[0]
                 if (typeArg && Ts.isTypeNode(typeArg)) {
                     const size = getSizeOfNode(typeArg)
-                    return Ts.factory.createNumericLiteral(size)
+                    return Ts.factory.createNumericLiteral(size.toString())
                 }
             }
             return Ts.visitEachChild(node, visit, context)
