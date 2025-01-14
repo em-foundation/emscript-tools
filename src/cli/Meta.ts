@@ -313,7 +313,13 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                 if (Ts.isIdentifier(node.typeName) && node.typeName.text === "struct_t") {
                     if (node.typeArguments && node.typeArguments[0] && Ts.isTypeLiteralNode(node.typeArguments[0])) {
                         const innerType = node.typeArguments[0]
-                        return getSizeOfNode(innerType)
+                        let size = 0
+                        for (const member of innerType.members) {
+                            if (Ts.isPropertySignature(member) && member.type) {
+                                size += getSizeOfNode(member.type)
+                            }
+                        }
+                        return size
                     }
                 } else if (Ts.isIdentifier(node.typeName)) {
                     const typeName = node.typeName.text
