@@ -183,7 +183,7 @@ function transpile(options: Ts.CompilerOptions) {
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName,
-            transformers: { before: [exportTransformer, sizeofTransformer()] },
+            transformers: { before: [exportTransformer, sizeofTransformer(), structTransformer()] },
         })
         Fs.mkdirSync(`${buildDir}/${Path.dirname(uid)}`, { recursive: true })
         Fs.writeFileSync(`${buildDir}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
@@ -292,7 +292,6 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
             u16: 2,
             u32: 4,
         }
-
         const aliasSizes: Record<string, number> = {}
 
         function collectAliasSizes(node: Ts.Node): void {
@@ -305,20 +304,15 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                     }
                 }
             }
-
-            // Detect classes extending $struct and treat them as aliases
             if (Ts.isClassDeclaration(node)) {
                 const extendsClause = node.heritageClauses?.find(
                     (clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword
                 )
-
                 if (extendsClause) {
                     const extendsType = extendsClause.types[0]
                     if (Ts.isExpressionWithTypeArguments(extendsType) &&
                         Ts.isIdentifier(extendsType.expression) &&
                         extendsType.expression.text === "$struct") {
-
-                        // Class extends $struct, treat it as a type alias for size computation
                         const className = node.name!.text
                         let size = 0
                         for (const member of node.members) {
@@ -330,7 +324,6 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                     }
                 }
             }
-
             Ts.forEachChild(node, collectAliasSizes)
         }
 
@@ -341,7 +334,6 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                     if (primitiveSizes[typeName] !== undefined) {
                         return primitiveSizes[typeName]
                     }
-
                     if (aliasSizes[typeName] !== undefined) {
                         return aliasSizes[typeName]
                     }
@@ -362,6 +354,54 @@ function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
         }
 
         collectAliasSizes(sourceFile)
+        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
+
+function structTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        function visit(node: Ts.Node): Ts.Node {
+            if (Ts.isClassDeclaration(node)) {
+                const extendsClause = node.heritageClauses?.find(
+                    (clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword
+                )
+                if (extendsClause) {
+                    const extendsType = extendsClause.types[0]
+                    if (Ts.isExpressionWithTypeArguments(extendsType) &&
+                        Ts.isIdentifier(extendsType.expression) &&
+                        extendsType.expression.text === "$struct") {
+                        const className = node.name!.text
+                        const makeMethod = Ts.factory.createMethodDeclaration(
+                            [Ts.factory.createModifier(Ts.SyntaxKind.StaticKeyword)],
+                            undefined,
+                            Ts.factory.createIdentifier("$make"),
+                            undefined,
+                            undefined,
+                            [],
+                            Ts.factory.createTypeReferenceNode(className, []), // return type
+                            Ts.factory.createBlock([
+                                Ts.factory.createReturnStatement(
+                                    Ts.factory.createNewExpression(
+                                        Ts.factory.createThis(),
+                                        [],
+                                        []
+                                    )
+                                )
+                            ])
+                        )
+                        return Ts.factory.updateClassDeclaration(
+                            node,
+                            node.modifiers,
+                            node.name,
+                            node.typeParameters,
+                            undefined,
+                            [...node.members, makeMethod]
+                        )
+                    }
+                }
+            }
+            return Ts.visitEachChild(node, visit, context)
+        }
 
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
     }
