@@ -11,6 +11,39 @@ const primitiveSizes: Record<string, number> = {
 }
 const aliasSizes: Record<string, number> = {}
 
+export function collectAliasSizes(node: Ts.Node): void {
+    if (Ts.isTypeAliasDeclaration(node) && Ts.isIdentifier(node.name)) {
+        const aliasName = node.name.text
+        if (node.type) {
+            const size = getSizeOfNode(node.type)
+            if (!Number.isNaN(size)) {
+                aliasSizes[aliasName] = size
+            }
+        }
+    }
+    if (Ts.isClassDeclaration(node)) {
+        const extendsClause = node.heritageClauses?.find(
+            (clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword
+        )
+        if (extendsClause) {
+            const extendsType = extendsClause.types[0]
+            if (Ts.isExpressionWithTypeArguments(extendsType) &&
+                Ts.isIdentifier(extendsType.expression) &&
+                extendsType.expression.text === "$struct") {
+                const className = node.name!.text
+                let size = 0
+                for (const member of node.members) {
+                    if (Ts.isPropertyDeclaration(member) && member.type) {
+                        size += getSizeOfNode(member.type)
+                    }
+                }
+                aliasSizes[className] = size
+            }
+        }
+    }
+    Ts.forEachChild(node, collectAliasSizes)
+}
+
 export const exportTransformer: Ts.TransformerFactory<Ts.SourceFile> = () => {
     return (root) => {
         const decls: Ts.PropertyAssignment[] = []
@@ -68,57 +101,23 @@ export const exportTransformer: Ts.TransformerFactory<Ts.SourceFile> = () => {
     }
 }
 
+function getSizeOfNode(node: Ts.TypeNode): number {
+    if (Ts.isTypeReferenceNode(node)) {
+        if (Ts.isIdentifier(node.typeName)) {
+            const typeName = node.typeName.text
+            if (primitiveSizes[typeName] !== undefined) {
+                return primitiveSizes[typeName]
+            }
+            if (aliasSizes[typeName] !== undefined) {
+                return aliasSizes[typeName]
+            }
+        }
+    }
+    return Number.NaN
+}
+
 export function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
-
-        function collectAliasSizes(node: Ts.Node): void {
-            if (Ts.isTypeAliasDeclaration(node) && Ts.isIdentifier(node.name)) {
-                const aliasName = node.name.text
-                if (node.type) {
-                    const size = getSizeOfNode(node.type)
-                    if (!Number.isNaN(size)) {
-                        aliasSizes[aliasName] = size
-                    }
-                }
-            }
-            if (Ts.isClassDeclaration(node)) {
-                const extendsClause = node.heritageClauses?.find(
-                    (clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword
-                )
-                if (extendsClause) {
-                    const extendsType = extendsClause.types[0]
-                    if (Ts.isExpressionWithTypeArguments(extendsType) &&
-                        Ts.isIdentifier(extendsType.expression) &&
-                        extendsType.expression.text === "$struct") {
-                        const className = node.name!.text
-                        let size = 0
-                        for (const member of node.members) {
-                            if (Ts.isPropertyDeclaration(member) && member.type) {
-                                size += getSizeOfNode(member.type)
-                            }
-                        }
-                        aliasSizes[className] = size
-                    }
-                }
-            }
-            Ts.forEachChild(node, collectAliasSizes)
-        }
-
-        function getSizeOfNode(node: Ts.TypeNode): number {
-            if (Ts.isTypeReferenceNode(node)) {
-                if (Ts.isIdentifier(node.typeName)) {
-                    const typeName = node.typeName.text
-                    if (primitiveSizes[typeName] !== undefined) {
-                        return primitiveSizes[typeName]
-                    }
-                    if (aliasSizes[typeName] !== undefined) {
-                        return aliasSizes[typeName]
-                    }
-                }
-            }
-            return Number.NaN
-        }
-
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isExpressionWithTypeArguments(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$sizeof") {
                 const typeArg = node.typeArguments?.[0]
@@ -129,8 +128,6 @@ export function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
             }
             return Ts.visitEachChild(node, visit, context)
         }
-
-        collectAliasSizes(sourceFile)
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
     }
 }
