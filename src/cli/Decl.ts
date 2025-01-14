@@ -78,7 +78,9 @@ export function generate(decl: Ts.Declaration) {
     }
     else if (Ts.isClassDeclaration(decl) && decl.heritageClauses) {
         // console.log(decl.heritageClauses[0].getText(Targ.context().ud.sf))
-        Out.print("%tstruct %1 {\n%+", decl.name!.text)
+        const name = decl.name!.text
+        Out.print("%tstruct %1 {\n%+", name)
+        Out.print("%tstatic constexpr %1 $make() { return %1(); }\n", name)
         decl.members.forEach(e => generate(e))
         Out.print("%-%t};\n")
     }

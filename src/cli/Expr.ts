@@ -53,6 +53,9 @@ export function make(expr: Ts.Expression): string {
         else if (Config.getKind(expr.expression) != 'NONE') {
             return sa.join('.')
         }
+        else if (tc.getTypeAtLocation(expr.expression).isClass()) {
+            return sa.join('.')
+        }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
             if (tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
@@ -60,6 +63,11 @@ export function make(expr: Ts.Expression): string {
             let re = /^(frame_t|ptr_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
             return sa.join(tn.match(re) ? '.' : '::')
         }
+    }
+    else if (Ts.isExpressionWithTypeArguments(expr)) {
+        const op = expr.expression.getText(sf).replace('$', '')
+        const ts = Type.make(expr.typeArguments![0])
+        return `${op}(${ts})`
     }
     else if (Ts.isCallExpression(expr)) {
         const dbg = mkDbg(expr.expression, txt)
