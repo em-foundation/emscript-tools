@@ -28,6 +28,9 @@ export function generate(decl: Ts.Declaration) {
             case 'ARRAY_V':
                 Config.genArrayVal(decl, dn)
                 return
+            case 'FACTORY':
+                Config.genFactory(decl, dn)
+                return
             case 'PARAM':
                 Config.genParam(decl, dn)
                 return

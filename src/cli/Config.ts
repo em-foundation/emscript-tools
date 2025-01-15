@@ -8,7 +8,7 @@ import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
-export type Kind = 'NONE' | 'ARRAY_P' | 'ARRAY_V' | 'PARAM' | 'PROXY' | 'TABLE'
+export type Kind = 'NONE' | 'ARRAY_P' | 'ARRAY_V' | 'FACTORY' | 'PARAM' | 'PROXY' | 'TABLE'
 
 export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
     if (!Targ.isHdr()) return
@@ -38,41 +38,31 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
         Iter end() { return Iter(&items[5]); }
     };
 `)
-
-    /*
-        struct Buf {
-            static constexpr em::u16 $len = 5;
-            static Buf $make() { return Buf(); }
-            em::u8 items[5] = {0};
-            em::u8 &operator[](em::u16 index) { return items[index]; }
-            const em::u8 &operator[](em::u16 index) const { return items[index]; }
-            struct Ptr {
-                em::u8& $$;
-                constexpr Ptr(em::u8& v) : $$ (v) {}
-                void $inc() { $$ = *(reinterpret_cast<em::u8*>($$) + 1); }
-            };
-            Ptr $ptr() { return Ptr(items[0]); }
-            struct Iter {
-                em::u8 *ptr_;
-                Iter(em::u8 *ptr) : ptr_(ptr) {}
-                em::u8 &operator*() { return *ptr_; }
-                Iter &operator++() { ++ptr_; return *this; }
-                bool operator==(const Iter &other) const { return ptr_ == other.ptr_; }
-                bool operator!=(const Iter &other) const { return ptr_ != other.ptr_; }
-            };
-            Iter begin() { return Iter(&items[0]); }
-            Iter end() { return Iter(&items[5]); }
-        };
-    
-    */
-
-
 }
 
 export function genArrayVal(decl: Ts.VariableDeclaration, dn: string) {
     if (!Targ.isHdr()) return
     Ast.printTree(decl)
     Out.print("%t// %1\n", dn)
+}
+
+export function genFactory(decl: Ts.VariableDeclaration, dn: string) {
+    const cobj = getObj(dn)
+    const es = Targ.isHdr() ? 'extern ' : ''
+    const len = cobj.elems.length
+    const tname = `${cobj.proto.constructor?.em$metaData}::${cobj.proto.constructor?.name}`
+    const ts = `em::factory<${tname}, ${len}>`
+    Out.print("%t%1%2 %3", es, ts, dn)
+    if (Targ.isMain()) {
+        Out.print(" = {%+\n")
+        for (let i = 0; i < len; i++) {
+            Out.print("%t")
+            printVal(cobj.elems[i])
+            Out.print(",\n")
+        }
+        Out.print("%-%t}")
+    }
+    Out.print(";\n")
 }
 
 export function genParam(decl: Ts.VariableDeclaration, dn: string) {
@@ -96,7 +86,9 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     if (Targ.isMain()) {
         Out.print(" = {%+\n")
         for (let i = 0; i < len; i++) {
+            Out.print("%t")
             printVal(cobj.elems[i])
+            Out.print(",\n")
         }
         Out.print("%-%t}")
     }
@@ -107,6 +99,7 @@ export function getKind(node: Ts.Node): Kind {
     const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
     if (te.startsWith('em$ArrayProto')) return 'ARRAY_P'
     // if (te.startsWith('em$ArrayVal')) return 'ARRAY_V'
+    if (te.startsWith('factory_t<')) return 'FACTORY'
     if (te.startsWith('em$param_t')) return 'PARAM'
     if (te.startsWith('em$proxy_t')) return 'PROXY'
     if (te.startsWith('table_t<')) return 'TABLE'
@@ -124,15 +117,21 @@ function getObj(name: string): any {
 
 function printVal(val: any) {
     if (typeof val === 'number') {
-        Out.print("%t%1,\n", val)
+        Out.print("%1", val)
     }
     else if (typeof val === 'object' && val?.constructor?.name === 'em$text_t') {
-        Out.print("%t%1,\n", Expr.mkTextVal(val.str))
+        Out.print("%1", Expr.mkTextVal(val.str))
     }
     else if (typeof val === 'object' && val.constructor?.em$metaData) {
-        Out.print("%t%1::%2::$make(),\n", val.constructor?.em$metaData, val.constructor?.name)
+        Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
+        for (let p in val) {
+            Out.print("%t.%1 = ", p)
+            printVal(val[p])
+            Out.print(",\n")
+        }
+        Out.print("%-%t})")
     }
     else {
-        Out.print("%t<<UNKNOWN VALUE>>,\n")
+        Out.print("<<UNKNOWN VALUE>>")
     }
 }
