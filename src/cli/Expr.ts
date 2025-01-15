@@ -31,7 +31,11 @@ export function make(expr: Ts.Expression): string {
     else if (expr.kind === Ts.SyntaxKind.FalseKeyword || expr.kind === Ts.SyntaxKind.TrueKeyword) {
         return txt
     }
+    else if (expr.kind === Ts.SyntaxKind.NullKeyword) {
+        return 'nullptr'
+    }
     else if (Ts.isIdentifier(expr)) {
+        if (txt.startsWith('$')) return `em::${txt}`
         return txt
     }
     else if (Ts.isPropertyAccessExpression(expr)) {
