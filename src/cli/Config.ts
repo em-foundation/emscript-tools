@@ -129,6 +129,9 @@ function printVal(val: any) {
     else if (typeof val === 'object' && val?.constructor?.name === 'em$text_t') {
         Out.print("%t%1,\n", Expr.mkTextVal(val.str))
     }
+    else if (typeof val === 'object' && val.constructor?.em$metaData) {
+        Out.print("%t%1::%2::$make(),\n", val.constructor?.em$metaData, val.constructor?.name)
+    }
     else {
         Out.print("%t<<UNKNOWN VALUE>>,\n")
     }

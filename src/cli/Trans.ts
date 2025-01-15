@@ -173,7 +173,7 @@ export function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
     }
 }
 
-export function structTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+export function structTransformer(cname: string): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isClassDeclaration(node)) {
@@ -204,6 +204,13 @@ export function structTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                                 )
                             ])
                         )
+                        const metaData = Ts.factory.createPropertyDeclaration(
+                            [Ts.factory.createModifier(Ts.SyntaxKind.StaticKeyword)],
+                            'em$metaData',
+                            undefined,
+                            undefined,
+                            Ts.factory.createStringLiteral(cname)
+                        )
                         const updatedMembers = node.members.map((member) => {
                             if (Ts.isPropertyDeclaration(member) && !member.initializer) {
                                 const fieldType = resolveTypeAlias(member.type)
@@ -227,7 +234,7 @@ export function structTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                             node.name,
                             node.typeParameters,
                             undefined,
-                            [...updatedMembers, makeMethod]
+                            [...updatedMembers, makeMethod, metaData]
                         )
                     }
                 }

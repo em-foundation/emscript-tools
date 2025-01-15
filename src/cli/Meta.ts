@@ -189,7 +189,7 @@ function transpile(options: Ts.CompilerOptions) {
                 before: [
                     Trans.exportTransformer,
                     Trans.sizeofTransformer(),
-                    Trans.structTransformer()
+                    Trans.structTransformer(ud.cname)
                 ]
             },
         })
