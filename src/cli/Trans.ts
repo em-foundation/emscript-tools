@@ -5,6 +5,8 @@ const primitiveSizes: Record<string, number> = {
     i8: 1,
     i16: 2,
     i32: 4,
+    ptr_t: 4,
+    ref_t: 4,
     u8: 1,
     u16: 2,
     u32: 4,
