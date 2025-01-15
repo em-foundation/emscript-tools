@@ -24,6 +24,7 @@ export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
         const ${ts} &operator[](em::u16 index) const { return items[index]; }
         em::frame_t<${ts}> $frame(em::i16 beg, em::u16 len = 0) { return em::frame_t<${ts}>::create(items, ${len}, beg, len); }
         operator em::frame_t<${ts}>() { return $frame(0, 0); }
+        operator em::index_t<${ts}>() { return em::index_t<${ts}>(&items[0]); }
         em::ptr_t<${ts}> $ptr() { return em::ptr_t<${ts}>(&items[0]); }
         struct Iter {
             ${ts} *ptr_;

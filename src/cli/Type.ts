@@ -9,6 +9,7 @@ const builtins = new Set<string>([
     'arg_t',
     'bool_t',
     'frame_t',
+    'index_t',
     'i8',
     'i16',
     'i32',
