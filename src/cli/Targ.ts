@@ -24,12 +24,13 @@ let $$units: Map<string, any>
 
 let curCtx: Context = { gen: 'UNK' } as Context
 
-export function build(): string {
+export function build(): string | null {
     try {
         let proc = ChildProc.spawnSync('./build.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
         if (proc.status != 0 || proc.stderr.length > 0) {
             console.log(`*** target build failed with status ${proc.status}`)
             console.log(String(proc.stderr))
+            return null
         }
         return String(proc.stdout)
     } catch (err) {

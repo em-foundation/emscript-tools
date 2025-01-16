@@ -62,6 +62,7 @@ function doBuild(opts: any): void {
     if (opts.meta) return
     console.log(`compiling 'main.cpp' ...`)
     const stdout = Targ.build()
+    if (stdout === null) process.exit(1)
     printSha32()
     printSize(stdout)
     const t2 = mkDelta()
