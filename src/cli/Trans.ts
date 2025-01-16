@@ -116,15 +116,24 @@ function getDefaultValueForType(type: Ts.TypeNode | undefined): Ts.Expression | 
                 return Ts.factory.createNumericLiteral("0")
             }
             if (Ts.isIdentifier(type.typeName)) {
-                const structName = type.typeName.text
-                return Ts.factory.createCallExpression(
-                    Ts.factory.createPropertyAccessExpression(
-                        Ts.factory.createIdentifier(structName),
-                        Ts.factory.createIdentifier("$make")
-                    ),
-                    [],
-                    []
-                )
+                const tname = type.typeName.text
+                if (tname === 'ref_t') {
+                    return Ts.factory.createCallExpression(
+                        Ts.factory.createIdentifier('$ref'),
+                        undefined,
+                        undefined,
+                    )
+                }
+                else {
+                    return Ts.factory.createCallExpression(
+                        Ts.factory.createPropertyAccessExpression(
+                            Ts.factory.createIdentifier(tname),
+                            Ts.factory.createIdentifier("$make")
+                        ),
+                        [],
+                        []
+                    )
+                }
             }
         }
     }
@@ -160,7 +169,7 @@ function resolveTypeAlias(type: Ts.TypeNode | undefined): Ts.TypeNode | undefine
 export function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
-            if (Ts.isExpressionWithTypeArguments(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$sizeof") {
+            if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$sizeof") {
                 const typeArg = node.typeArguments?.[0]
                 if (typeArg && Ts.isTypeNode(typeArg)) {
                     const size = getSizeOfNode(typeArg)
