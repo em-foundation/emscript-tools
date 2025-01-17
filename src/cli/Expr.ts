@@ -32,7 +32,7 @@ export function make(expr: Ts.Expression): string {
         return txt
     }
     else if (expr.kind === Ts.SyntaxKind.NullKeyword) {
-        return 'nullptr'
+        return 'em::null'
     }
     else if (Ts.isIdentifier(expr)) {
         if (txt.startsWith('$')) return `em::${txt}`
@@ -58,12 +58,14 @@ export function make(expr: Ts.Expression): string {
             return sa.join('.')
         }
         else if (tc.getTypeAtLocation(expr.expression).isClass()) {
-            return sa.join('.')
+            return `${make(expr.expression)}.${expr.name.text}`
         }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
+            const sel = expr.name.text
+            // console.log(sel, sa.length)
             if (tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
-            if ((tn.startsWith('ptr_t') || tn.startsWith('ref_t')) && sa[1] == '$$') return `*(${sa[0]})`
+            if ((tn.match(/^(ptr_t|ref_t|oref_t)/) && sa[1] == '$$')) return `(*(${sa[0]}))`
             let re = /^(frame_t|ptr_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
             return sa.join(tn.match(re) ? '.' : '::')
         }

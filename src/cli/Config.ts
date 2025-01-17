@@ -70,8 +70,12 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const call = decl.initializer! as Ts.CallExpression
     const cs = Targ.isHdr() ? 'extern const ' : 'const '
     const ts = `em::param<${Type.make(call.typeArguments![0])}>`
-    const init = Targ.isMain() ? ` = ${String(cobj.val)}` : ''
-    Out.print("%t%1%2 %3%4;\n", cs, ts, dn, init)
+    Out.print("%t%1%2 %3", cs, ts, dn)
+    if (Targ.isMain()) {
+        Out.print(" = ")
+        printVal(cobj.val, ts)
+    }
+    Out.print(";\n")
 }
 
 export function genTable(decl: Ts.VariableDeclaration, dn: string) {
@@ -115,23 +119,38 @@ function getObj(name: string): any {
     return cobj
 }
 
-function printVal(val: any) {
-    if (typeof val === 'number') {
+function printVal(val: any, ts?: string) {
+    if (typeof val === 'number' || typeof val === 'boolean') {
         Out.print("%1", val)
+        return
     }
-    else if (typeof val === 'object' && val?.constructor?.name === 'em$text_t') {
-        Out.print("%1", Expr.mkTextVal(val.str))
-    }
-    else if (typeof val === 'object' && val.constructor?.em$metaData) {
-        Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
-        for (let p in val) {
-            Out.print("%t.%1 = ", p)
-            printVal(val[p])
-            Out.print(",\n")
+    if (typeof val === 'object') {
+        if (val?.constructor?.name === 'em$text_t') {
+            Out.print("%1", Expr.mkTextVal(val.str))
+            return
         }
-        Out.print("%-%t})")
+        if (val.__em$class == 'em$oref') {
+            if (val.idx == -1) {
+                Out.print("nullptr")
+            }
+            else {
+                if (ts) Out.print("%1", ts)
+                Out.print("(&%1[%2])", val.cname, val.idx)
+            }
+            return
+        }
+        if (val.constructor?.em$metaData) {
+            Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
+            for (let p in val) {
+                Out.print("%t.%1 = ", p)
+                printVal(val[p], ts)
+                Out.print(",\n")
+            }
+            Out.print("%-%t})")
+            return
+        }
     }
-    else {
-        Out.print("<<UNKNOWN VALUE>>")
-    }
+    console.log('*** UNKNOWN')
+    console.log(val)
+    Out.print("<<UNKNOWN VALUE>>")
 }

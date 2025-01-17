@@ -188,6 +188,7 @@ function transpile(options: Ts.CompilerOptions) {
             transformers: {
                 before: [
                     Trans.exportTransformer,
+                    Trans.factoryTransformer(ud.cname),
                     Trans.sizeofTransformer(),
                     Trans.structTransformer(ud.cname)
                 ]

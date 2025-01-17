@@ -1,3 +1,5 @@
+import * as Ast from './Ast'
+
 import * as Ts from 'typescript'
 
 const primitiveSizes: Record<string, number> = {
@@ -102,6 +104,26 @@ export const exportTransformer: Ts.TransformerFactory<Ts.SourceFile> = () => {
             emDeclsConst,
             emDeclsExport,
         ])
+    }
+}
+
+export function factoryTransformer(cname: string): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        function visit(node: Ts.Node): Ts.Node {
+            if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text == '$factory') {
+                let dname = ((node.parent as Ts.VariableDeclaration).name as Ts.Identifier).text
+                return Ts.factory.updateCallExpression(
+                    node,
+                    node.expression,
+                    node.typeArguments,
+                    [...node.arguments, Ts.factory.createStringLiteral(`${cname}::${dname}`)]
+                )
+            }
+
+            return Ts.visitEachChild(node, visit, context)
+        }
+
+        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
     }
 }
 

@@ -56,5 +56,9 @@ function makeArgs(args: Ts.NodeArray<Ts.TypeNode> | undefined): string {
         sep = ', '
     })
     return res + '>'
+}
 
+export function makeDefault(ts: string): string {
+    console.log(ts)
+    return '<<UNKNOWN>>'
 }

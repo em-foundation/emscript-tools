@@ -83,7 +83,7 @@ export function generate(decl: Ts.Declaration) {
         // console.log(decl.heritageClauses[0].getText(Targ.context().ud.sf))
         const name = decl.name!.text
         Out.print("%tstruct %1 {\n%+", name)
-        Out.print("%tstatic constexpr %1 $make() { return %1(); }\n", name)
+        Out.print("%tstatic %1 $make() { return %1(); }\n", name)
         decl.members.forEach(e => generate(e))
         Out.print("%-%t};\n")
     }
@@ -96,10 +96,6 @@ export function generate(decl: Ts.Declaration) {
     else {
         Ast.fail('Decl', decl)
     }
-}
-
-function mkDelegate(decl: Ts.VariableDeclaration): string {
-    return ''
 }
 
 export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = ''): string {
