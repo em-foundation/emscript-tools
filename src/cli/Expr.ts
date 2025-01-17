@@ -40,6 +40,10 @@ export function make(expr: Ts.Expression): string {
     }
     else if (Ts.isPropertyAccessExpression(expr)) {
         const sa = txt.split('.')
+        const etxt = expr.expression.getText(sf)
+        // const DEBUG = txt.startsWith('str.')
+        const DEBUG = false
+        if (DEBUG) console.log(txt)
         if (sa[0] == 'em$_R') {
             if (sa[sa.length - 1] == '$$') {
                 const mod = sa[1].match(/([A-Za-z]+)/)![1]
@@ -58,16 +62,24 @@ export function make(expr: Ts.Expression): string {
             return sa.join('.')
         }
         else if (tc.getTypeAtLocation(expr.expression).isClass()) {
+            const tn = Ast.getTypeExpr(tc, expr.expression)
+            if (DEBUG) console.log(`    class ${tn}: ${etxt}`)
+            if (etxt.endsWith('.$$')) {
+                const base = (expr.expression as Ts.PropertyAccessExpression).expression
+                return `${make(base)}->${expr.name.text}`
+            }
             return `${make(expr.expression)}.${expr.name.text}`
         }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
-            const sel = expr.name.text
-            // console.log(sel, sa.length)
             if (tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
-            if ((tn.match(/^(ptr_t|ref_t|oref_t)/) && sa[1] == '$$')) return `(*(${sa[0]}))`
-            let re = /^(frame_t|ptr_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
-            return sa.join(tn.match(re) ? '.' : '::')
+            const op = mkSelOp(tn)
+            if (op == '::') return sa.join(op)
+            if (DEBUG) console.log(`    ${tn}`)
+            if (sa.length == 2 && (tn.match(/^(ptr_t|ref_t)/))) {
+                return (sa[1] == '$$') ? `(*(${sa[0]}))` : `${sa[0]}.${sa[1]}`
+            }
+            return `${make(expr.expression)}.${expr.name.text}`
         }
     }
     else if (Ts.isExpressionWithTypeArguments(expr)) {
@@ -178,6 +190,11 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
     if (!txt.endsWith('.$make()')) return null
     if (!Ts.isPropertyAccessExpression(expr.expression)) return null
     return `${make(expr.expression.expression)}::$make()`
+}
+
+function mkSelOp(tn: string): string {
+    let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
+    return tn.match(re) ? '.' : '::'
 }
 
 function mkPrintf(expr: Ts.CallExpression): string | null {
