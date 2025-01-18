@@ -148,7 +148,7 @@ function genProxies(uid: string) {
         const txt = decl.getText(ud.sf)
         if (!txt.match(/\$(delegate|proxy)/)) return
         const pn = (decl.name as Ts.Identifier).text
-        const pobj = uobj[pn]
+        const pobj = uobj[pn] || uobj.em$decls[pn]
         const did = pobj.prx.em$_U.uid
         const dud = unitTab.get(did)
         if (dud) Out.print('namespace %1 { namespace %2 = %3; };\n', ud.cname, pn, dud.cname)

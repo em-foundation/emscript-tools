@@ -63,6 +63,12 @@ export function exec() {
                 if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
                 nextSet.add(cobj.prx.em$_U.uid)
             }
+            for (const p in uobj.em$decls) {
+                const cobj = uobj.em$decls[p]
+                if (!cobj || cobj.$$em$config != 'proxy') continue
+                if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
+                nextSet.add(cobj.prx.em$_U.uid)
+            }
         })
         workSet.clear()
         nextSet.forEach(uid => workSet.add(uid))
