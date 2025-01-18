@@ -110,7 +110,7 @@ export function getKind(node: Ts.Node): Kind {
     return 'NONE'
 }
 
-function getObj(name: string): any {
+export function getObj(name: string): any {
     const $$units = Session.getUnits()
     const uobj = $$units.get(Targ.context().ud.id)!
     let cobj = uobj[name]
