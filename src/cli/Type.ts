@@ -24,17 +24,24 @@ const builtins = new Set<string>([
 
 export const UNKNOWN = '<<UNKNOWN>>'
 
-export function make(type: Ts.TypeNode): string {
+export function make(type: Ts.TypeNode, tdef?: string): string {
     let res = ""
     if (Ts.isTypeReferenceNode(type)) {
         let tn = type.typeName.getText(Targ.context().ud.sf)
         if (builtins.has(tn)) tn = `em.${tn}`
-        res = tn.replaceAll('.', '::') + makeArgs(type.typeArguments)
+        res = tn.replaceAll('.', '::') + makeTypeArgs(type.typeArguments)
+        if (tdef) res += ` ${tdef}`
     }
     // else if (Ts.isTypeQueryNode(type)) {
     //     console.log(txt)
     //     res = txt.replaceAll('.', '::')
     // }
+    else if (Ts.isFunctionTypeNode(type)) {
+        // using Comparator = std::function<int(const ref_t<std::string>&, const ref_t<std::string>&)>;
+        let ret = make(type.type)
+        let td = tdef ? tdef : ''
+        res = `${ret} (*${td})${makeFxnParams(type.parameters)}`
+    }
     else if (type.kind === Ts.SyntaxKind.VoidKeyword) {
         res = 'void'
     }
@@ -47,7 +54,17 @@ export function make(type: Ts.TypeNode): string {
     return res
 }
 
-function makeArgs(args: Ts.NodeArray<Ts.TypeNode> | undefined): string {
+function makeFxnParams(params: Ts.NodeArray<Ts.ParameterDeclaration>): string {
+    let res = '('
+    let sep = ''
+    params.forEach(p => {
+        res += `${sep}${make(p.type!)} ${(p.name as Ts.Identifier).text}`
+        sep = ', '
+    })
+    return res + ')'
+}
+
+function makeTypeArgs(args: Ts.NodeArray<Ts.TypeNode> | undefined): string {
     if (!args) return ''
     let res = '<'
     let sep = ''

@@ -14,7 +14,7 @@ export function generate(decl: Ts.Declaration) {
         // handled elsewhere
     }
     else if (Ts.isTypeAliasDeclaration(decl)) {
-        Out.print("%ttypedef %1 %2;\n", Type.make(decl.type), (decl.name as Ts.Identifier).text)
+        Out.print("%ttypedef %1;\n", Type.make(decl.type, (decl.name as Ts.Identifier).text))
     }
     else if (Ts.isVariableDeclaration(decl)) {
         const txt = decl.getText(Targ.context().ud.sf)
