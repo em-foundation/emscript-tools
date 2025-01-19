@@ -21,6 +21,8 @@ export class Desc {
     isMetaOnly(): boolean { return this.kind == 'COMPOSITE' || this.kind == 'TEMPLATE' }
 }
 
+
+/*
 function cloneNode<T extends Ts.Node>(node: T): T {
     const transformer: Ts.TransformerFactory<T> = context => rootNode => {
         function visit(node: Ts.Node): Ts.Node {
@@ -31,6 +33,7 @@ function cloneNode<T extends Ts.Node>(node: T): T {
     const [cloned] = Ts.transform(node, [transformer]).transformed
     return cloned
 }
+*/
 
 export function create(sf: Ts.SourceFile, tc: Ts.TypeChecker): Desc {
     const uid = Session.mkUid(sf.fileName)
@@ -74,7 +77,7 @@ function scan(sf: Ts.SourceFile): ScanResult {
             }
         }
         else if (Ts.isVariableStatement(stmt)) {
-            const m = stmt.getText(sf).match(/em\.declare\(['"](\w+)['"]/)
+            const m = stmt.getText(sf).match(/em\.\$declare\(['"](\w+)['"]/)
             if (m) res.kind = m[1] as Kind
         }
     })
@@ -87,6 +90,7 @@ interface TransResult {
     imps: Map<string, string>
 }
 
+/*
 function transform(sf: Ts.SourceFile): TransResult {
     let res = { kind: 'MODULE', imps: new Map<string, string> } as TransResult
     const transformer = (context: Ts.TransformationContext) => {
@@ -113,7 +117,7 @@ function transform(sf: Ts.SourceFile): TransResult {
                     }
                 }
                 if (Ts.isVariableStatement(node)) {
-                    const m = node.getText(sf).match(/em\.declare\(['"](\w+)['"]/)
+                    const m = node.getText(sf).match(/em\.\$declare\(['"](\w+)['"]/)
                     if (m) {
                         res.kind = m[1] as Kind
                         const orig = node.declarationList.declarations[0]
@@ -124,7 +128,7 @@ function transform(sf: Ts.SourceFile): TransResult {
                             Ts.factory.createCallExpression(
                                 Ts.factory.createPropertyAccessExpression(
                                     Ts.factory.createIdentifier("em"),
-                                    "declare"
+                                    "$declare"
                                 ),
                                 undefined,
                                 [
@@ -155,6 +159,7 @@ function transform(sf: Ts.SourceFile): TransResult {
     res.sf = Ts.transform(sf, [transformer]).transformed[0]
     return res
 }
+*/
 
 export function units(): ReadonlyMap<string, Desc> {
     return unitTab
