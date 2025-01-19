@@ -111,7 +111,7 @@ function expand(doneSet: Set<string>): Array<string> {
                 const tud = Unit.units().get(tuid)!
                 let lines = Array<string>(`// *** GENERATED UNIT CLONED FROM '${tud.id}'\n`)
                 lines.push("import em from '@$$emscript'")
-                lines.push("export const em$_U = em.$declare('MODULE')")
+                lines.push("export const em$_U = $declare('MODULE')")
                 let found = false
                 for (let line of tud.sf.getText(tud.sf).split('\n').slice(2)) {
                     if (line.startsWith('export namespace em$template')) {
@@ -203,7 +203,7 @@ function transpile(options: Ts.CompilerOptions) {
         Fs.mkdirSync(`${buildDir}/${Path.dirname(uid)}`, { recursive: true })
         Fs.writeFileSync(`${buildDir}/${uid}.em.js.map`, transOut.sourceMapText!, 'utf-8')
         let src = transOut.outputText
-        src = src.replaceAll(/__emscript_1\.default\.\$declare\((.+)\)/g, `__emscript_1.default.$$declare($1, '${uid}')`)
+        src = src.replaceAll(/\$declare\((.+)\)/g, `$$declare($1, '${uid}')`)
         src = src.replace('@$$emscript', '../em.lang/emscript')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em"))`)

@@ -77,7 +77,7 @@ function scan(sf: Ts.SourceFile): ScanResult {
             }
         }
         else if (Ts.isVariableStatement(stmt)) {
-            const m = stmt.getText(sf).match(/em\.\$declare\(['"](\w+)['"]/)
+            const m = stmt.getText(sf).match(/\$declare\(['"](\w+)['"]/)
             if (m) res.kind = m[1] as Kind
         }
     })
@@ -89,77 +89,6 @@ interface TransResult {
     kind: Kind,
     imps: Map<string, string>
 }
-
-/*
-function transform(sf: Ts.SourceFile): TransResult {
-    let res = { kind: 'MODULE', imps: new Map<string, string> } as TransResult
-    const transformer = (context: Ts.TransformationContext) => {
-        return (sf: Ts.SourceFile): Ts.SourceFile => {
-            const visitor: Ts.Visitor = (node) => {
-                if (Ts.isImportDeclaration(node)) {
-                    const modSpecNode = node.moduleSpecifier
-                    if (Ts.isStringLiteral(modSpecNode)) {
-                        let modSpec = modSpecNode.text.replace('@$$emscript', '../em.lang/emscript')
-                        const iuMatch = modSpec.match(/^@(.+)\.em$/)
-                        if (iuMatch) {
-                            modSpec = modSpec.replace('@', '../')
-                            const inMatch = node.importClause!.getText(sf).match(/\W*(\w+)$/)
-                            res.imps.set(inMatch![1], iuMatch[1])
-                        }
-                        const updNode = Ts.factory.updateImportDeclaration(
-                            node,
-                            node.modifiers,
-                            node.importClause,
-                            Ts.factory.createStringLiteral(modSpec),
-                            node.attributes
-                        )
-                        return updNode
-                    }
-                }
-                if (Ts.isVariableStatement(node)) {
-                    const m = node.getText(sf).match(/em\.\$declare\(['"](\w+)['"]/)
-                    if (m) {
-                        res.kind = m[1] as Kind
-                        const orig = node.declarationList.declarations[0]
-                        const varDecl = Ts.factory.createVariableDeclaration(
-                            orig.name,
-                            undefined,
-                            undefined,
-                            Ts.factory.createCallExpression(
-                                Ts.factory.createPropertyAccessExpression(
-                                    Ts.factory.createIdentifier("em"),
-                                    "$declare"
-                                ),
-                                undefined,
-                                [
-                                    Ts.factory.createStringLiteral(res.kind),
-                                    Ts.factory.createStringLiteral(sf.fileName)
-                                ]
-                            )
-                        );
-                        const varDeclList = Ts.factory.createVariableDeclarationList(
-                            [varDecl],
-                            Ts.NodeFlags.Const
-                        );
-                        const varStmt = Ts.factory.createVariableStatement(
-                            node.modifiers,
-                            varDeclList
-                        );
-                        return varStmt
-                    }
-                }
-                return node
-            }
-            const updatedStatements: Ts.Statement[] = sf.statements.map(stmt =>
-                Ts.visitNode(stmt, visitor) as Ts.Statement
-            )
-            return Ts.factory.updateSourceFile(sf, updatedStatements)
-        }
-    }
-    res.sf = Ts.transform(sf, [transformer]).transformed[0]
-    return res
-}
-*/
 
 export function units(): ReadonlyMap<string, Desc> {
     return unitTab
