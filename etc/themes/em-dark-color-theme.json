@@ -1456,7 +1456,7 @@
         },
         "em-special": {
             "foreground": "#ff9d73",
-            "fontStyle": "bold"
+            "fontStyle": ""
         },
         "em-unit": {
             "foreground": "#43c9a7",
