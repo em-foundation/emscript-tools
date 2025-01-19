@@ -44,7 +44,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 const name = node.text
                 let tokType = ''
                 if (name === 'em') tokType = 'em-ident'
-                else if (name === '$$') tokType = 'em-ident'
+                else if (name === '$$') tokType = 'em-deref'
                 else if (unitSet.has(name)) tokType = 'em-unit'
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
                 else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
@@ -81,5 +81,5 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
 }
 
 export function legend(): Vsc.SemanticTokensLegend {
-    return new Vsc.SemanticTokensLegend(['em-debug', 'em-domain', 'em-ident', 'em-special', 'em-unit', 'em-wrong'], []);
+    return new Vsc.SemanticTokensLegend(['em-debug', 'em-deref', 'em-domain', 'em-ident', 'em-special', 'em-unit', 'em-wrong'], []);
 }
