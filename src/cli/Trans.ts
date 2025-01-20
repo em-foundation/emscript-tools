@@ -148,11 +148,11 @@ function getDefaultValueForType(type: Ts.TypeNode | undefined): Ts.Expression | 
     if (type) {
         if (Ts.isTypeReferenceNode(type)) {
             const typeName = type.typeName.getText()
-            if (typeName === "bool_t") {
+            if (typeName === 'bool_t') {
                 return Ts.factory.createFalse()
             }
-            if (["i8", "i16", "i32", "u8", "u16", "u32"].includes(typeName)) {
-                return Ts.factory.createNumericLiteral("0")
+            if (['arg_t', 'i8', 'i16', 'i32', 'u8', 'u16', 'u32'].includes(typeName)) {
+                return Ts.factory.createNumericLiteral('0')
             }
             if (Ts.isIdentifier(type.typeName)) {
                 const tname = type.typeName.text
@@ -163,16 +163,21 @@ function getDefaultValueForType(type: Ts.TypeNode | undefined): Ts.Expression | 
                         undefined,
                     )
                 }
-                else {
+                if (tname === 'cb_t') {
                     return Ts.factory.createCallExpression(
-                        Ts.factory.createPropertyAccessExpression(
-                            Ts.factory.createIdentifier(tname),
-                            Ts.factory.createIdentifier("$make")
-                        ),
-                        [],
-                        []
+                        Ts.factory.createIdentifier('$cb$null'),
+                        undefined,
+                        undefined,
                     )
                 }
+                return Ts.factory.createCallExpression(
+                    Ts.factory.createPropertyAccessExpression(
+                        Ts.factory.createIdentifier(tname),
+                        Ts.factory.createIdentifier("$make")
+                    ),
+                    [],
+                    []
+                )
             }
         }
     }
