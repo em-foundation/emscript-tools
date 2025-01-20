@@ -94,7 +94,7 @@ function genHeader(ud: Unit.Desc) {
     })
     genStructFwds(ud)
     genStmts(ud.sf)
-    genStructDefs(ud)
+    genStructBodies(ud)
     Out.print("\n%-};\n\n")
     Out.addText(`#endif // ${ud.cname}__M\n`)
     Out.close()
@@ -176,10 +176,10 @@ function genStmts(node: Ts.Node) {
     })
 }
 
-function genStructDefs(ud: Unit.Desc) {
+function genStructBodies(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
         if (Ts.isClassDeclaration(node)) {
-            Decl.genStruct(node)
+            Decl.genStruct(node, 'BODY')
         }
     })
 }

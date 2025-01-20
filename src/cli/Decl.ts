@@ -80,7 +80,7 @@ export function generate(decl: Ts.Declaration) {
         Out.print("\n%-%t};\n")
     }
     else if (Ts.isClassDeclaration(decl) && decl.heritageClauses) {
-        return // handled later in genStruct
+        genStruct(decl, 'DECL')
     }
     else if (Ts.isPropertyDeclaration(decl)) {
         const pn = (decl.name as Ts.Identifier).text
@@ -93,37 +93,57 @@ export function generate(decl: Ts.Declaration) {
     }
 }
 
-function genMethod(decl: Ts.PropertyDeclaration, kname: string) {
+function genMethodBody(decl: Ts.PropertyDeclaration, kname: string) {
     const mft = decl.type! as Ts.FunctionTypeNode
     const mname = (decl.name as Ts.Identifier).text
     const mfxn = `$$::${kname}__${mname}`
-    Out.print("%t%1 %2(", Type.make(mft.type), mname)
+    Out.print("%tinline %1 %2::%3(", Type.make(mft.type), kname, mname)
     let sep = ''
     mft.parameters.forEach(p => {
         Out.print("%3%1 %2", Type.make(p.type!), (p.name as Ts.Identifier).text, sep)
         sep = ', '
     })
     const rs = !Type.isVoid(mft.type) ? 'return ' : ''
-    Out.print(") { %2%1(this\n", mfxn, rs)
+    Out.print(") { %2%1(this", mfxn, rs)
     mft.parameters.forEach(p => {
         Out.print(", %1", (p.name as Ts.Identifier).text)
     })
     Out.print("); }\n")
 }
 
-export function genStruct(decl: Ts.ClassDeclaration) {
+function genMethodDecl(decl: Ts.PropertyDeclaration) {
+    const mft = decl.type! as Ts.FunctionTypeNode
+    const mname = (decl.name as Ts.Identifier).text
+    Out.print("%t%1 %2(", Type.make(mft.type), mname)
+    let sep = ''
+    mft.parameters.forEach(p => {
+        Out.print("%3%1 %2", Type.make(p.type!), (p.name as Ts.Identifier).text, sep)
+        sep = ', '
+    })
+    Out.print(");\n")
+}
+
+export function genStruct(decl: Ts.ClassDeclaration, kind: 'BODY' | 'DECL') {
     const name = decl.name!.text
-    Out.print("%tstruct %1 {\n%+", name)
-    Out.print("%tstatic %1 $make() { return %1(); }\n", name)
+    if (kind == 'DECL') {
+        Out.print("%tstruct %1 {\n%+", name)
+        Out.print("%tstatic %1 $make() { return %1(); }\n", name)
+        decl.members.forEach(e => {
+            if (Ts.isPropertyDeclaration(e) && e.type && Ts.isFunctionTypeNode(e.type)) {
+                genMethodDecl(e)
+            }
+            else {
+                generate(e)
+            }
+        })
+        Out.print("%-%t};\n")
+        return
+    }
     decl.members.forEach(e => {
         if (Ts.isPropertyDeclaration(e) && e.type && Ts.isFunctionTypeNode(e.type)) {
-            genMethod(e, name)
-        }
-        else {
-            generate(e)
+            genMethodBody(e, name)
         }
     })
-    Out.print("%-%t};\n")
 }
 
 export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = ''): string {

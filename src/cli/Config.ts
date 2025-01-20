@@ -133,6 +133,15 @@ function printVal(val: any, ts?: string) {
             Out.print("%1::%2", val.cname, val.fxn.name)
             return
         }
+        if (val.__em$class == 'em$ref') {
+            if (val.$$ == undefined) {
+                Out.print("nullptr")
+            }
+            else {
+                printVal(val.$$)
+            }
+            return
+        }
         if (val.__em$class == 'em$oref') {
             if (val.idx == -1) {
                 Out.print("nullptr")
@@ -146,6 +155,7 @@ function printVal(val: any, ts?: string) {
         if (val.constructor?.em$metaData) {
             Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
             for (let p in val) {
+                if (val[p] === undefined) continue
                 Out.print("%t.%1 = ", p)
                 printVal(val[p], ts)
                 Out.print(",\n")
