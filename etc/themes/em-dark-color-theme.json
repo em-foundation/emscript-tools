@@ -1439,7 +1439,7 @@
     "semanticHighlighting": true,
     "semanticTokenColors": {
         "em-debug": {
-            "foreground": "#ff4040",
+            "foreground": "#ff0000",
             "fontStyle": ""
         },
         "em-deref": {

@@ -28,9 +28,14 @@ export function make(type: Ts.TypeNode, tdef?: string): string {
     let res = ""
     if (Ts.isTypeReferenceNode(type)) {
         let tn = type.typeName.getText(Targ.context().ud.sf)
-        if (builtins.has(tn)) tn = `em.${tn}`
-        res = tn.replaceAll('.', '::') + makeTypeArgs(type.typeArguments)
-        if (tdef) res += ` ${tdef}`
+        if (tn == 'cb_t') {
+            res = makeCb(type.typeArguments![0] as Ts.TupleTypeNode, tdef!)
+        }
+        else {
+            if (builtins.has(tn)) tn = `em.${tn}`
+            res = tn.replaceAll('.', '::') + makeTypeArgs(type.typeArguments)
+            if (tdef) res += ` ${tdef}`
+        }
     }
     // else if (Ts.isTypeQueryNode(type)) {
     //     console.log(txt)
@@ -42,6 +47,9 @@ export function make(type: Ts.TypeNode, tdef?: string): string {
         let td = tdef ? tdef : ''
         res = `${ret} (*${td})${makeFxnParams(type.parameters)}`
     }
+    else if (Ts.isTupleTypeNode(type)) {
+        res = '()'
+    }
     else if (type.kind === Ts.SyntaxKind.VoidKeyword) {
         res = 'void'
     }
@@ -52,6 +60,17 @@ export function make(type: Ts.TypeNode, tdef?: string): string {
         Ast.fail('Type', type)
     }
     return res
+}
+
+function makeCb(tup: Ts.TupleTypeNode, tdef: string): string {
+    let res = `void (*${tdef})(`
+    let sep = ''
+    tup.elements.forEach(e => {
+        let t = Ts.isNamedTupleMember(e) ? e.type : e
+        res += `${sep}${make(t)}`
+        sep = ', '
+    })
+    return res + ')'
 }
 
 function makeFxnParams(params: Ts.NodeArray<Ts.ParameterDeclaration>): string {
