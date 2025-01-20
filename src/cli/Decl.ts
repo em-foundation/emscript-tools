@@ -80,12 +80,7 @@ export function generate(decl: Ts.Declaration) {
         Out.print("\n%-%t};\n")
     }
     else if (Ts.isClassDeclaration(decl) && decl.heritageClauses) {
-        // console.log(decl.heritageClauses[0].getText(Targ.context().ud.sf))
-        const name = decl.name!.text
-        Out.print("%tstruct %1 {\n%+", name)
-        Out.print("%tstatic %1 $make() { return %1(); }\n", name)
-        decl.members.forEach(e => generate(e))
-        Out.print("%-%t};\n")
+        return // handled later in genStruct
     }
     else if (Ts.isPropertyDeclaration(decl)) {
         const pn = (decl.name as Ts.Identifier).text
@@ -96,6 +91,28 @@ export function generate(decl: Ts.Declaration) {
     else {
         Ast.fail('Decl', decl)
     }
+}
+
+function genMethod(decl: Ts.PropertyDeclaration, kname: string) {
+    const mft = decl.type! as Ts.FunctionTypeNode
+    const mname = (decl.name as Ts.Identifier).text
+    const mfxn = `$$::${kname}__${mname}`
+    Out.print("%t%1 %2() { %3(this); }\n", Type.make(mft.type), mname, mfxn)
+}
+
+export function genStruct(decl: Ts.ClassDeclaration) {
+    const name = decl.name!.text
+    Out.print("%tstruct %1 {\n%+", name)
+    Out.print("%tstatic %1 $make() { return %1(); }\n", name)
+    decl.members.forEach(e => {
+        if (Ts.isPropertyDeclaration(e) && e.type && Ts.isFunctionTypeNode(e.type)) {
+            genMethod(e, name)
+        }
+        else {
+            generate(e)
+        }
+    })
+    Out.print("%-%t};\n")
 }
 
 export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = ''): string {

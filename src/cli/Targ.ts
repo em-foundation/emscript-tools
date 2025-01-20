@@ -92,7 +92,9 @@ function genHeader(ud: Unit.Desc) {
         if (iud.isMetaOnly()) return
         Out.print(`%tnamespace %1 = %2;\n`, key, iud.cname)
     })
+    genStructFwds(ud)
     genStmts(ud.sf)
+    genStructDefs(ud)
     Out.print("\n%-};\n\n")
     Out.addText(`#endif // ${ud.cname}__M\n`)
     Out.close()
@@ -170,6 +172,22 @@ function genStmts(node: Ts.Node) {
     node.forEachChild(child => {
         if (Ts.isStatement(child)) {
             Stmt.generate(child)
+        }
+    })
+}
+
+function genStructDefs(ud: Unit.Desc) {
+    ud.sf.statements.forEach(node => {
+        if (Ts.isClassDeclaration(node)) {
+            Decl.genStruct(node)
+        }
+    })
+}
+
+function genStructFwds(ud: Unit.Desc) {
+    ud.sf.statements.forEach(node => {
+        if (Ts.isClassDeclaration(node)) {
+            Out.print("%tstruct %1;\n", node.name!.text)
         }
     })
 }
