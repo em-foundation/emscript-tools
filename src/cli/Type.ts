@@ -24,6 +24,10 @@ const builtins = new Set<string>([
 
 export const UNKNOWN = '<<UNKNOWN>>'
 
+export function isVoid(type: Ts.TypeNode): boolean {
+    return type.kind === Ts.SyntaxKind.VoidKeyword
+}
+
 export function make(type: Ts.TypeNode, tdef?: string): string {
     let res = ""
     if (Ts.isTypeReferenceNode(type)) {
@@ -50,7 +54,7 @@ export function make(type: Ts.TypeNode, tdef?: string): string {
     else if (Ts.isTupleTypeNode(type)) {
         res = '()'
     }
-    else if (type.kind === Ts.SyntaxKind.VoidKeyword) {
+    else if (isVoid(type)) {
         res = 'void'
     }
     else if (type.kind === Ts.SyntaxKind.UnknownKeyword) {

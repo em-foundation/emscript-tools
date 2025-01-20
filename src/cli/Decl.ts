@@ -97,7 +97,18 @@ function genMethod(decl: Ts.PropertyDeclaration, kname: string) {
     const mft = decl.type! as Ts.FunctionTypeNode
     const mname = (decl.name as Ts.Identifier).text
     const mfxn = `$$::${kname}__${mname}`
-    Out.print("%t%1 %2() { %3(this); }\n", Type.make(mft.type), mname, mfxn)
+    Out.print("%t%1 %2(", Type.make(mft.type), mname)
+    let sep = ''
+    mft.parameters.forEach(p => {
+        Out.print("%3%1 %2", Type.make(p.type!), (p.name as Ts.Identifier).text, sep)
+        sep = ', '
+    })
+    const rs = !Type.isVoid(mft.type) ? 'return ' : ''
+    Out.print(") { %2%1(this\n", mfxn, rs)
+    mft.parameters.forEach(p => {
+        Out.print(", %1", (p.name as Ts.Identifier).text)
+    })
+    Out.print("); }\n")
 }
 
 export function genStruct(decl: Ts.ClassDeclaration) {
