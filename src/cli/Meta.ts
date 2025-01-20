@@ -193,6 +193,7 @@ function transpile(options: Ts.CompilerOptions) {
             fileName: ud.sf.fileName,
             transformers: {
                 before: [
+                    Trans.callbackTransformer(ud.cname),
                     Trans.exportTransformer,
                     Trans.factoryTransformer(ud.cname),
                     Trans.sizeofTransformer(),

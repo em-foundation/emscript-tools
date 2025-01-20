@@ -16,6 +16,23 @@ const primitiveSizes: Record<string, number> = {
 const aliasSizes: Record<string, number> = {}
 const aliasTypes: Record<string, Ts.TypeNode> = {}
 
+export function callbackTransformer(cname: string): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        function visit(node: Ts.Node): Ts.Node {
+            if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$cb") {
+                return Ts.factory.updateCallExpression(
+                    node,
+                    node.expression,
+                    node.typeArguments,
+                    [...node.arguments, Ts.factory.createStringLiteral(cname)]
+                )
+            }
+            return Ts.visitEachChild(node, visit, context)
+        }
+        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
+
 export function collectAliasInfo(node: Ts.Node): void {
     if (Ts.isTypeAliasDeclaration(node) && Ts.isIdentifier(node.name)) {
         const aliasName = node.name.text

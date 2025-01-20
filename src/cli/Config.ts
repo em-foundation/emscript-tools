@@ -129,6 +129,10 @@ function printVal(val: any, ts?: string) {
             Out.print("%1", Expr.mkTextVal(val.str))
             return
         }
+        if (val.__em$class == 'em$cb') {
+            Out.print("%1::%2", val.cname, val.fxn.name)
+            return
+        }
         if (val.__em$class == 'em$oref') {
             if (val.idx == -1) {
                 Out.print("nullptr")
