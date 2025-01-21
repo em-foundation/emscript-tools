@@ -53,9 +53,9 @@ export function generate(decl: Ts.Declaration) {
         Out.print("%1 %2%3", ts, pn, init)
     }
     else if (Ts.isFunctionDeclaration(decl)) {
-        const es = Targ.isHdr() ? 'static ' : ''
-        const ts = (decl.type) ? Type.make(decl.type) : 'void'
         const name = decl.name!.text
+        const es = name.endsWith('$$') ? 'extern "C" ' : Targ.isHdr() ? 'static ' : ''
+        const ts = (decl.type) ? Type.make(decl.type) : 'void'
         Out.print("%t%1%2 %3(", es, ts, name)
         let sep = ''
         decl.parameters.forEach(par => {

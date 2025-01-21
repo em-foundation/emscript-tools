@@ -96,6 +96,7 @@ function genHeader(ud: Unit.Desc) {
     genStmts(ud.sf)
     genStructBodies(ud)
     Out.print("\n%-};\n\n")
+    genUsing(ud)
     Out.addText(`#endif // ${ud.cname}__M\n`)
     Out.close()
 }
@@ -137,7 +138,7 @@ function genMain() {
     Out.print("%-}\n")
     Out.addText("\n")
     const dist = Session.getDistro()
-    Out.addText(`#include <${dist.bucket}/startup.c>\n`)
+    Out.addText(`#include <${dist.bucket}/startup.cpp>\n`)
     Out.close()
 }
 
@@ -209,6 +210,14 @@ function genUnit(uid: string) {
     curCtx.gen = 'BODY'
     genBody(ud)
     curCtx.gen = 'UNK'
+}
+
+function genUsing(ud: Unit.Desc) {
+    ud.sf.statements.forEach(node => {
+        if (Ts.isFunctionDeclaration(node) && node.name && node.name.text.endsWith('$$')) {
+            Out.print("using %1::%2;\n", ud.cname, node.name.text)
+        }
+    })
 }
 
 export function generate() {
