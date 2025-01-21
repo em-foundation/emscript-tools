@@ -88,6 +88,7 @@ export function make(expr: Ts.Expression): string {
         return `${op}(${ts})`
     }
     else if (Ts.isCallExpression(expr)) {
+        if (txt.startsWith('$cb')) return make(expr.arguments[0])
         const dbg = mkDbg(expr.expression, txt)
         if (dbg) return `${dbg}${make(expr.arguments[0])})`
         const printf = mkPrintf(expr)
@@ -111,6 +112,9 @@ export function make(expr: Ts.Expression): string {
         const ts = expr.template.getText(sf).slice(1, -1)
         if (tag.endsWith('c$')) {
             return `'${ts}'`
+        }
+        if (tag.endsWith('e$')) {
+            return ts
         }
         if (tag.endsWith('t$')) {
             const js = JSON.parse(`"${ts}"`)
