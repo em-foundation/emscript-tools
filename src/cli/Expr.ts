@@ -41,6 +41,7 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isPropertyAccessExpression(expr)) {
         const sa = txt.split('.')
         const etxt = expr.expression.getText(sf)
+        // const DEBUG = sa[0] == 'a'
         // const DEBUG = txt.startsWith('str.')
         const DEBUG = false
         if (DEBUG) console.log(txt)
@@ -72,10 +73,10 @@ export function make(expr: Ts.Expression): string {
         }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
-            if (tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
+            if (DEBUG) console.log(`    ${tn}`)
+            if (sa.length == 2 && tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
             const op = mkSelOp(tn)
             if (op == '::') return sa.join(op)
-            if (DEBUG) console.log(`    ${tn}`)
             if (sa.length == 2 && (tn.match(/^(ptr_t|ref_t)/))) {
                 return (sa[1] == '$$') ? `(*(${sa[0]}))` : `${sa[0]}.${sa[1]}`
             }
@@ -198,7 +199,7 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
 
 function mkSelOp(tn: string): string {
     let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
-    return tn.match(re) ? '.' : '::'
+    return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
 }
 
 function mkPrintf(expr: Ts.CallExpression): string | null {

@@ -130,7 +130,12 @@ function printVal(val: any, ts?: string) {
             return
         }
         if (val.__em$class == 'em$cb') {
-            Out.print("%1::%2", val.cname, val.fxn.name)
+            if (val.fxn == undefined) {
+                Out.print("nullptr")
+            }
+            else {
+                Out.print("%1::%2", val.cname, val.fxn.name)
+            }
             return
         }
         if (val.__em$class == 'em$ref') {
