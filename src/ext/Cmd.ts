@@ -14,7 +14,7 @@ export function build(uri: Vsc.Uri, opts: string[] = []) {
 export async function newComposite(uri: Vsc.Uri) {
     const content = `
 import em from '@$$emscript'
-export const em$_U = em.declare('COMPOSITE')
+export const em$_U = em.$declare('COMPOSITE')
 
 `
     await Utils.newUnit(uri, 'composite', content.trim())
@@ -24,9 +24,13 @@ export const em$_U = em.declare('COMPOSITE')
 export async function newInterface(uri: Vsc.Uri) {
     const content = `
 import em from '@$$emscript'
-export const em$_U = em.declare('INTERFACE')
+export const em$_U = em.$declare('INTERFACE')
 
-export interface em$_I { }
+export interface em$meta { }
+
+export interface em$_I {
+    em$meta: em$meta
+}
 
 `
     await Utils.newUnit(uri, 'interface', content.trim())
@@ -35,7 +39,7 @@ export interface em$_I { }
 export async function newModule(uri: Vsc.Uri) {
     const content = `
 import em from '@$$emscript'
-export const em$_U = em.declare('MODULE')
+export const em$_U = em.$declare('MODULE')
 
 export namespace em$meta { }
 
@@ -47,7 +51,9 @@ export namespace em$meta { }
 export async function newProgram(uri: Vsc.Uri) {
     const content = `
 import em from '@$$emscript'
-export const em$_U = em.declare('MODULE')
+export const em$_U = em.$declare('MODULE')
+
+export namespace em$meta { }
 
 export function em$run() {
     em.halt()
@@ -61,22 +67,15 @@ export function em$run() {
 export async function newTemplate(uri: Vsc.Uri) {
     const content = `
 import em from '@$$emscript'
-export const em$_T = em.declare('TEMPLATE')
+export const em$_T = em.$declare('TEMPLATE')
 
-namespace em$template {
-    export const em$_U = em.declare('MODULE')
-    const em$_C = { }
+export namespace em$template {
+    export const em$_U = em.$declare('MODULE')
+
     namespace em$meta { }
-    namespace em$targ { }
-    export const em$clone = {
-        em$_U, 
-        // em$_C,
-        // ...em$meta,
-        // ...em$targ,
-    }
 }
 
-export function em$clone() { return { em$_T, ...em$template.em$clone } }
+export function em$clone() { return { em$_T, ...em$template } }
 
 `
     await Utils.newUnit(uri, 'template', content.trim())
