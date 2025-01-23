@@ -1,6 +1,8 @@
 import * as Fs from 'fs'
 import * as Path from 'path'
 
+import * as Props from './Props'
+
 export enum Mode {
     BUILD,
     CLEAN,
@@ -15,12 +17,15 @@ let buildDir: string
 
 let $$units = new Map<string, any>()
 
-export function activate(root: string, mode: Mode): void {
+export function activate(root: string, mode: Mode, setup?: string): void {
     projDir = root
     workDir = Path.join(projDir, 'workspace').replaceAll(/\\/g, '/')
     buildDir = Path.join(workDir, '.emscript').replaceAll(/\\/g, '/')
     process.chdir(projDir)
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
+    Props.init(workDir, setup)
+    if (setup) Props.addSetup(setup)
+    Props.addWorkspace()
 }
 
 export function getBuildDir(): string {

@@ -7,6 +7,7 @@ import * as Path from 'path'
 import * as Ast from './Ast'
 import * as Format from './Format'
 import * as Meta from './Meta'
+import * as Props from './Props'
 import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Unit from './Unit'
@@ -24,6 +25,7 @@ CMD
     .option('-a --ast', 'display AST', false)
     .option('-l --load', 'load after build', false)
     .option('-m --meta', 'meta-program only', false)
+    .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doBuild(opts))
 CMD
@@ -40,6 +42,11 @@ CMD
     .description('display AST for a unit')
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doParse(opts))
+CMD
+    .command('properties')
+    .description('display workspace properties')
+    .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
+    .action((opts: any) => doProperties(opts))
 
 let t0 = Date.now()
 CMD.parse(process.argv)
@@ -50,7 +57,8 @@ function doBuild(opts: any): void {
         doParse(opts)
         return
     }
-    Session.activate(getRoot(), Session.Mode.BUILD)
+    const setup = (opts.setupProperties ? opts.setupProperties : '') as string
+    Session.activate(getRoot(), Session.Mode.BUILD, setup)
     console.log(`building '${Session.mkUid(upath)}' ...`)
     Meta.parse(upath)
     Meta.exec()
@@ -98,6 +106,14 @@ function doParse(opts: any): void {
     const sf = Unit.units().get(uid!)?.sf!
     sf.statements.forEach(stmt => Ast.printTree(stmt, '    '))
 }
+
+function doProperties(opts: any) {
+    const setup = (opts.setupProperties ? opts.setupProperties : '') as string
+    Session.activate(getRoot(), Session.Mode.PROPS, setup)
+    Props.print()
+}
+
+
 function getRoot() {
     return Path.resolve(CMD.opts().root)
 }
