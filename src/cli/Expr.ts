@@ -45,7 +45,7 @@ export function make(expr: Ts.Expression): string {
         // const DEBUG = txt.startsWith('str.')
         const DEBUG = false
         if (DEBUG) console.log(txt)
-        if (sa[0] == 'em$_R') {
+        if (sa[0] == '$R') {
             if (sa[sa.length - 1] == '$$') {
                 const mod = sa[1].match(/([A-Za-z]+)/)![1]
                 let idx = ''
