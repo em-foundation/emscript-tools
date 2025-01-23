@@ -64,6 +64,7 @@ interface ScanResult {
 
 function scan(sf: Ts.SourceFile): ScanResult {
     let res = { kind: 'MODULE', imps: new Map<string, string> } as ScanResult
+    const distro = Session.getDistro()
     sf.statements.map((stmt) => {
         if (Ts.isImportDeclaration(stmt)) {
             const modSpecNode = stmt.moduleSpecifier
@@ -72,7 +73,8 @@ function scan(sf: Ts.SourceFile): ScanResult {
                 const iuMatch = modSpec.match(/^@(.+)\.em$/)
                 if (iuMatch) {
                     const inMatch = stmt.importClause!.getText(sf).match(/([\w_$]+)$/)
-                    res.imps.set(inMatch![1], iuMatch[1])
+                    const iupath = iuMatch[1].replace('$distro/', `${distro.bucket}/`)
+                    res.imps.set(inMatch![1], iupath)
                 }
             }
         }

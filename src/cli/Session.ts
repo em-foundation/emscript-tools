@@ -22,10 +22,11 @@ export function activate(root: string, mode: Mode, setup?: string): void {
     workDir = Path.join(projDir, 'workspace').replaceAll(/\\/g, '/')
     buildDir = Path.join(workDir, '.emscript').replaceAll(/\\/g, '/')
     process.chdir(projDir)
-    if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
     Props.init(workDir, setup)
     if (setup) Props.addSetup(setup)
     Props.addWorkspace()
+    if (mode != Mode.BUILD && mode != Mode.CLEAN) return
+    if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
 }
 
 export function getBuildDir(): string {
@@ -33,7 +34,7 @@ export function getBuildDir(): string {
 }
 
 export function getDistro(): { package: string, bucket: string } {
-    return { package: 'ti.cc23xx', bucket: 'ti.distro.cc23xx' }
+    return Props.getDistro()
 }
 
 export function getShellPath(): string {

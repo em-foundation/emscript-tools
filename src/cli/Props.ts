@@ -7,6 +7,7 @@ const LOCAL_INI_FILE = 'emscript-local.ini'
 const PKG_INI_FILE = 'em-package.ini'
 const ROOT_INI_FILE = 'emscript.ini'
 
+const PROP_DISTRO = 'em.lang.Distro'
 const PROP_EXTENDS = 'em.lang.SetupExtends'
 const PROP_REQUIRES = 'em.lang.PackageRequires'
 
@@ -70,6 +71,12 @@ function applyRequires(pm: PropMap) {
     if (!pm.has(PROP_REQUIRES)) return
     const reqs = pm.get(PROP_REQUIRES)!.trim()
     reqs.split(', ').forEach(pn => addPackage(pn))
+}
+
+export function getDistro() {
+    const ds = cur_props.get(PROP_DISTRO)!
+    const sa = ds.split(SETUP_SEP)
+    return { package: sa[0], bucket: sa[1] }
 }
 
 export function getPackages(): PkgList {

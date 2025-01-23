@@ -5,6 +5,8 @@ import Vsc from "vscode";
 
 import * as JSON5 from 'json5'
 
+import * as Session from '../cli/Session'
+
 const EXT = ".em.ts"
 const EXTENSION_ID = "the-em-foundation.emscript"
 
@@ -139,6 +141,9 @@ export function updateConfig(): void {
             }
         });
     });
+    Session.activate(rootPath(), Session.Mode.PROPS)
+    const d = Session.getDistro()
+    json.compilerOptions.paths[`@$distro/*`] = [`./workspace/${d.package}/${d.bucket}/*`]
     Fs.writeFileSync(file, JSON.stringify(json, null, 4), 'utf-8')
 }
 

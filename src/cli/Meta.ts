@@ -206,6 +206,8 @@ function transpile(options: Ts.CompilerOptions) {
         let src = transOut.outputText
         src = src.replaceAll(/\$declare\((.+)\)/g, `$$declare($1, '${uid}')`)
         src = src.replace('@$$emscript', '../em.lang/emscript')
+        src = src.replace('@$distro/', `../${Session.getDistro().bucket}/`)
+        src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \w+\.em\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em"))`)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
