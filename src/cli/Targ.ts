@@ -105,6 +105,7 @@ function genMain() {
     Out.open(`${Session.getBuildDir()}/main.cpp`)
     Out.addText('#include <emscript.hpp>\n')
     Out.genTitle('MODULE HEADERS')
+    Out.addText(`#include <${Session.getDistro().bucket}/REGS.hpp>\n`)
     Array.from($$units.keys()).forEach(uid => Out.addText(`#include <${uid}.hpp>\n`))
     Out.genTitle('PROXY BINDINGS')
     Array.from($$units.keys()).forEach(uid => genProxies(uid))
