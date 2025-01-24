@@ -40,7 +40,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             }
             else if (Ts.isVariableStatement(stmt)) {
                 const dtxt = stmt.declarationList.declarations[0].getText(sf)
-                const m = dtxt.match(/^(\w+)\W+(\w+)\.em\$clone\(.*\)$/)
+                const m = dtxt.match(/^(\w+)\W+(\w+)\.\$clone\(.*\)$/)
                 if (!m) return
                 unitSet.add(m[1])
             }
@@ -56,7 +56,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 else if (name.startsWith('$')) tokType = 'em-special'
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
                 else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
-                else if (name.match(/^em\$(clone|configure|construct|fail|generate|halt|init|ready|reset|run|startup)/)) tokType = 'em-special'
+                else if (name.match(/^em\$(configure|construct|fail|generate|halt|init|ready|reset|run|startup)/)) tokType = 'em-special'
                 else if (name.match(/^fail|halt|printf$/)) tokType = 'em-debug'
                 else if (name.match(/^[cet]\$/)) tokType = 'em-deref'
                 else if (name.match(/^em\$/)) tokType = 'em-wrong'

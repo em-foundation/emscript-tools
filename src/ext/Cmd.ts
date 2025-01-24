@@ -75,7 +75,7 @@ export namespace em$template {
     namespace em$meta { }
 }
 
-export function em$clone() { return { em$_T, ...em$template } }
+export function $clone() { return { em$_T, ...em$template } }
 
 `
     await Utils.newUnit(uri, 'template', content.trim())
