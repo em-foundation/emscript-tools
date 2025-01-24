@@ -15,11 +15,11 @@ let $$units = new Map<string, any>()
 
 function call(fn: string, u: any) {
     if (fn in u) {
-        // console.log(`call ${u.em$_U.uid}.${fn}`)  // TODO logging
+        // console.log(`call ${u.$U.uid}.${fn}`)  // TODO logging
         u[fn]()
     }
     else if (u.em$meta && fn in u.em$meta) {
-        // console.log(`call ${u.em$_U.uid}.${fn}`) // TODO logging
+        // console.log(`call ${u.$U.uid}.${fn}`) // TODO logging
         u.em$meta[fn]()
     }
 }
@@ -36,11 +36,11 @@ export function exec() {
     const $$uarrTop = Array.from($$units.values()).reverse()
     $$uarrBot.forEach(u => call('em$init', u))
     $$uarrTop.forEach(u => call('em$configure', u))
-    $$uarrTop[0].em$_U._used = true // main unit
-    $$units.get(`${Session.getDistro().bucket}/BuildC`).em$_U._used = true
+    $$uarrTop[0].$U._used = true // main unit
+    $$units.get(`${Session.getDistro().bucket}/BuildC`).$U._used = true
     const workSet = new Set<string>()
     $$units.forEach((uobj, uid) => {
-        if (uobj.em$_U._used) workSet.add(uid)
+        if (uobj.$U._used) workSet.add(uid)
     })
     const usedSet = new Set<string>()
     const nextSet = new Set<string>()
@@ -61,27 +61,27 @@ export function exec() {
                 const cobj = uobj[p]
                 if (cobj.$$em$config != 'proxy') continue
                 if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
-                nextSet.add(cobj.prx.em$_U.uid)
+                nextSet.add(cobj.prx.$U.uid)
             }
             for (const p in uobj.em$decls) {
                 const cobj = uobj.em$decls[p]
                 if (!cobj || cobj.$$em$config != 'proxy') continue
                 if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
-                nextSet.add(cobj.prx.em$_U.uid)
+                nextSet.add(cobj.prx.$U.uid)
             }
         })
         workSet.clear()
         nextSet.forEach(uid => workSet.add(uid))
     }
     $$uarrTop.forEach(u => {
-        if (!usedSet.has(u.em$_U.uid)) return
+        if (!usedSet.has(u.$U.uid)) return
         call('em$construct', u)
-        usedSet.add(u.em$_U.uid)
+        usedSet.add(u.$U.uid)
     })
     const cwd = process.cwd()
     process.chdir(Session.getBuildDir())
     $$uarrTop.forEach(u => {
-        if (!usedSet.has(u.em$_U.uid)) return
+        if (!usedSet.has(u.$U.uid)) return
         call('em$generate', u)
     })
     process.chdir(cwd)
@@ -111,7 +111,7 @@ function expand(doneSet: Set<string>): Array<string> {
                 const tud = Unit.units().get(tuid)!
                 let lines = Array<string>(`// *** GENERATED UNIT CLONED FROM '${tud.id}'\n`)
                 lines.push("import em from '@$$emscript'")
-                lines.push("export const em$_U = $declare('MODULE')")
+                lines.push("export const $U = $declare('MODULE')")
                 let found = false
                 for (let line of tud.sf.getText(tud.sf).split('\n').slice(2)) {
                     if (line.startsWith('export namespace em$template')) {
@@ -119,7 +119,7 @@ function expand(doneSet: Set<string>): Array<string> {
                         found = true
                         continue
                     }
-                    if (found && line.indexOf('export const em$_U') != -1) continue
+                    if (found && line.indexOf('export const $U') != -1) continue
                     if (found && line.startsWith('}')) break
                     lines.push(line)
                 }

@@ -20,7 +20,7 @@ export function generate(decl: Ts.Declaration) {
         const txt = decl.getText(Targ.context().ud.sf)
         if (txt.indexOf('em$clone') != -1) return
         const dn = (decl.name as Ts.Identifier).text
-        if (dn == 'em$_U') return
+        if (dn == '$U') return
         switch (Config.getKind(decl.name)) {
             case 'ARRAY_P':
                 Config.genArrayProto(decl, dn)
