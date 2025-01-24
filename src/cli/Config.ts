@@ -69,7 +69,7 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
     const call = decl.initializer! as Ts.CallExpression
     const cs = Targ.isHdr() ? 'extern const ' : 'const '
-    const ts = `em::param<${Type.make(call.typeArguments![0])}>`
+    const ts = `em::config<${Type.make(call.typeArguments![0])}>`
     Out.print("%t%1%2 %3", cs, ts, dn)
     if (Targ.isMain()) {
         Out.print(" = ")
@@ -104,7 +104,7 @@ export function getKind(node: Ts.Node): Kind {
     if (te.startsWith('em$ArrayProto')) return 'ARRAY_P'
     // if (te.startsWith('em$ArrayVal')) return 'ARRAY_V'
     if (te.startsWith('factory_t<')) return 'FACTORY'
-    if (te.startsWith('em$param_t')) return 'PARAM'
+    if (te.startsWith('em$config_t')) return 'PARAM'
     if (te.startsWith('em$proxy_t')) return 'PROXY'
     if (te.startsWith('table_t<')) return 'TABLE'
     return 'NONE'
