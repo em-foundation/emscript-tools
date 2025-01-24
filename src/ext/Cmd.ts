@@ -28,7 +28,7 @@ export const $U = em.$declare('INTERFACE')
 
 export interface em$meta { }
 
-export interface em$_I {
+export interface $I {
     em$meta: em$meta
 }
 
@@ -67,7 +67,7 @@ export function em$run() {
 export async function newTemplate(uri: Vsc.Uri) {
     const content = `
 import em from '@$$emscript'
-export const em$_T = em.$declare('TEMPLATE')
+export const $T = em.$declare('TEMPLATE')
 
 export namespace em$template {
     export const $U = em.$declare('MODULE')
@@ -75,7 +75,7 @@ export namespace em$template {
     namespace em$meta { }
 }
 
-export function $clone() { return { em$_T, ...em$template } }
+export function $clone() { return { $T, ...em$template } }
 
 `
     await Utils.newUnit(uri, 'template', content.trim())
