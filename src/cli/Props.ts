@@ -7,6 +7,7 @@ const LOCAL_INI_FILE = 'emscript-local.ini'
 const PKG_INI_FILE = 'em-package.ini'
 const ROOT_INI_FILE = 'emscript.ini'
 
+const PROP_BOARD = 'em.lang.BoardKind'
 const PROP_DISTRO = 'em.lang.Distro'
 const PROP_EXTENDS = 'em.lang.SetupExtends'
 const PROP_REQUIRES = 'em.lang.PackageRequires'
@@ -46,8 +47,11 @@ export function addSetup(name: string) {
 }
 
 export function addWorkspace() {
-    const path = Path.join(root_dir, ROOT_INI_FILE)
+    let path = Path.join(root_dir, ROOT_INI_FILE)
     if (!Fs.existsSync(path)) Err.fail(`can't find '${ROOT_INI_FILE}'`)
+    addWorkspaceProps(path)
+    path = Path.join(root_dir, LOCAL_INI_FILE)
+    if (!Fs.existsSync(path)) return
     addWorkspaceProps(path)
 }
 
@@ -73,6 +77,10 @@ function applyRequires(pm: PropMap) {
     reqs.split(', ').forEach(pn => addPackage(pn))
 }
 
+export function getBoardKind(): string {
+    return cur_props.get(PROP_BOARD)!
+}
+
 export function getDistro() {
     const ds = cur_props.get(PROP_DISTRO)!
     const sa = ds.split(SETUP_SEP)
@@ -87,9 +95,13 @@ export function getProps(): PropMap {
     return cur_props
 }
 
+export function getSetup(): string {
+    return cur_props.get(PROP_EXTENDS)!
+}
+
 export function init(dir: string, sname?: string) {
     root_dir = dir
-    if (sname === undefined) return
+    if (!sname) return
     has_setup = true
     cur_props.set(PROP_EXTENDS, sname)
 }
@@ -117,5 +129,9 @@ function readProps(path: string): PropMap {
         res.set(pre + m[1].trim(), m[2].trim())
     }
     return res
+}
+
+export function saveProps(path: string) {
+    Fs.writeFileSync(path, JSON.stringify(Object.fromEntries(cur_props), undefined, 4))
 }
 

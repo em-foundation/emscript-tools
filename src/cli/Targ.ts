@@ -107,6 +107,9 @@ function genMain() {
     Out.genTitle('MODULE HEADERS')
     Out.addText(`#include <${Session.getDistro().bucket}/REGS.hpp>\n`)
     Array.from($$units.keys()).forEach(uid => Out.addText(`#include <${uid}.hpp>\n`))
+    Out.genTitle('STARTUP CODE')
+    const dist = Session.getDistro()
+    Out.addText(`#include <${dist.bucket}/startup.cpp>\n`)
     Out.genTitle('PROXY BINDINGS')
     Array.from($$units.keys()).forEach(uid => genProxies(uid))
     Array.from($$units.keys()).forEach(uid => {
@@ -137,9 +140,6 @@ function genMain() {
     genSpecial(utop, 'em$run', 'FIRST')
     Out.print('%tem__halt();\n')
     Out.print("%-}\n")
-    Out.addText("\n")
-    const dist = Session.getDistro()
-    Out.addText(`#include <${dist.bucket}/startup.cpp>\n`)
     Out.close()
 }
 

@@ -60,6 +60,7 @@ function doBuild(opts: any): void {
     const setup = (opts.setupProperties ? opts.setupProperties : '') as string
     Session.activate(getRoot(), Session.Mode.BUILD, setup)
     console.log(`building '${Session.mkUid(upath)}' ...`)
+    console.log(`    using setup '${Props.getSetup()}' with board '${Props.getBoardKind()}'`)
     Meta.parse(upath)
     Meta.exec()
     const unitCnt = Unit.units().size

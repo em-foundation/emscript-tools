@@ -27,6 +27,9 @@ export function activate(root: string, mode: Mode, setup?: string): void {
     Props.addWorkspace()
     if (mode != Mode.BUILD && mode != Mode.CLEAN) return
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
+    if (mode == Mode.CLEAN) return
+    Fs.mkdirSync(buildDir)
+    Props.saveProps(Path.join(buildDir, 'props.json'))
 }
 
 export function getBuildDir(): string {
