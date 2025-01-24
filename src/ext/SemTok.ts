@@ -9,6 +9,13 @@ function addTok(doc: Vsc.TextDocument, builder: Vsc.SemanticTokensBuilder, node:
     builder.push(new Vsc.Range(start, end), tokType)
 }
 
+function isFirst(node: Ts.Identifier, sf: Ts.SourceFile): boolean {
+    const parent = node.parent
+    if (!Ts.isPropertyAccessExpression(parent)) return true
+    if (!parent.getText(sf).startsWith(`${node.text}.`)) return false
+    return true
+}
+
 export class Provider implements Vsc.DocumentSemanticTokensProvider {
     provideDocumentSemanticTokens(doc: Vsc.TextDocument): Vsc.ProviderResult<Vsc.SemanticTokens> {
         const sf = Ts.createSourceFile(
@@ -45,7 +52,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 let tokType = ''
                 if (name === 'em') tokType = 'em-ident'
                 else if (name === '$$') tokType = 'em-deref'
-                else if (unitSet.has(name)) tokType = 'em-unit'
+                else if (unitSet.has(name) && isFirst(node, sf)) tokType = 'em-unit'
                 else if (name.startsWith('$')) tokType = 'em-special'
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
                 else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
