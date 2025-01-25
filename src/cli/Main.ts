@@ -3,11 +3,14 @@ import * as ChildProc from 'child_process'
 import * as Crypto from 'crypto'
 import * as Fs from 'fs'
 import * as Path from 'path'
+import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
 import * as Format from './Format'
+import * as Markdown from './Markdown'
 import * as Meta from './Meta'
 import * as Props from './Props'
+import * as Render from './Render'
 import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Unit from './Unit'
@@ -38,6 +41,13 @@ CMD
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doFormat(opts))
 CMD
+    .command('markdown')
+    .description('generate markdown for a package')
+    .requiredOption('-o, --outdir <dir>', 'output directory', '.')
+    .requiredOption('-p, --package <dir>', 'package directory', '.')
+    .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
+    .action((opts: any) => doMarkdown(opts))
+CMD
     .command('parse')
     .description('display AST for a unit')
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
@@ -47,6 +57,11 @@ CMD
     .description('display workspace properties')
     .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
     .action((opts: any) => doProperties(opts))
+CMD
+    .command('render')
+    .description('render a unit')
+    .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
+    .action((opts: any) => doRender(opts))
 
 let t0 = Date.now()
 CMD.parse(process.argv)
@@ -88,6 +103,10 @@ function doFormat(opts: any): void {
     Format.exec(opts.unit)
 }
 
+function doMarkdown(opts: any) {
+    Markdown.generate(opts.package, opts.outdir)
+}
+
 function doLoad(upath: string) {
     console.log(`loading '${Session.mkUid(upath)}'...`)
     let proc = ChildProc.spawnSync('./load.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
@@ -99,13 +118,8 @@ function doLoad(upath: string) {
 }
 
 function doParse(opts: any): void {
-    const upath = opts.unit
-    Session.activate(getRoot(), Session.Mode.BUILD)
-    const uid = Session.mkUid(upath)
-    console.log(`parsing '${uid}' ...`)
-    Meta.parse(upath)
-    const sf = Unit.units().get(uid!)?.sf!
-    sf.statements.forEach(stmt => Ast.printTree(stmt, '    '))
+    const ud = mkUnit(opts, 'parsing')
+    ud.sf.statements.forEach(stmt => Ast.printTree(stmt, '    '))
 }
 
 function doProperties(opts: any) {
@@ -114,6 +128,10 @@ function doProperties(opts: any) {
     Props.print()
 }
 
+function doRender(opts: any) {
+    const ud = mkUnit(opts, 'rendering')
+    Render.exec(ud)
+}
 
 function getRoot() {
     return Path.resolve(CMD.opts().root)
@@ -121,6 +139,16 @@ function getRoot() {
 
 function mkDelta(): string {
     return ((Date.now() - t0) / 1000).toFixed(2)
+}
+
+function mkUnit(opts: any, action: string): Unit.Desc {
+    const upath = opts.unit
+    Session.activate(getRoot(), Session.Mode.BUILD)
+    const uid = Session.mkUid(upath)
+    console.log(`${action} '${uid}' ...`)
+    Meta.parse(upath)
+    const ud = Unit.units().get(uid!)!
+    return ud
 }
 
 function printSha32() {
