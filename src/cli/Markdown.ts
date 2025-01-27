@@ -65,9 +65,9 @@ export function generate(ppath: string, outdir: string) {
             Out.print("        - %3: shelf/%1/%2/%3.md\n", pn, bn, un)
         }
     }
-    // let yfile = Path.join(outdir, '../../mkdocs.yml')
-    // let mkdocs = String(Fs.readFileSync(yfile))
-    // let re = RegExp(`(#-- ${pn}\\s)([\\s\\S]*?)(#--)`)
-    // Fs.writeFileSync(yfile, mkdocs.replace(re, `$1${Out.getText()}$3`))
+    let yfile = Path.join(outdir, '../../mkdocs.yml')
+    let mkdocs = String(Fs.readFileSync(yfile))
+    let re = RegExp(`(#-- ${pn}\\s)([\\s\\S]*?)(#--)`)
+    Fs.writeFileSync(yfile, mkdocs.replace(re, `$1${Out.getText()}$3`))
 
 }

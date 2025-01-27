@@ -21,7 +21,7 @@ const types = new Set<string>([
     'u32',
 ])
 
-export function exec(ud: Unit.Desc): string {
+export function exec(ud: Unit.Desc, verbose?: boolean): string {
     const unitSet = findUnits(ud.sf)
     const inSrc = ud.sf.getText(ud.sf)
     let outSrc = ''
@@ -30,14 +30,14 @@ export function exec(ud: Unit.Desc): string {
         if (Ts.isIdentifier(node)) {
             const id = node.text
             const sym = ud.tc.getSymbolAtLocation(node)
-            if (sym && !types.has(id) && !id.match(/^(em\.)?\$/)) {
+            if (sym && !types.has(id) && !id.match(/^(em)?\$/)) {
                 let suf: string | undefined
                 if (unitSet.has(id) && isFirst(node, ud.sf)) {
                     suf = '#u'
                 }
                 else {
                     const kind = Ts.SymbolFlags[sym.flags]
-                    // console.log(node.text, kind)
+                    if (verbose) console.log(node.text, kind)
                     suf = sufMap.get(kind)
                 }
                 if (suf) {

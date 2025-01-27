@@ -61,6 +61,7 @@ CMD
     .command('render')
     .description('render a unit')
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
+    .option('--verbose', 'additional output', false)
     .action((opts: any) => doRender(opts))
 
 let t0 = Date.now()
@@ -131,7 +132,7 @@ function doProperties(opts: any) {
 
 function doRender(opts: any) {
     const ud = mkUnit(opts, 'rendering')
-    console.log(Render.exec(ud))
+    console.log(Render.exec(ud, opts.verbose))
 }
 
 function getRootDir() {
