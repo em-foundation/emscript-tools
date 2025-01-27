@@ -48,7 +48,7 @@ export function addSetup(name: string) {
 
 export function addWorkspace() {
     let path = Path.join(root_dir, ROOT_INI_FILE)
-    if (!Fs.existsSync(path)) Err.fail(`can't find '${ROOT_INI_FILE}'`)
+    if (!Fs.existsSync(path)) Err.fail(`can't find '${root_dir}/${ROOT_INI_FILE}'`)
     addWorkspaceProps(path)
     path = Path.join(root_dir, LOCAL_INI_FILE)
     if (!Fs.existsSync(path)) return

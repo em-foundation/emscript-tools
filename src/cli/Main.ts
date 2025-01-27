@@ -73,7 +73,7 @@ function doBuild(opts: any): void {
         return
     }
     const setup = (opts.setupProperties ? opts.setupProperties : '') as string
-    Session.activate(getRoot(), Session.Mode.BUILD, setup)
+    Session.activate(getRootDir(), Session.Mode.BUILD, setup)
     console.log(`building '${Session.mkUid(upath)}' ...`)
     console.log(`    using setup '${Props.getSetup()}' with board '${Props.getBoardKind()}'`)
     Meta.parse(upath)
@@ -95,16 +95,12 @@ function doBuild(opts: any): void {
 }
 
 function doClean(opts: any): void {
-    Session.activate(getRoot(), Session.Mode.CLEAN)
+    Session.activate(getRootDir(), Session.Mode.CLEAN)
     console.log('cleaned')
 }
 
 function doFormat(opts: any): void {
     Format.exec(opts.unit)
-}
-
-function doMarkdown(opts: any) {
-    Markdown.generate(opts.package, opts.outdir)
 }
 
 function doLoad(upath: string) {
@@ -117,6 +113,11 @@ function doLoad(upath: string) {
     console.log('done')
 }
 
+function doMarkdown(opts: any) {
+    Session.activate(getRootDir(), Session.Mode.BUILD)
+    Markdown.generate(opts.package, opts.outdir)
+}
+
 function doParse(opts: any): void {
     const ud = mkUnit(opts, 'parsing')
     ud.sf.statements.forEach(stmt => Ast.printTree(stmt, '    '))
@@ -124,16 +125,16 @@ function doParse(opts: any): void {
 
 function doProperties(opts: any) {
     const setup = (opts.setupProperties ? opts.setupProperties : '') as string
-    Session.activate(getRoot(), Session.Mode.PROPS, setup)
+    Session.activate(getRootDir(), Session.Mode.PROPS, setup)
     Props.print()
 }
 
 function doRender(opts: any) {
     const ud = mkUnit(opts, 'rendering')
-    Render.exec(ud)
+    console.log(Render.exec(ud))
 }
 
-function getRoot() {
+function getRootDir() {
     return Path.resolve(CMD.opts().root)
 }
 
@@ -143,7 +144,7 @@ function mkDelta(): string {
 
 function mkUnit(opts: any, action: string): Unit.Desc {
     const upath = opts.unit
-    Session.activate(getRoot(), Session.Mode.BUILD)
+    Session.activate(getRootDir(), Session.Mode.BUILD)
     const uid = Session.mkUid(upath)
     console.log(`${action} '${uid}' ...`)
     Meta.parse(upath)
