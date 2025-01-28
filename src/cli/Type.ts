@@ -19,6 +19,7 @@ const builtins = new Set<string>([
     'u16',
     'u32',
     'text_t',
+    'volatile_t'
 ])
 
 export const UNKNOWN = '<<UNKNOWN>>'

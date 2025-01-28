@@ -4,6 +4,7 @@ import * as Ast from './Ast'
 import * as Unit from './Unit'
 
 const sufMap = new Map<string, string>([
+    ['Class', '#t'],
     ['Function', '#f'],
     ['Method', '#f'],
     ['TypeAlias', '#t']
@@ -15,10 +16,13 @@ const types = new Set<string>([
     'i8',
     'i16',
     'i32',
+    'ptr_t',
+    'ref_t',
     'text_t',
     'u8',
     'u16',
     'u32',
+    'volatile_t'
 ])
 
 export function exec(ud: Unit.Desc, verbose?: boolean): string {
