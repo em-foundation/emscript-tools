@@ -40,9 +40,16 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             }
             else if (Ts.isVariableStatement(stmt)) {
                 const dtxt = stmt.declarationList.declarations[0].getText(sf)
-                const m = dtxt.match(/^(\w+)\W+(\w+)\.\$clone\(.*\)$/)
-                if (!m) return
-                unitSet.add(m[1])
+                const mc = dtxt.match(/^(\w+)\W+(\w+)\.\$clone\(.*\)$/)
+                if (mc) {
+                    unitSet.add(mc[1])
+                    return
+                }
+                const md = dtxt.match(/^(\w+)\W+\$delegate\(.*\)$/)
+                if (md) {
+                    unitSet.add(md[1])
+                    return
+                }
             }
 
         })
