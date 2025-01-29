@@ -12,6 +12,8 @@ const PROP_DISTRO = 'em.lang.Distro'
 const PROP_EXTENDS = 'em.lang.SetupExtends'
 const PROP_REQUIRES = 'em.lang.PackageRequires'
 
+const PROP_TOOLS_HOME = 'em.build.ToolsHome'
+
 const SETUP_SEP = '://'
 
 type PkgList = Array<string>
@@ -44,6 +46,19 @@ export function addSetup(name: string) {
     const sa = name.split(SETUP_SEP)
     const path = Path.join(root_dir, sa[0], `setup-${sa[1]}.ini`)
     addWorkspaceProps(path)
+}
+
+export function addToolsHome() {
+    if (cur_props.has(PROP_TOOLS_HOME)) return;
+    const HOME_DIR = (process.env['HOME'] ? process.env['HOME'] : process.env['USERPROFILE'])!.replace(/\\/g, '/')
+    for (let ch of ['', '.']) {
+        let p = `${HOME_DIR}/${ch}emscript-sdk/tools`
+        if (Fs.existsSync(p)) {
+            cur_props.set(PROP_TOOLS_HOME, p)
+            return
+        }
+    }
+    Err.fail('no tools directory configured or found')
 }
 
 export function addWorkspace() {

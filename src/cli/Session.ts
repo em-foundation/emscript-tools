@@ -1,6 +1,7 @@
 import * as Fs from 'fs'
 import * as Path from 'path'
 
+import * as Err from './Err'
 import * as Props from './Props'
 
 export enum Mode {
@@ -25,6 +26,7 @@ export function activate(root: string, mode: Mode, setup?: string): void {
     Props.init(workDir, setup)
     if (setup) Props.addSetup(setup)
     Props.addWorkspace()
+    Props.addToolsHome()
     if (mode != Mode.BUILD && mode != Mode.CLEAN) return
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
     if (mode == Mode.CLEAN) return
