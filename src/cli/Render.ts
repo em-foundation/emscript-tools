@@ -76,7 +76,7 @@ function findUnits(sf: Ts.SourceFile): Set<string> {
         }
         else if (Ts.isVariableStatement(stmt)) {
             const dtxt = stmt.declarationList.declarations[0].getText(sf)
-            const m = dtxt.match(/^(\w+)\W+(\w+)\.\$clone\(.*\)$/)
+            const m = dtxt.match(/^(\w+)\W+\$clone\((\w+)\)$/)
             if (!m) return
             unitSet.add(m[1])
         }

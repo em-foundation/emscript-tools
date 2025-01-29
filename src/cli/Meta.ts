@@ -102,7 +102,7 @@ function expand(doneSet: Set<string>): Array<string> {
         ud.sf.statements.forEach((stmt) => {
             if (Ts.isVariableStatement(stmt)) {
                 const dtxt = stmt.declarationList.declarations[0].getText(ud.sf)
-                const m = dtxt.match(/^(\w+)\W+(\w+)\.\$clone\(.*\)$/)
+                const m = dtxt.match(/^(\w+)\W+\$clone\((\w+)\)$/)
                 if (!m) return
                 const xpath = `${Session.getBuildDir()}/${uid}__${m[1]}.em.ts`
                 ud.addImport(m[1], `${uid}__${m[1]}`)
@@ -209,7 +209,7 @@ function transpile(options: Ts.CompilerOptions) {
         src = src.replace('@$distro/', `../${Session.getDistro().bucket}/`)
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
-        src = src.replaceAll(/((\w+)) = \w+\.\$clone\(.*\);/g, `$1 = __importStar(require("../${uid}__$2.em"))`)
+        src = src.replaceAll(/((\w+)) = \$clone\((\w+)\);/g, `$1 = __importStar(require("../${uid}__$2.em"))`)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
     }
     const emFile = 'em.lang/emscript'
