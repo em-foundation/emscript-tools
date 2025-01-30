@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as Commander from 'commander'
 import * as ChildProc from 'child_process'
 import * as Crypto from 'crypto'
