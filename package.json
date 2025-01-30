@@ -24,7 +24,8 @@
         "vscode:prepublish": "npm run build-base -- --minify",
         "build-cli": "esbuild --bundle --external:vscode ./src/cli/Main --outdir=out/cli --platform=node --format=cjs",
         "build-ext": "esbuild --bundle --external:vscode ./src/ext/extension --outdir=out/ext --platform=node --format=cjs",
-        "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap ",
+        "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap && npm run cli-executable",
+        "cli-executable": "mkdir -p out/cli/bin && uglifyjs out/cli/Main.js -o out/cli/bin/emscript && chmod +x out/cli/bin/emscript",
         "watch": "npm run build-cli -- --sourcemap --watch"
     },
     "dependencies": {
@@ -38,7 +39,8 @@
         "@types/node": "^22.10.1",
         "@types/vscode": "^1.80.0",
         "tsx": "^4.19.2",
-        "typescript": "^5.7.2"
+        "typescript": "^5.7.2",
+        "uglify-js": "^3.19.3"
     },
     "extensionDependencies": [
         "vscode-icons-team.vscode-icons"
