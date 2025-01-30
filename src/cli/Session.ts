@@ -44,7 +44,15 @@ export function getDistro(): { package: string, bucket: string } {
 
 export function getShellPath(): string {
     // TODO -- infer path if necessary
-    return process.env['SHELL']!
+    if (process.env['SHELL']) {
+        return process.env.SHELL
+    } else if (Fs.existsSync('C:\\git\\usr\\bin\\bash.exe')) {
+        return 'C:\\git\\usr\\bin\\bash.exe'
+    } else if (process.env.COMSPEC) {
+        return process.env.COMSPEC
+    } else {
+        return ''
+    }
 }
 
 export function getUnits(): typeof $$units {
