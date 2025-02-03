@@ -2,7 +2,7 @@
     "name": "emscript",
     "displayName": "EM•Script",
     "description": "EM•Script platform tooling",
-    "version": "0.0.1",
+    "version": "26.0.1",
     "publisher": "the-em-foundation",
     "icon": "images/em-icon.png",
     "license": "MIT",
@@ -22,6 +22,7 @@
     "main": "./out/ext/extension",
     "scripts": {
         "vscode:prepublish": "npm run build-base -- --minify",
+        "build-base": "esbuild --bundle --external:vscode src/extension.ts --outdir=out --platform=node --format=cjs",
         "build-cli": "esbuild --bundle --external:vscode ./src/cli/Main --outdir=out/cli --platform=node --format=cjs",
         "build-ext": "esbuild --bundle --external:vscode ./src/ext/extension --outdir=out/ext --platform=node --format=cjs",
         "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap ",
