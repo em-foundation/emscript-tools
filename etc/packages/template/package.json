@@ -1,0 +1,14 @@
+{
+  "name": "@NAME",
+  "version": "@VERS",
+  "scripts": {
+    "install": "node scripts/install.js"
+  },
+  "dependencies": {
+    "adm-zip": "0.5.7"
+  },
+  "files": [
+    "dist",
+    "scripts"
+  ]
+}
