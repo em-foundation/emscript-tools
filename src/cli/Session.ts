@@ -16,6 +16,9 @@ let projDir: string
 let workDir: string
 let buildDir: string
 
+let vers = '@VERS'
+if (vers[0] == '@') vers = '0.0.0.' + new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -5)
+
 let $$units = new Map<string, any>()
 
 export function activate(root: string, mode: Mode, setup?: string): void {
@@ -69,4 +72,8 @@ export function mkUid(upath: string): string {
 
 export function setUnits(umap: typeof $$units) {
     $$units = umap
+}
+
+export function version(): string {
+    return vers
 }

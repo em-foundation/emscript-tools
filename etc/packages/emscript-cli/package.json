@@ -1,0 +1,7 @@
+{
+    "name": "emcript-cli",
+    "version": "@VERS",
+    "bin": {
+        "emscript": "./emscript.sh"
+    }
+}

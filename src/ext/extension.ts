@@ -36,7 +36,7 @@ export async function activate(context: Vsc.ExtensionContext) {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
     })
 
-    Vsc.window.showInformationMessage("EM•Script activated")
+    Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersion()} ]`)
 }
 
 async function refreshIcons() {

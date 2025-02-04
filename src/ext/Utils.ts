@@ -55,6 +55,10 @@ export function getExtRoot(): string {
     return Vsc.extensions.getExtension(EXTENSION_ID)!.extensionPath
 }
 
+export function getVersion(): string {
+    return Session.version()
+}
+
 export function isPackage(path: string): boolean {
     if (!Fs.existsSync(path)) return false;
     if (!Fs.statSync(path).isDirectory()) return false;

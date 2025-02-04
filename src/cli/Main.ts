@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as Commander from 'commander'
 import * as ChildProc from 'child_process'
 import * as Crypto from 'crypto'
@@ -20,7 +22,7 @@ let curTab = ""
 const CMD = new Commander.Command('emscript')
 
 CMD
-    .version("0.0.1")
+    .version(Session.version())
     .option('--root <dir>', 'project root directory', '..')
 CMD
     .command('build')

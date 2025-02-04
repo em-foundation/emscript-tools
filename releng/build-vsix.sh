@@ -6,7 +6,23 @@ VERS_FULL="${VERS}.${DATE}"
 
 rm -f emscript*.vsix
 
-npm version --no-git-tag-version --alow-same-version ${VERS}
+npm version --no-git-tag-version --allow-same-version ${VERS}
 
-#npx vsce package
-#mv emscript-${VERS}.vsix emscript-${VERS_FULL}.vsix
+cp -r etc/packages/emscript-cli build
+pushd build/emscript-cli
+sed -i "s/@VERS/${VERS}/" emscript.sh
+sed -i "s/@VERS/${VERS}/" package.json
+npm pack .
+cp *.tgz ../../emscript-cli.tgz
+popd
+
+npm run build
+sed -i "s/@VERS/${VERS_FULL}/" out/cli/Main.js
+sed -i "s/@VERS/${VERS_FULL}/" out/ext/extension.js
+
+npx vsce package
+mv emscript-${VERS}.vsix emscript-${VERS_FULL}.vsix
+
+cd build/emscript-sdk
+gh release upload v${VERS_FULL}  ../../*.vsix
+
