@@ -16,6 +16,9 @@ npm pack .
 cp *.tgz ../../emscript-cli.tgz
 popd
 
+cp etc/packages/sdk-tools/package.json package-tools.json
+sed -i "s/@VERS/${VERS}/" package-tools.json
+
 npm run build
 sed -i "s/@VERS/${VERS_FULL}/" out/cli/Main.js
 sed -i "s/@VERS/${VERS_FULL}/" out/ext/extension.js

@@ -1,6 +1,6 @@
 {
     "name": "emscript-sdk-tools",
-    "version": "@VERS",
+    "version": "26.0.1",
     "dependencies": {
         "ti-uniflash": "https://github.com/em-foundation/emscript-sdk/releases/download/npm-packages/ti-uniflash-8.5.0.tgz"
     }

@@ -1,8 +1,6 @@
 #! /bin/sh
 
-VERS=`sed -n '1p' VERSION-*`
 DATE=`sed -n '2p' VERSION-*`
-VERS_FULL="${VERS}.${DATE}"
 
 PKGS=etc/packages
 NPM=build/npm
@@ -30,5 +28,5 @@ mkdir ${NPM}
 make_package ti-uniflash
 
 pushd build/emscript-sdk
-gh release upload v${VERS_FULL} ../npm/*.tgz
+gh release upload npm-packages ../npm/*.tgz
 popd
