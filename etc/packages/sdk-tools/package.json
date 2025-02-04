@@ -1,0 +1,7 @@
+{
+    "name": "emscript-sdk-tools",
+    "version": "@VERS",
+    "dependencies": {
+        "ti-uniflash": "https://github.com/em-foundation/emscript-sdk/releases/download/v@FULL/ti-uniflash-8.5.0.tgz"
+    }
+}
