@@ -23,6 +23,8 @@ sed -i "s/@VERS/${VERS_FULL}/" out/ext/extension.js
 npx vsce package
 mv emscript-${VERS}.vsix emscript-${VERS_FULL}.vsix
 
+rm emscript-cli.tgz
+
 cd build/emscript-sdk
 gh release upload v${VERS_FULL}  ../../*.vsix
 

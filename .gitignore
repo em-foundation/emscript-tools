@@ -4,5 +4,6 @@
 /build/
 /node_modules/
 /out/
+/*.vsix
 
 /emscript-cli.tgz
