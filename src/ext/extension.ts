@@ -36,6 +36,8 @@ export async function activate(context: Vsc.ExtensionContext) {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
     })
 
+    await Utils.installCli()
+
     Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersion()} ]`)
 }
 

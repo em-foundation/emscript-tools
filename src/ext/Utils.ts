@@ -59,6 +59,14 @@ export function getVersion(): string {
     return Session.version()
 }
 
+export async function installCli() {
+    let path = Path.join(getExtRoot(), 'emscript-cli.tgz')
+    if (Fs.existsSync(path)) {
+        let proc = ChildProc.spawnSync('npm', ['install -g emscript-cli.tgz'], { cwd: getExtRoot(), shell: Session.getShellPath() })
+        if (proc.error) console.log(`*** install CLI failed: ${proc.error}`)
+    }
+}
+
 export function isPackage(path: string): boolean {
     if (!Fs.existsSync(path)) return false;
     if (!Fs.statSync(path).isDirectory()) return false;
