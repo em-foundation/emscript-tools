@@ -2,6 +2,7 @@
     "name": "emscript-sdk-tools",
     "version": "26.0.1",
     "dependencies": {
+        "segger-arm": "https://github.com/em-foundation/emscript-sdk/releases/download/npm-packages/segger-arm-8.22.1.tgz",
         "ti-uniflash": "https://github.com/em-foundation/emscript-sdk/releases/download/npm-packages/ti-uniflash-8.5.0.tgz"
     }
 }

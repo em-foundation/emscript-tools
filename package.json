@@ -24,14 +24,13 @@
         "build-base": "esbuild --bundle --external:vscode src/extension.ts --outdir=out --platform=node --format=cjs",
         "build-cli": "esbuild --bundle --external:vscode ./src/cli/Main --outdir=out/cli --platform=node --format=cjs",
         "build-ext": "esbuild --bundle --external:vscode ./src/ext/extension --outdir=out/ext --platform=node --format=cjs",
-        "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap && npm run cli-executable",
+        "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap",
         "cli-executable": "mkdir -p out/cli/bin && uglifyjs out/cli/Main.js -o out/cli/bin/emscript && chmod +x out/cli/bin/emscript",
         "watch": "npm run build-cli -- --sourcemap --watch"
     },
     "dependencies": {
         "@types/sprintf-js": "^1.1.4",
         "commander": "^8.3.0",
-        "emcript-cli": "file:emscript-cli.tgz",
         "json5": "^2.2.3",
         "sprintf-js": "1.1.3",
         "unescape-js": "^1.1.4"

@@ -29,5 +29,6 @@ mv emscript-${VERS}.vsix emscript-${VERS_FULL}.vsix
 rm emscript-cli.tgz
 
 cd build/emscript-sdk
-gh release upload v${VERS_FULL}  ../../*.vsix
+gh release upload v${VERS_FULL} ../../*.vsix
+gh release upload v${VERS_FULL} ../../package-tools.json
 

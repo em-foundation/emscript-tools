@@ -20,13 +20,14 @@ make_package() {
     pushd ${root}
     npm pack --pack-destination ..
     popd
+    pushd build/emscript-sdk
+    gh release upload npm-packages ../npm/${name}-${vers}.tgz
+    popd
 }
 
 rm -rf ${NPM}
 mkdir ${NPM}
 
+make_package segger-arm
 make_package ti-uniflash
 
-pushd build/emscript-sdk
-gh release upload npm-packages ../npm/*.tgz
-popd

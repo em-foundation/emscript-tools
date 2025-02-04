@@ -51,12 +51,10 @@ export function addSetup(name: string) {
 export function addToolsHome() {
     if (cur_props.has(PROP_TOOLS_HOME)) return;
     const HOME_DIR = (process.env['HOME'] ? process.env['HOME'] : process.env['USERPROFILE'])!.replace(/\\/g, '/')
-    for (let ch of ['', '.']) {
-        let p = `${HOME_DIR}/${ch}emscript-sdk/tools`
-        if (Fs.existsSync(p)) {
-            cur_props.set(PROP_TOOLS_HOME, p)
-            return
-        }
+    let p = `${HOME_DIR}/.emscript/tools`
+    if (Fs.existsSync(p)) {
+        cur_props.set(PROP_TOOLS_HOME, p)
+        return
     }
     Err.fail('no tools directory configured or found')
 }
