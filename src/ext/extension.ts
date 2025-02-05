@@ -7,7 +7,6 @@ import * as Vsc from 'vscode'
 export async function activate(context: Vsc.ExtensionContext) {
     console.log("emscript active")
 
-    await Utils.installCli()
     await Utils.installTools()
 
     await refreshIcons()
