@@ -7,6 +7,9 @@ import * as Vsc from 'vscode'
 export async function activate(context: Vsc.ExtensionContext) {
     console.log("emscript active")
 
+    await Utils.installCli()
+    await Utils.installTools()
+
     await refreshIcons()
     Utils.updateConfig()
     Utils.updateSettings('editor', 'tabCompletion', 'on')
@@ -35,8 +38,6 @@ export async function activate(context: Vsc.ExtensionContext) {
     Vsc.workspace.onDidSaveTextDocument((document) => {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
     })
-
-    await Utils.installCli()
 
     Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersion()} ]`)
 }

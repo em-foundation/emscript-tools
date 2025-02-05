@@ -63,8 +63,24 @@ export async function installCli() {
     let path = Path.join(getExtRoot(), 'emscript-cli.tgz')
     if (Fs.existsSync(path)) {
         let proc = ChildProc.spawnSync('npm', ['install -g emscript-cli.tgz'], { cwd: getExtRoot(), shell: Session.getShellPath() })
-        if (proc.error) console.log(`*** install CLI failed: ${proc.error}`)
+        if (proc.error) console.log(`*** installCli failed: ${proc.error}`)
     }
+}
+
+export async function installTools() {
+    const homeDir = Path.join((process.env['HOME'] ? process.env['HOME'] : process.env['USERPROFILE'])!.replace(/\\/g, '/'), '.emscript')
+    const versFile = Path.join(homeDir, '.version')
+    let vers = Session.version()
+    if (vers.startsWith('0.0.0')) return
+    let clean = Fs.existsSync(versFile) && String(Fs.readFileSync(versFile, 'utf-8')) == vers
+    if (clean) return
+    Vsc.window.showInformationMessage('updating EM•Script...')
+    if (Fs.existsSync(homeDir)) Fs.rmdirSync(homeDir, { recursive: true })
+    Fs.mkdirSync(homeDir)
+    Fs.writeFileSync(versFile, Session.version(), 'utf-8')
+    Fs.copyFileSync(Path.join(getExtRoot(), 'package-tools.json'), Path.join(homeDir, 'package.json'))
+    let proc = ChildProc.spawnSync('npm', ['install'], { cwd: homeDir, shell: Session.getShellPath() })
+    if (proc.error) console.log(`*** installTools failed: ${proc.error}`)
 }
 
 export function isPackage(path: string): boolean {
