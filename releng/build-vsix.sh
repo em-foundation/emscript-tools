@@ -10,30 +10,21 @@ rm -f emscript*.vsix
 
 npm version --no-git-tag-version --allow-same-version ${VERS}
 
-cp -r etc/packages/emscript-cli build
-pushd build/emscript-cli
-sed -i "s/@VERS/${VERS}/" emscript.sh
-sed -i "s/@VERS/${VERS}/" package.json
-npm pack .
-cp *.tgz ../../emscript-cli.tgz
-popd
-
-cp etc/packages/sdk-tools/package.json package-tools.json
-sed -i "s/@VERS/${VERS}/" package-tools.json
-
 npm run build
 sed -i "s/@VERS/${VERS_FULL}/" out/cli/Main.js
 sed -i "s/@VERS/${VERS_FULL}/" out/ext/extension.js
 
 npx vsce package
 mv emscript-${VERS}.vsix emscript-${VERS_FULL}.vsix
-
-rm emscript-cli.tgz
-
 cp *.vsix ${SDK}/emscript.vsix
-cp package-tools.json ${SDK}/package.json
 
-## cd build/emscript-sdk
-## gh release upload v${VERS_FULL} ../../*.vsix
-## gh release upload v${VERS_FULL} ../../package-tools.json
-
+cp -r etc/packages/emscript-cli build
+pushd build/emscript-cli
+sed -i "s/@VERS/${VERS}/" package.json
+mkdir -p bin
+cp ../../out/cli/Main.js bin/main.js
+chmod +x bin/main.js
+npm pack .
+rm -f ../../${SDK}/emscript-cli.tgz
+cp *.tgz ../../${SDK}/emscript-cli.tgz
+popd

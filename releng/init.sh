@@ -19,5 +19,6 @@ pushd build
 git clone --depth 1 -b main https://github.com/em-foundation/emscript-sdk.git
 cd emscript-sdk
 cp ../../CHANGELOG.md .
-## gh release create v${VERS_FULL} --notes-file ../../CHANGELOG.md --prerelease
+rm -f VERSION-*
+cp ../../VERSION-* .
 popd

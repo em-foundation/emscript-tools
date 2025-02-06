@@ -2,6 +2,15 @@
     "name": "emscript-cli",
     "version": "@VERS",
     "bin": {
-        "emscript": "./emscript.sh"
+        "emscript": "./bin/main.js"
+    },
+    "dependencies": {
+        "@types/sprintf-js": "^1.1.4",
+        "commander": "^8.3.0",
+        "json5": "^2.2.3",
+        "sprintf-js": "1.1.3",
+        "unescape-js": "^1.1.4",
+        "segger-arm": "https://github.com/em-foundation/emscript-sdk/releases/download/npm-packages/segger-arm-8.22.1.tgz",
+        "ti-uniflash": "https://github.com/em-foundation/emscript-sdk/releases/download/npm-packages/ti-uniflash-8.7.0.tgz"
     }
 }
