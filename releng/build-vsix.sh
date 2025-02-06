@@ -4,6 +4,8 @@ VERS=`sed -n '1p' VERSION-*`
 DATE=`sed -n '2p' VERSION-*`
 VERS_FULL="${VERS}.${DATE}"
 
+SDK=build/emscript-sdk
+
 rm -f emscript*.vsix
 
 npm version --no-git-tag-version --allow-same-version ${VERS}
@@ -28,7 +30,10 @@ mv emscript-${VERS}.vsix emscript-${VERS_FULL}.vsix
 
 rm emscript-cli.tgz
 
-cd build/emscript-sdk
-gh release upload v${VERS_FULL} ../../*.vsix
-gh release upload v${VERS_FULL} ../../package-tools.json
+cp *.vsix ${SDK}/emscript.vsix
+cp package-tools.json ${SDK}/package.json
+
+## cd build/emscript-sdk
+## gh release upload v${VERS_FULL} ../../*.vsix
+## gh release upload v${VERS_FULL} ../../package-tools.json
 

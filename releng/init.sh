@@ -18,5 +18,6 @@ mkdir build
 pushd build
 git clone --depth 1 -b main https://github.com/em-foundation/emscript-sdk.git
 cd emscript-sdk
-gh release create v${VERS_FULL} --notes-file ../../CHANGELOG.md --prerelease
+cp ../../CHANGELOG.md .
+## gh release create v${VERS_FULL} --notes-file ../../CHANGELOG.md --prerelease
 popd
