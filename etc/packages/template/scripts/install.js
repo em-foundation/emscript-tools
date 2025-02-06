@@ -16,8 +16,7 @@ const ZIP_FILE = Path.join(DIST_DIR, `${PLAT_ARCH}.zip`)
 if (!Fs.existsSync(ZIP_FILE)) throw `no support for ${PLAT_ARCH}: can't find ${ZIP_FILE}`
 
 if (Fs.existsSync(TARG_DIR)) Fs.rmSync(TARG_DIR, { recursive: true })
-if (!Fs.existsSync(TOOLS_DIR)) Fs.mkdirSync(TOOLS_DIR)
-Fs.mkdirSync(TARG_DIR)
+Fs.mkdirSync(TARG_DIR, { recursive: true })
 
 let zip = new Zip(ZIP_FILE)
 zip.extractAllTo(TARG_DIR, true, true)
