@@ -110,7 +110,11 @@ function doClean(opts: any): void {
 
 function doConfig(opts: any) {
     const file = Path.join(getRootDir(), 'tsconfig.json')
-    const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))
+    const json: any = {
+        extends: "./tsconfig.base.json",
+        compilerOptions: {
+        }
+    }
     json.compilerOptions.paths = { "@$$emscript": ["./workspace/em.core/em.lang/emscript"] }
     Session.activate(getRootDir(), Session.Mode.PROPS)
     const wdir = Session.getWorkDir()

@@ -7,8 +7,6 @@ import * as Vsc from 'vscode'
 export async function activate(context: Vsc.ExtensionContext) {
     console.log("emscript active")
 
-    await Utils.installTools()
-
     await refreshIcons()
     Utils.updateConfig()
     Utils.updateSettings('editor', 'tabCompletion', 'on')

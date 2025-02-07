@@ -59,32 +59,32 @@ export function getVersion(): string {
     return Session.version()
 }
 
-function installCli() {
-    let path = Path.join(getExtRoot(), 'emscript-cli.tgz')
-    if (Fs.existsSync(path)) {
-        const proc = ChildProc.spawnSync('npm', ['install -g emscript-cli.tgz'], { cwd: getExtRoot(), shell: Session.getShellPath() })
-        if (proc.error) console.log(`*** installCli failed: ${proc.error}`)
-    }
-    const proc = ChildProc.spawnSync('npm', ['install'], { cwd: rootPath(), shell: Session.getShellPath() })
-    if (proc.error) console.log(`*** installCli failed: ${proc.error}`)
-}
-
-export async function installTools() {
-    const homeDir = Path.join((process.env['HOME'] ? process.env['HOME'] : process.env['USERPROFILE'])!.replace(/\\/g, '/'), '.emscript')
-    const versFile = Path.join(homeDir, '.version')
-    let vers = Session.version()
-    if (vers.startsWith('0.0.0')) return
-    let clean = Fs.existsSync(versFile) && String(Fs.readFileSync(versFile, 'utf-8')) == vers
-    if (clean) return
-    Vsc.window.showInformationMessage('updating EM•Script...')
-    if (Fs.existsSync(homeDir)) Fs.rmdirSync(homeDir, { recursive: true })
-    Fs.mkdirSync(homeDir)
-    Fs.copyFileSync(Path.join(getExtRoot(), 'package-tools.json'), Path.join(homeDir, 'package.json'))
-    let proc = ChildProc.spawnSync('npm', ['install'], { cwd: homeDir, shell: Session.getShellPath() })
-    if (proc.error) console.log(`*** installTools failed: ${proc.error}`)
-    installCli()
-    Fs.writeFileSync(versFile, Session.version(), 'utf-8')
-}
+// function installCli() {
+//     let path = Path.join(getExtRoot(), 'emscript-cli.tgz')
+//     if (Fs.existsSync(path)) {
+//         const proc = ChildProc.spawnSync('npm', ['install -g emscript-cli.tgz'], { cwd: getExtRoot(), shell: Session.getShellPath() })
+//         if (proc.error) console.log(`*** installCli failed: ${proc.error}`)
+//     }
+//     const proc = ChildProc.spawnSync('npm', ['install'], { cwd: rootPath(), shell: Session.getShellPath() })
+//     if (proc.error) console.log(`*** installCli failed: ${proc.error}`)
+// }
+// 
+// export async function installTools() {
+//     const homeDir = Path.join((process.env['HOME'] ? process.env['HOME'] : process.env['USERPROFILE'])!.replace(/\\/g, '/'), '.emscript')
+//     const versFile = Path.join(homeDir, '.version')
+//     let vers = Session.version()
+//     if (vers.startsWith('0.0.0')) return
+//     let clean = Fs.existsSync(versFile) && String(Fs.readFileSync(versFile, 'utf-8')) == vers
+//     if (clean) return
+//     Vsc.window.showInformationMessage('updating EM•Script...')
+//     if (Fs.existsSync(homeDir)) Fs.rmdirSync(homeDir, { recursive: true })
+//     Fs.mkdirSync(homeDir)
+//     Fs.copyFileSync(Path.join(getExtRoot(), 'package-tools.json'), Path.join(homeDir, 'package.json'))
+//     let proc = ChildProc.spawnSync('npm', ['install'], { cwd: homeDir, shell: Session.getShellPath() })
+//     if (proc.error) console.log(`*** installTools failed: ${proc.error}`)
+//     installCli()
+//     Fs.writeFileSync(versFile, Session.version(), 'utf-8')
+// }
 
 export function isPackage(path: string): boolean {
     return Session.isPackage(path);
@@ -155,23 +155,10 @@ export async function newUnit(uri: Vsc.Uri, uks: string, content: string) {
 
 
 export function updateConfig(): void {
-    const file = Path.join(rootPath(), 'tsconfig.json')
-    const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))
-    json.compilerOptions.paths = { "@$$emscript": ["./workspace/em.core/em.lang/emscript"] }
-    let wdir = workPath()
-    Fs.readdirSync(wdir).forEach(f1 => {
-        let ppath = Path.join(wdir, f1);
-        if (isPackage(ppath)) Fs.readdirSync(ppath).forEach(f2 => {
-            let bpath = Path.join(ppath, f2);
-            if (Fs.statSync(bpath).isDirectory()) {
-                json.compilerOptions.paths[`@${f2}/*`] = [`./workspace/${f1}/${f2}/*`]
-            }
-        });
-    });
-    Session.activate(rootPath(), Session.Mode.PROPS)
-    const d = Session.getDistro()
-    json.compilerOptions.paths[`@$distro/*`] = [`./workspace/${d.package}/${d.bucket}/*`]
-    Fs.writeFileSync(file, JSON.stringify(json, null, 4), 'utf-8')
+    let main = Path.join(getExtRoot(), 'out/cli/Main.js')
+    let args = [main, 'config']
+    process.env['NODE_PATH'] = Path.join(getExtRoot(), 'node_modules')
+    ChildProc.spawnSync('node', args, { cwd: workPath() })
 }
 
 export async function updateSettings(sect: string, key: string, val: any) {

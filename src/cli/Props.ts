@@ -48,10 +48,9 @@ export function addSetup(name: string) {
     addWorkspaceProps(path)
 }
 
-export function addToolsHome() {
+export function addToolsHome(projDir: string) {
     if (cur_props.has(PROP_TOOLS_HOME)) return;
-    const HOME_DIR = (process.env['HOME'] ? process.env['HOME'] : process.env['USERPROFILE'])!.replace(/\\/g, '/')
-    let p = `${HOME_DIR}/.emscript/tools`
+    let p = `${projDir}/tools`
     if (Fs.existsSync(p)) {
         cur_props.set(PROP_TOOLS_HOME, p)
         return

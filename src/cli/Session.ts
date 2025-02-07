@@ -22,19 +22,20 @@ if (vers[0] == '@') vers = '0.0.0.' + new Date().toISOString().replace(/[^0-9]/g
 let $$units = new Map<string, any>()
 
 export function activate(root: string, mode: Mode, setup?: string): void {
-    projDir = root
-    workDir = Path.join(projDir, 'workspace').replaceAll(/\\/g, '/')
-    buildDir = Path.join(workDir, '.emscript').replaceAll(/\\/g, '/')
+    projDir = root.replaceAll(/\\/g, '/')
+    workDir = `${projDir}/workspace`
+    buildDir = `${workDir}/.emscript`
     process.chdir(projDir)
     Props.init(workDir, setup)
     if (setup) Props.addSetup(setup)
     Props.addWorkspace()
-    Props.addToolsHome()
+    Props.addToolsHome(projDir)
     if (mode != Mode.BUILD && mode != Mode.CLEAN) return
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
     if (mode == Mode.CLEAN) return
     Fs.mkdirSync(buildDir)
     Props.saveProps(Path.join(buildDir, 'props.json'))
+    process.chdir(root)
 }
 
 export function getBuildDir(): string {
