@@ -11,9 +11,10 @@ make_package() {
     root=${NPM}/${name}
     mkdir ${root}
     cp -r ${PKGS}/template/* ${root}
-    sed -i "s/@NAME/${name}/" ${root}/scripts/install.js
-    sed -i "s/@NAME/${name}/" ${root}/package.json
-    sed -i "s/@VERS/${vers}/" ${root}/package.json
+    sed -i '' "s/@NAME/${name}/" "${root}/scripts/install.js"
+    sed -i '' "s/@NAME/${name}/" "${root}/package.json"
+    sed -i '' "s/@VERS/${vers}/" "${root}/package.json"
+    mkdir ${root}/dist
     cp ${PKGS}/${name}/*.zip ${root}/dist
     cp ${PKGS}/${name}/LICENSE ${root}/dist
     touch ${root}/dist/VERSION-${vers}.${DATE}
