@@ -12,10 +12,6 @@ git push origin ${VERS_FULL}
 popd
 
 pushd ${SDK}
-git submodule update --remote --checkout emscript-content
-cd emscript-content
-git checkout ${VERS_FULL}
-cd ..
 git add .
 git commit -m "version ${VERS_FULL}"
 git push
