@@ -18,10 +18,9 @@ make_package() {
     cp ${PKGS}/${name}/LICENSE ${root}/dist
     touch ${root}/dist/VERSION-${vers}.${DATE}
     pushd ${root}
-    npm pack --pack-destination ..
-    popd
-    pushd build/emscript-sdk
-    gh release upload npm-packages ../npm/${name}-${vers}.tgz
+    npm pack
+    gh release delete-asset resources *.tgz --repo em-foundation/npm-packages -y || true
+    gh release upload resources *.tgz --repo em-foundation/npm-packages
     popd
 }
 

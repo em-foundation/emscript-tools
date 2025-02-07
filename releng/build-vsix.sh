@@ -25,6 +25,11 @@ mkdir -p bin
 cp ../../out/cli/Main.js bin/main.js
 chmod +x bin/main.js
 npm pack .
-rm -f ../../${SDK}/emscript-cli.tgz
-cp *.tgz ../../${SDK}/emscript-cli.tgz
+mv *.tgz emscript-cli-${VERS_FULL}.tgz
+gh release delete-asset resources *.tgz --repo em-foundation/npm-packages -y || true
+gh release upload resources *.tgz --repo em-foundation/npm-packages
 popd
+
+
+## rm -f ../../${SDK}/emscript-cli.tgz
+## cp *.tgz ../../${SDK}/emscript-cli.tgz
