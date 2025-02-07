@@ -7,3 +7,5 @@
 /*.vsix
 
 /emscript-cli.tgz
+
+/releng/gh-auth.txt
