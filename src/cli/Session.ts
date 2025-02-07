@@ -66,6 +66,14 @@ export function getWorkDir(): string {
     return workDir
 }
 
+export function isPackage(path: string): boolean {
+    if (!Fs.existsSync(path)) return false;
+    if (!Fs.statSync(path).isDirectory()) return false;
+    let ifile = Path.join(path, 'em-package.ini');
+    if (!Fs.existsSync(ifile)) return false;
+    return true;
+}
+
 export function mkUid(upath: string): string {
     return `${Path.basename(Path.dirname(upath))}/${Path.basename(upath, '.em.ts')}`
 }

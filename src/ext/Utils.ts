@@ -87,11 +87,7 @@ export async function installTools() {
 }
 
 export function isPackage(path: string): boolean {
-    if (!Fs.existsSync(path)) return false;
-    if (!Fs.statSync(path).isDirectory()) return false;
-    let ifile = Path.join(path, 'em-package.ini');
-    if (!Fs.existsSync(ifile)) return false;
-    return true;
+    return Session.isPackage(path);
 }
 
 export function isUnitFile(uri: Vsc.Uri): boolean {

@@ -7,6 +7,8 @@ import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Ts from 'typescript'
 
+import * as JSON5 from 'json5'
+
 import * as Ast from './Ast'
 import * as Format from './Format'
 import * as Markdown from './Markdown'
@@ -37,6 +39,10 @@ CMD
     .command('clean')
     .description('clean a bundle')
     .action((opts: any) => doClean(opts))
+CMD
+    .command('config')
+    .description('auto configure this project')
+    .action((opts: any) => doConfig(opts))
 CMD
     .command('fmt')
     .description('format a unit')
@@ -100,6 +106,26 @@ function doBuild(opts: any): void {
 function doClean(opts: any): void {
     Session.activate(getRootDir(), Session.Mode.CLEAN)
     console.log('cleaned')
+}
+
+function doConfig(opts: any) {
+    const file = Path.join(getRootDir(), 'tsconfig.json')
+    const json = JSON5.parse(Fs.readFileSync(file, 'utf-8'))
+    json.compilerOptions.paths = { "@$$emscript": ["./workspace/em.core/em.lang/emscript"] }
+    Session.activate(getRootDir(), Session.Mode.PROPS)
+    const wdir = Session.getWorkDir()
+    Fs.readdirSync(wdir).forEach(f1 => {
+        let ppath = Path.join(wdir, f1);
+        if (Session.isPackage(ppath)) Fs.readdirSync(ppath).forEach(f2 => {
+            let bpath = Path.join(ppath, f2);
+            if (Fs.statSync(bpath).isDirectory()) {
+                json.compilerOptions.paths[`@${f2}/*`] = [`./workspace/${f1}/${f2}/*`]
+            }
+        });
+    });
+    const d = Session.getDistro()
+    json.compilerOptions.paths[`@$distro/*`] = [`./workspace/${d.package}/${d.bucket}/*`]
+    Fs.writeFileSync(file, JSON.stringify(json, null, 4), 'utf-8')
 }
 
 function doFormat(opts: any): void {
