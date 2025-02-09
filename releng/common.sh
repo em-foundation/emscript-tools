@@ -1,8 +1,11 @@
 VERS=`sed -n '1p' VERSION-*`
 DATE=`sed -n '2p' VERSION-*`
-VERS_FULL="${VERS}.${DATE}"
+FULL="${VERS}.${DATE}"
+
+PKGS=etc/packages
 
 CLI=build/emscript-cli
+NPM=build/npm
 SDK=build/emscript-sdk
 
 sed_in_place() {

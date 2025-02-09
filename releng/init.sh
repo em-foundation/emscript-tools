@@ -3,12 +3,12 @@
 VERS='26.0.1'
 
 DATE=`date -u +%Y%m%d%H%M`
-VERS_FULL="${VERS}.${DATE}"
+FULL="${VERS}.${DATE}"
 
 rm -f VERSION-*
-touch VERSION-${VERS_FULL}
-echo "${VERS}" >> VERSION-${VERS_FULL}
-echo "${DATE}" >> VERSION-${VERS_FULL}
+touch VERSION-${FULL}
+echo "${VERS}" >> VERSION-${FULL}
+echo "${DATE}" >> VERSION-${FULL}
 
 cat releng/gh-auth.txt | gh auth login --with-token
 
