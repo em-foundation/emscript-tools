@@ -16,7 +16,7 @@ rm -rf build
 mkdir build
 
 pushd build
-git clone --depth 1 -b main https://github.com/em-foundation/emscript-sdk.git
+git clone --depth 1 -b staging https://github.com/em-foundation/emscript-sdk.git
 cd emscript-sdk
 cp ../../CHANGELOG.md .
 rm -f VERSION-*
