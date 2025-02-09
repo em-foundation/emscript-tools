@@ -2,6 +2,9 @@
 
 source releng/common.sh
 
+git tag $FULL
+git push origin $FULL
+
 pushd ../emscript-content
 git tag $FULL
 git push origin $FULL
