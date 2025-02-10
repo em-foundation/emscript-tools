@@ -12,7 +12,6 @@ sed_in_place "s/@VERS/$FULL/" out/ext/extension.js
 
 npx vsce package
 mv emscript-$VERS.vsix emscript-$FULL.vsix
-cp *.vsix $SDK/tools/emscript-vscode.vsix
 
 cp -r etc/packages/emscript-cli build
 pushd $CLI
