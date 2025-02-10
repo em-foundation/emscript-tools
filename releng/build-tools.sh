@@ -32,7 +32,6 @@ pushd $SDK
 sed_in_place "s/@VERS/$VERS/" package.json
 sed_in_place "s/@FULL/$FULL/" package.json
 npm install --package-lock-only --ignore-scripts
-rm -rf tools
-mkdir tools
-cp ../../*.vsix tools
+rm -f *.vsix
+cp ../../*.vsix .
 popd
