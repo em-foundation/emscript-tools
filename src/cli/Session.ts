@@ -9,6 +9,7 @@ export enum Mode {
     CLEAN,
     PARSE,
     PROPS,
+    ROOTS,
     UNITS,
 }
 
@@ -25,6 +26,7 @@ export function activate(root: string, mode: Mode, setup?: string): void {
     projDir = root.replaceAll(/\\/g, '/')
     workDir = `${projDir}/workspace`
     buildDir = `${workDir}/.emscript`
+    if (mode == Mode.ROOTS) return
     process.chdir(projDir)
     Props.init(workDir, setup)
     if (setup) Props.addSetup(setup)
