@@ -36,7 +36,13 @@ export async function activate(context: Vsc.ExtensionContext) {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
     })
 
-    Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersion()} ]`)
+    let sbi = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left)
+    let vers
+    sbi.text = `EM•Script v${Utils.getVers()}`
+    sbi.show()
+    context.subscriptions.push(sbi)
+
+    Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersFull()} ]`)
 }
 
 async function refreshIcons() {

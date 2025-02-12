@@ -55,36 +55,14 @@ export function getExtRoot(): string {
     return Vsc.extensions.getExtension(EXTENSION_ID)!.extensionPath
 }
 
-export function getVersion(): string {
-    return Session.version()
+export function getVers(): string {
+    const vers = Session.version()
+    return vers.slice(0, vers.lastIndexOf('.'))
 }
 
-// function installCli() {
-//     let path = Path.join(getExtRoot(), 'emscript-cli.tgz')
-//     if (Fs.existsSync(path)) {
-//         const proc = ChildProc.spawnSync('npm', ['install -g emscript-cli.tgz'], { cwd: getExtRoot(), shell: Session.getShellPath() })
-//         if (proc.error) console.log(`*** installCli failed: ${proc.error}`)
-//     }
-//     const proc = ChildProc.spawnSync('npm', ['install'], { cwd: rootPath(), shell: Session.getShellPath() })
-//     if (proc.error) console.log(`*** installCli failed: ${proc.error}`)
-// }
-// 
-// export async function installTools() {
-//     const homeDir = Path.join((process.env['HOME'] ? process.env['HOME'] : process.env['USERPROFILE'])!.replace(/\\/g, '/'), '.emscript')
-//     const versFile = Path.join(homeDir, '.version')
-//     let vers = Session.version()
-//     if (vers.startsWith('0.0.0')) return
-//     let clean = Fs.existsSync(versFile) && String(Fs.readFileSync(versFile, 'utf-8')) == vers
-//     if (clean) return
-//     Vsc.window.showInformationMessage('updating EM•Script...')
-//     if (Fs.existsSync(homeDir)) Fs.rmdirSync(homeDir, { recursive: true })
-//     Fs.mkdirSync(homeDir)
-//     Fs.copyFileSync(Path.join(getExtRoot(), 'package-tools.json'), Path.join(homeDir, 'package.json'))
-//     let proc = ChildProc.spawnSync('npm', ['install'], { cwd: homeDir, shell: Session.getShellPath() })
-//     if (proc.error) console.log(`*** installTools failed: ${proc.error}`)
-//     installCli()
-//     Fs.writeFileSync(versFile, Session.version(), 'utf-8')
-// }
+export function getVersFull(): string {
+    return Session.version()
+}
 
 export function isPackage(path: string): boolean {
     return Session.isPackage(path);
