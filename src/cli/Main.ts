@@ -83,7 +83,8 @@ function doBuild(opts: any): void {
     }
     const setup = (opts.setupProperties ? opts.setupProperties : '') as string
     Session.activate(getRootDir(), Session.Mode.BUILD, setup)
-    console.log(`building '${Session.mkUid(upath)}' ...`)
+    Props.bindProg(Session.mkUid(upath))
+    console.log(`building '${Props.getProg()}' ...`)
     console.log(`    using setup '${Props.getSetup()}' with board '${Props.getBoardKind()}'`)
     Meta.parse(upath)
     Meta.exec()
