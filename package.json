@@ -53,11 +53,11 @@
             },
             {
                 "command": "em.buildLoad",
-                "title": "EM•Script — Build and Load Program"
+                "title": "EM•Script — Build and Load"
             },
             {
                 "command": "em.buildMeta",
-                "title": "EM•Script — Build Meta Program only"
+                "title": "EM•Script — Build Meta-Program"
             },
             {
                 "command": "em.newComposite",
