@@ -52,6 +52,14 @@
                 "title": "EM•Script — Build"
             },
             {
+                "command": "em.buildLoad",
+                "title": "EM•Script — Build and Load Program"
+            },
+            {
+                "command": "em.buildMeta",
+                "title": "EM•Script — Build Meta Program only"
+            },
+            {
                 "command": "em.newComposite",
                 "title": "EM•Script - New Composite..."
             },
@@ -113,6 +121,14 @@
                     "when": "false"
                 },
                 {
+                    "command": "em.buildLoad",
+                    "when": "false"
+                },
+                {
+                    "command": "em.buildMeta",
+                    "when": "false"
+                },
+                {
                     "command": "em.newComposite",
                     "when": "false"
                 },
@@ -138,6 +154,16 @@
                     "command": "em.build",
                     "group": "ZZZemscript@2",
                     "when": "resourceFilename =~ /^.+\\.em\\.ts$/"
+                },
+                {
+                    "command": "em.buildLoad",
+                    "group": "ZZZemscript@2",
+                    "when": "resourceExtname == '.ts'"
+                },
+                {
+                    "command": "em.buildMeta",
+                    "group": "ZZZemscript@2",
+                    "when": "resourceExtname == '.ts'"
                 },
                 {
                     "command": "em.newComposite",
@@ -168,6 +194,16 @@
             "editor/context": [
                 {
                     "command": "em.build",
+                    "group": "ZZZem-builder@2",
+                    "when": "resourceExtname == '.ts'"
+                },
+                {
+                    "command": "em.buildLoad",
+                    "group": "ZZZem-builder@2",
+                    "when": "resourceExtname == '.ts'"
+                },
+                {
+                    "command": "em.buildMeta",
                     "group": "ZZZem-builder@2",
                     "when": "resourceExtname == '.ts'"
                 }

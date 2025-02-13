@@ -49,6 +49,11 @@ CMD
     .requiredOption('-u --unit <qualified-name>', '<package-name>/<bundle-name>/<unit-name>')
     .action((opts: any) => doFormat(opts))
 CMD
+    .command('load')
+    .description('load program')
+    .action((opts: any) => doLoad(opts))
+
+CMD
     .command('markdown')
     .description('generate markdown for a package')
     .requiredOption('-o, --outdir <dir>', 'output directory', '.')
@@ -83,8 +88,8 @@ function doBuild(opts: any): void {
     }
     const setup = (opts.setupProperties ? opts.setupProperties : '') as string
     Session.activate(getRootDir(), Session.Mode.BUILD, setup)
-    console.log(`building '${Session.mkUid(upath)}' ...`)
-    console.log(`    using setup '${Props.getSetup()}' with board '${Props.getBoardKind()}'`)
+    Props.bindProg(Session.mkUid(upath))
+    printProgress('building')
     Meta.parse(upath)
     Meta.exec()
     const unitCnt = Unit.units().size
@@ -100,7 +105,9 @@ function doBuild(opts: any): void {
     printSize(stdout)
     const t2 = mkDelta()
     console.log(`${curTab}done in ${t2} seconds`)
-    if (opts.load) doLoad(opts.unit)
+    if (!opts.load) return
+    printProgress('loading')
+    loadProg()
 }
 
 function doClean(opts: any): void {
@@ -136,14 +143,19 @@ function doFormat(opts: any): void {
     Format.exec(opts.unit)
 }
 
-function doLoad(upath: string) {
-    console.log(`loading '${Session.mkUid(upath)}'...`)
-    let proc = ChildProc.spawnSync('./load.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
-    if (proc.status != 0) {
-        console.error('*** loader failed')
+function doLoad(opts: any) {
+    Session.activate(getRootDir(), Session.Mode.ROOTS)
+    const file = Path.join(Session.getBuildDir(), '.PROG')
+    if (!Fs.existsSync(file)) {
+        console.error('*** no program found')
         process.exit(1)
     }
-    console.log('done')
+    const prog = Fs.readFileSync(file, 'utf-8')
+    Props.bindProg(prog)
+    const board = Fs.readFileSync(Path.join(Session.getBuildDir(), '.BOARD'), 'utf-8')
+    const setup = Fs.readFileSync(Path.join(Session.getBuildDir(), '.SETUP'), 'utf-8')
+    printProgress('loading', { setup: setup, board: board })
+    loadProg()
 }
 
 function doMarkdown(opts: any) {
@@ -167,6 +179,15 @@ function doRender(opts: any) {
     console.log(Render.exec(ud, opts.verbose))
 }
 
+function loadProg() {
+    let proc = ChildProc.spawnSync('./load.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
+    if (proc.status != 0) {
+        console.error('*** loader failed')
+        process.exit(1)
+    }
+    console.log('done')
+}
+
 function getRootDir() {
     return Path.resolve(CMD.opts().root)
 }
@@ -183,6 +204,14 @@ function mkUnit(opts: any, action: string): Unit.Desc {
     Meta.parse(upath)
     const ud = Unit.units().get(uid!)!
     return ud
+}
+
+function printProgress(label: string, using: { setup: string, board: string } | boolean = false) {
+    console.log(`${label} '${Props.getProg()}' ...`)
+    if (using === false) return
+    const board = using === true ? Props.getBoardKind() : using.board
+    const setup = using === true ? Props.getSetup() : using.setup
+    console.log(`    using setup '${setup}' with board '${board}'`)
 }
 
 function printSha32() {

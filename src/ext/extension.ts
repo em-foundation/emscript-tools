@@ -22,7 +22,11 @@ export async function activate(context: Vsc.ExtensionContext) {
         ],
     })
 
-    context.subscriptions.push(Vsc.commands.registerCommand("em.build", Cmd.build))
+
+    for (let cmd of ["em.build", "em.buildLoad", "em.buildMeta"]) {
+        context.subscriptions.push(Vsc.commands.registerCommand(cmd, (uri: Vsc.Uri) => Cmd.build(uri, cmd)))
+    }
+
     context.subscriptions.push(Vsc.commands.registerCommand("em.newComposite", Cmd.newComposite))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newInterface", Cmd.newInterface))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newModule", Cmd.newModule))
@@ -36,7 +40,13 @@ export async function activate(context: Vsc.ExtensionContext) {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
     })
 
-    Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersion()} ]`)
+    let sbi = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left)
+    let vers
+    sbi.text = `EM•Script v${Utils.getVers()}`
+    sbi.show()
+    context.subscriptions.push(sbi)
+
+    Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersFull()} ]`)
 }
 
 async function refreshIcons() {

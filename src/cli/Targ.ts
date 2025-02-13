@@ -1,13 +1,10 @@
 import * as ChildProc from 'child_process'
-import * as Fs from 'fs'
-import * as Path from 'path'
 import * as Ts from 'typescript'
 
-import * as Ast from './Ast'
 import * as Decl from './Decl'
 import * as Err from './Err'
-import * as Expr from './Expr'
 import * as Out from './Out'
+import * as Props from './Props'
 import * as Session from './Session'
 import * as Stmt from './Stmt'
 import * as Unit from './Unit'
@@ -142,6 +139,18 @@ function genMain() {
     Out.close()
 }
 
+function genMarkers() {
+    Out.open(`${Session.getBuildDir()}/.BOARD`)
+    Out.addText(Props.getBoardKind())
+    Out.close()
+    Out.open(`${Session.getBuildDir()}/.PROG`)
+    Out.addText(Props.getProg())
+    Out.close()
+    Out.open(`${Session.getBuildDir()}/.SETUP`)
+    Out.addText(Props.getSetup())
+    Out.close()
+}
+
 function genProxies(uid: string) {
     const ud = unitTab.get(uid)!
     const uobj = $$units.get(uid)
@@ -224,6 +233,7 @@ export function generate() {
     $$units = Session.getUnits()
     for (let k of $$units.keys()) genUnit(k)
     genMain()
+    genMarkers()
 }
 
 export function isBody() { return curCtx.gen == 'BODY' }

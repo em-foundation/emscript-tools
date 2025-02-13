@@ -10,6 +10,7 @@ const ROOT_INI_FILE = 'emscript.ini'
 const PROP_BOARD = 'em.lang.BoardKind'
 const PROP_DISTRO = 'em.lang.Distro'
 const PROP_EXTENDS = 'em.lang.SetupExtends'
+const PROP_PROG = 'em.lang.Prog'
 const PROP_REQUIRES = 'em.lang.PackageRequires'
 
 const PROP_TOOLS_HOME = 'em.build.ToolsHome'
@@ -89,6 +90,10 @@ function applyRequires(pm: PropMap) {
     reqs.split(', ').forEach(pn => addPackage(pn))
 }
 
+export function bindProg(prog: string) {
+    cur_props.set(PROP_PROG, prog)
+}
+
 export function getBoardKind(): string {
     return cur_props.get(PROP_BOARD)!
 }
@@ -101,6 +106,10 @@ export function getDistro() {
 
 export function getPackages(): PkgList {
     return cur_pkgs
+}
+
+export function getProg(): string {
+    return cur_props.get(PROP_PROG)!
 }
 
 export function getProps(): PropMap {
