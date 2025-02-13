@@ -22,7 +22,11 @@ export async function activate(context: Vsc.ExtensionContext) {
         ],
     })
 
-    context.subscriptions.push(Vsc.commands.registerCommand("em.build", Cmd.build))
+
+    for (let cmd of ["em.build", "em.buildLoad", "em.buildMeta"]) {
+        context.subscriptions.push(Vsc.commands.registerCommand(cmd, (uri: Vsc.Uri) => Cmd.build(uri, cmd)))
+    }
+
     context.subscriptions.push(Vsc.commands.registerCommand("em.newComposite", Cmd.newComposite))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newInterface", Cmd.newInterface))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newModule", Cmd.newModule))

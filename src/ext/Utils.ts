@@ -27,9 +27,9 @@ const loggerC = new class Logger {
     }
 }
 
-export function build(upath: string) {
+export function build(upath: string, opt: string) {
     let main = Path.join(getExtRoot(), 'out/cli/Main.js')
-    let args = [main, 'build', '-u', upath]
+    let args = [main, 'build', '-u', upath, opt]
     process.env['NODE_PATH'] = Path.join(getExtRoot(), 'node_modules')
     let proc = ChildProc.spawn('node', args, { cwd: workPath() })
     proc.stdout.setEncoding('utf8')

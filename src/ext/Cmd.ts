@@ -1,10 +1,11 @@
 import * as Utils from './Utils'
 import * as Vsc from 'vscode'
 
-export function build(uri: Vsc.Uri, opts: string[] = []) {
+export function build(uri: Vsc.Uri, cid: string) {
+    const opt = cid === 'em.buildLoad' ? '--load' : cid === 'em.buildMeta' ? '--meta' : ''
     if (Utils.isUnitFile(uri)) {
         let upath = Utils.mkUpath(uri)
-        Utils.build(upath)
+        Utils.build(upath, opt)
     }
     else {
         Vsc.window.showErrorMessage('not a unit')
