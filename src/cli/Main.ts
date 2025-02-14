@@ -89,7 +89,7 @@ function doBuild(opts: any): void {
     const setup = (opts.setupProperties ? opts.setupProperties : '') as string
     Session.activate(getRootDir(), Session.Mode.BUILD, setup)
     Props.bindProg(Session.mkUid(upath))
-    printProgress('building')
+    printProgress('building', true)
     Meta.parse(upath)
     Meta.exec()
     const unitCnt = Unit.units().size
