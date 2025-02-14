@@ -125,6 +125,7 @@ function genMain() {
     Out.print('%tem__done();\n')
     Out.print('%-}\n')
     Out.print('static void em__halt() {\n%+')
+    genSpecial(ubot, 'em$onexit', 'ALL')
     genSpecial(ubot, 'em$halt', 'FIRST')
     Out.print('%tem__done();\n')
     Out.print('%-}\n')
