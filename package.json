@@ -1,0 +1,232 @@
+{
+    "name": "emscript",
+    "displayName": "EM•Script",
+    "description": "EM•Script platform tooling",
+    "version": "26.0.1",
+    "publisher": "the-em-foundation",
+    "icon": "images/logo12.png",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/em-foundation/emscript-tools"
+    },
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "activationEvents": [
+        "workspaceContains:workspace/emscript.ini"
+    ],
+    "main": "./out/ext/extension",
+    "scripts": {
+        "build-base": "esbuild --bundle --external:vscode src/extension.ts --outdir=out --platform=node --format=cjs",
+        "build-cli": "esbuild --bundle --external:vscode ./src/cli/Main --outdir=out/cli --platform=node --format=cjs",
+        "build-ext": "esbuild --bundle --external:vscode ./src/ext/extension --outdir=out/ext --platform=node --format=cjs",
+        "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap",
+        "cli-executable": "mkdir -p out/cli/bin && uglifyjs out/cli/Main.js -o out/cli/bin/emscript && chmod +x out/cli/bin/emscript",
+        "watch": "npm run build-cli -- --sourcemap --watch"
+    },
+    "dependencies": {
+        "@types/sprintf-js": "^1.1.4",
+        "commander": "^8.3.0",
+        "json5": "^2.2.3",
+        "sprintf-js": "1.1.3",
+        "unescape-js": "^1.1.4"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.1",
+        "@types/vscode": "^1.80.0",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.2",
+        "uglify-js": "^3.19.3"
+    },
+    "extensionDependencies": [
+        "vscode-icons-team.vscode-icons"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "em.build",
+                "title": "EM•Script — Build"
+            },
+            {
+                "command": "em.buildLoad",
+                "title": "EM•Script — Build and Load"
+            },
+            {
+                "command": "em.buildMeta",
+                "title": "EM•Script — Build Meta-Program"
+            },
+            {
+                "command": "em.newComposite",
+                "title": "EM•Script - New Composite..."
+            },
+            {
+                "command": "em.newInterface",
+                "title": "EM•Script - New Interface..."
+            },
+            {
+                "command": "em.newModule",
+                "title": "EM•Script - New Module..."
+            },
+            {
+                "command": "em.newProgram",
+                "title": "EM•Script - New Program..."
+            },
+            {
+                "command": "em.newTemplate",
+                "title": "EM•Script - New Template..."
+            }
+        ],
+        "grammars": [
+            {
+                "language": "em-log",
+                "scopeName": "source.eml",
+                "path": "./etc/syntaxes/EmLog.tmLanguage.json"
+            }
+        ],
+        "languages": [
+            {
+                "id": "em",
+                "aliases": [
+                    "EM•Script",
+                    "EM",
+                    "Em",
+                    "em"
+                ],
+                "extensions": [
+                    ".em.ts"
+                ]
+            },
+            {
+                "id": "em-log",
+                "aliases": [
+                    "EmLog",
+                    "em-log"
+                ],
+                "extensions": [
+                    ".eml"
+                ],
+                "mimetypes": [
+                    "text/x-code-output"
+                ]
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "em.build",
+                    "when": "false"
+                },
+                {
+                    "command": "em.buildLoad",
+                    "when": "false"
+                },
+                {
+                    "command": "em.buildMeta",
+                    "when": "false"
+                },
+                {
+                    "command": "em.newComposite",
+                    "when": "false"
+                },
+                {
+                    "command": "em.newInterface",
+                    "when": "false"
+                },
+                {
+                    "command": "em.newModule",
+                    "when": "false"
+                },
+                {
+                    "command": "em.newProgram",
+                    "when": "false"
+                },
+                {
+                    "command": "em.newTemplate",
+                    "when": "false"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "em.build",
+                    "group": "ZZZemscript@2",
+                    "when": "resourceFilename =~ /^.+\\.em\\.ts$/"
+                },
+                {
+                    "command": "em.buildLoad",
+                    "group": "ZZZemscript@2",
+                    "when": "resourceExtname == '.ts'"
+                },
+                {
+                    "command": "em.buildMeta",
+                    "group": "ZZZemscript@2",
+                    "when": "resourceExtname == '.ts'"
+                },
+                {
+                    "command": "em.newComposite",
+                    "group": "ZZYemscript@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
+                    "command": "em.newInterface",
+                    "group": "ZZYemscript@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
+                    "command": "em.newModule",
+                    "group": "ZZYemscript@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
+                    "command": "em.newProgram",
+                    "group": "ZZYemscript@2",
+                    "when": "resourceFilename in ext.buckets"
+                },
+                {
+                    "command": "em.newTemplate",
+                    "group": "ZZYemscript@2",
+                    "when": "resourceFilename in ext.buckets"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "em.build",
+                    "group": "ZZZem-builder@2",
+                    "when": "resourceExtname == '.ts'"
+                },
+                {
+                    "command": "em.buildLoad",
+                    "group": "ZZZem-builder@2",
+                    "when": "resourceExtname == '.ts'"
+                },
+                {
+                    "command": "em.buildMeta",
+                    "group": "ZZZem-builder@2",
+                    "when": "resourceExtname == '.ts'"
+                }
+            ]
+        },
+        "semanticTokenScopes": [
+            {
+                "scopes": {
+                    "em-debug": [],
+                    "em-domain": [],
+                    "em-ident": [],
+                    "em-special": [],
+                    "em-unit": [],
+                    "em-wrong": []
+                }
+            }
+        ],
+        "themes": [
+            {
+                "label": "EM•Script Dark",
+                "uiTheme": "vs-dark",
+                "path": "etc/themes/em-dark-color-theme.json"
+            }
+        ]
+    }
+}

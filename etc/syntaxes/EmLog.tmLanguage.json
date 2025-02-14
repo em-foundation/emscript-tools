@@ -1,0 +1,51 @@
+{
+  "name": "EmLog",
+  "patterns": [
+    {
+      "include": "#break_line"
+    },
+    {
+      "include": "#error_line"
+    },
+    {
+      "include": "#info_line"
+    }
+  ],
+  "repository": {
+    "break_line": {
+      "name": "break.eml",
+      "match": "^[\\-]+"
+    },
+    "error_line": {
+      "name": "entry.eml",
+      "match": "^(.+)(E:)(.*)$",
+      "captures": {
+        "1": {
+          "name": "time.eml"
+        },
+        "2": {
+          "name": "tag.eml"
+        },
+        "3": {
+          "name": "error.eml"
+        }
+      }
+    },
+    "info_line": {
+      "name": "entry.eml",
+      "match": "^(.+)(I:)(.*)$",
+      "captures": {
+        "1": {
+          "name": "time.eml"
+        },
+        "2": {
+          "name": "tag.eml"
+        },
+        "3": {
+          "name": "info.eml"
+        }
+      }
+    }
+  },
+  "scopeName": "source.eml"
+}

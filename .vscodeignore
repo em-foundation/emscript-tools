@@ -1,0 +1,11 @@
+.history/**
+.vscode/**
+.junk/**
+build/**
+etc/packages/**
+releng/**
+src/**
+**/tsconfig.json
+
+.gitignore
+makefile
