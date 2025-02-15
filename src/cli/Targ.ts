@@ -24,11 +24,15 @@ let curCtx: Context = { gen: 'UNK' } as Context
 export function build(): string | null {
     try {
         const proc = ChildProc.spawnSync('./build.sh', [], { cwd: Session.getBuildDir(), shell: Session.getShellPath() })
-        if (proc?.error) {
+        if (proc.error) {
             console.log(`*** target build failed with error ${proc.error}`)
             return null
         }
-        return String(proc?.stdout)
+        if (proc.status && proc.status > 0) {
+            console.log(String(proc.stderr))
+            return null
+        }
+        return String(proc.stdout)
     } catch (err) {
         throw new Error('*** fatal exception: target build failed')
     }
