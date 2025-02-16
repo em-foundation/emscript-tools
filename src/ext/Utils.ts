@@ -131,6 +131,9 @@ export async function newUnit(uri: Vsc.Uri, uks: string, content: string) {
     Vsc.commands.executeCommand('vscode.open', Vsc.Uri.file(upath), { preview: true })
 }
 
+export function showVersion() {
+    Vsc.window.showInformationMessage(`EM•Script activated [ version ${getVersFull()} ]`)
+}
 
 export function updateConfig(): void {
     let main = Path.join(getExtRoot(), 'out/cli/Main.js')

@@ -40,9 +40,12 @@ export async function activate(context: Vsc.ExtensionContext) {
         if (document.fileName.endsWith(".em.ts")) Utils.format(document.fileName)
     })
 
+    context.subscriptions.push(Vsc.commands.registerCommand("em.showVersion", Utils.showVersion))
+
     let sbi = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left)
     let vers
     sbi.text = `EM•Script v${Utils.getVers()}`
+    sbi.command = "em.showVersion"
     sbi.show()
     context.subscriptions.push(sbi)
 
