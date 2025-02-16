@@ -78,6 +78,10 @@
             {
                 "command": "em.newTemplate",
                 "title": "EM•Script - New Template..."
+            },
+            {
+                "command": "em.version",
+                "title": "EM•Script - Show Version"
             }
         ],
         "grammars": [
