@@ -42,9 +42,9 @@ export function make(expr: Ts.Expression): string {
         const sa = txt.split('.')
         const etxt = expr.expression.getText(sf)
         // const DEBUG = sa[0] == 'a'
-        // const DEBUG = txt.startsWith('str.')
+        // const DEBUG = txt.startsWith('a._fiber')
         const DEBUG = false
-        if (DEBUG) console.log(txt)
+        if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
         if (sa[0] == '$R') {
             if (sa[sa.length - 1] == '$$') {
                 const mod = sa[1].match(/([A-Za-z]+)/)![1]
@@ -80,6 +80,11 @@ export function make(expr: Ts.Expression): string {
             if (sa.length == 2 && (tn.match(/^(ptr_t|ref_t)/))) {
                 return (sa[1] == '$$') ? `(*(${sa[0]}))` : `${sa[0]}.${sa[1]}`
             }
+            if (sa.length > 2 && etxt.endsWith('.$$')) {
+                const base = (expr.expression as Ts.PropertyAccessExpression).expression
+                return `${make(base)}->${expr.name.text}`
+            }
+
             return `${make(expr.expression)}.${expr.name.text}`
         }
     }
@@ -198,7 +203,7 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
 }
 
 function mkSelOp(tn: string): string {
-    let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|text))/
+    let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
     return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
 }
 
