@@ -38,6 +38,9 @@ export function make(expr: Ts.Expression): string {
         if (txt.startsWith('$')) return `em::${txt}`
         return txt
     }
+    else if (txt.startsWith('$implements')) {
+        return `/// ${txt}`
+    }
     else if (Ts.isPropertyAccessExpression(expr)) {
         const sa = txt.split('.')
         const etxt = expr.expression.getText(sf)

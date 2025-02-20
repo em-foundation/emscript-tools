@@ -144,6 +144,15 @@ export function factoryTransformer(cname: string): Ts.TransformerFactory<Ts.Sour
     }
 }
 
+export function implementsTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        const updatedStatements = sourceFile.statements.filter(stmt =>
+            !(Ts.isExpressionStatement(stmt) && stmt.getText(sourceFile).startsWith('$implements'))
+        )
+        return Ts.factory.updateSourceFile(sourceFile, updatedStatements)
+    }
+}
+
 function getDefaultValueForType(type: Ts.TypeNode | undefined): Ts.Expression | undefined {
     if (type) {
         if (Ts.isTypeReferenceNode(type)) {
