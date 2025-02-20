@@ -85,7 +85,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                     addTok(doc, builder, node.name, 'em-debug')
                     return
                 }
-                if (txt.startsWith('em.declare')) {
+                if (txt.match(/^em\.(declare|\$declare)/)) {
                     addTok(doc, builder, node.expression, 'em-ident')
                     addTok(doc, builder, node.name, 'em-ident')
                     return
