@@ -80,12 +80,18 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             }
             else if (Ts.isPropertyAccessExpression(node)) {
                 const txt = node.getText(sf)
-                if (!txt.match(/^em\.(fail|halt|printf|\$reg)/)) {
-                    Ts.forEachChild(node, visitNode);
+                if (txt.match(/^em\.(fail|halt|printf|\$reg)/)) {
+                    addTok(doc, builder, node.expression, 'em-debug')
+                    addTok(doc, builder, node.name, 'em-debug')
                     return
                 }
-                addTok(doc, builder, node.expression, 'em-debug')
-                addTok(doc, builder, node.name, 'em-debug')
+                if (txt.startsWith('em.declare')) {
+                    addTok(doc, builder, node.expression, 'em-ident')
+                    addTok(doc, builder, node.name, 'em-ident')
+                    return
+                }
+                Ts.forEachChild(node, visitNode);
+                return
             }
             else {
                 Ts.forEachChild(node, visitNode);
