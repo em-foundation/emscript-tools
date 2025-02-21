@@ -67,6 +67,23 @@ export function collectAliasInfo(node: Ts.Node): void {
     Ts.forEachChild(node, collectAliasInfo)
 }
 
+export function declareTransformer(uid: string): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        function visit(node: Ts.Node): Ts.Node {
+            if (Ts.isCallExpression(node) && node.expression.getText(sourceFile) == 'em.$declare') {
+                return Ts.factory.updateCallExpression(
+                    node,
+                    node.expression,
+                    node.typeArguments,
+                    [node.arguments[0]]
+                )
+            }
+            return Ts.visitEachChild(node, visit, context)
+        }
+        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
+
 export const exportTransformer: Ts.TransformerFactory<Ts.SourceFile> = () => {
     return (root) => {
         const decls: Ts.PropertyAssignment[] = []
@@ -141,6 +158,15 @@ export function factoryTransformer(cname: string): Ts.TransformerFactory<Ts.Sour
         }
 
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
+
+export function implementsTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        const updatedStatements = sourceFile.statements.filter(stmt =>
+            !(Ts.isExpressionStatement(stmt) && stmt.getText(sourceFile).startsWith('$implements'))
+        )
+        return Ts.factory.updateSourceFile(sourceFile, updatedStatements)
     }
 }
 
