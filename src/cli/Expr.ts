@@ -102,6 +102,8 @@ export function make(expr: Ts.Expression): string {
         if (dbg) return `${dbg}${make(expr.arguments[0])})`
         const printf = mkPrintf(expr)
         if (printf) return printf
+        const makeExit = mkExit(expr, txt)
+        if (makeExit) return makeExit
         const textVal = mkText(expr, txt)
         if (textVal) return textVal
         const makeCall = mkMakeCall(expr, txt)
@@ -178,12 +180,12 @@ export function make(expr: Ts.Expression): string {
 function mkDbg(expr: Ts.Expression, txt: string): string | null {
     if (!Ts.isElementAccessExpression(expr)) return null
     const sf = Targ.context().ud.sf
-    if (!txt.startsWith('em.$')) return null
     if (txt.startsWith('em.$reg')) {
         const m = txt.match(/^em\.(.+)\[/)
         const addr = make(expr.argumentExpression)
         return `*em::${m![1]}(${addr})`
     }
+    if (!(txt.startsWith('$') || txt.startsWith('em.$'))) return null
     const dbg = expr.argumentExpression.getText(sf)
     if (dbg.startsWith("'%%>")) return 'em_lang_Console::wr('
     const m = dbg.match(/^'\%\%([a-d])([-+:]?)'$/)
@@ -197,6 +199,12 @@ function mkDbg(expr: Ts.Expression, txt: string): string | null {
     ])
     const suf = op == ':' ? ', ' : ')'
     return `em_lang_Debug::${fxnMap.get(op)}(${id}${suf}`
+}
+
+function mkExit(expr: Ts.CallExpression, txt: string): string | null {
+    const m = txt.match(/^(fail|halt)\(/)
+    if (m == null) return null
+    return `em::${m[1]}()`
 }
 
 function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {

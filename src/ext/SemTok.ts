@@ -71,12 +71,11 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             }
             else if (Ts.isElementAccessExpression(node)) {
                 const txt = node.expression.getText(sf)
-                if (txt != 'em.$') {
-                    Ts.forEachChild(node, visitNode);
+                if (txt == '$' || txt == 'em.$') {
+                    addTok(doc, builder, node, 'em-debug')
                     return
                 }
-                visitNode(node.expression)
-                addTok(doc, builder, node.argumentExpression, 'em-debug')
+                Ts.forEachChild(node, visitNode);
             }
             else if (Ts.isPropertyAccessExpression(node)) {
                 const txt = node.getText(sf)
@@ -86,8 +85,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                     return
                 }
                 if (txt.match(/^em\.(declare|\$declare)/)) {
-                    addTok(doc, builder, node.expression, 'em-ident')
-                    addTok(doc, builder, node.name, 'em-ident')
+                    addTok(doc, builder, node, 'em-ident')
                     return
                 }
                 Ts.forEachChild(node, visitNode);
