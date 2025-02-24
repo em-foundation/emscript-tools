@@ -35,6 +35,7 @@ export function make(expr: Ts.Expression): string {
         return 'em::null'
     }
     else if (Ts.isIdentifier(expr)) {
+        if (txt == '$bkpt') return `asm volatile("bkpt")`
         if (txt.startsWith('$')) return `em::${txt}`
         return txt
     }
