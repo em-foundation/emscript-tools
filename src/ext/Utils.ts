@@ -5,6 +5,7 @@ import Vsc from "vscode";
 
 import * as JSON5 from 'json5'
 
+import * as Props from '../cli/Props'
 import * as Session from '../cli/Session'
 
 const EXT = ".em.ts"
@@ -24,6 +25,92 @@ const loggerC = new class Logger {
             if (ln.length) this.output.appendLine(`${mkTime()} ${kind}: ${ln.trimEnd()}`)
         })
         this.output.show(true)
+    }
+}
+
+abstract class StatusItem {
+    private static COMMENT = "## **** DO NOT EDIT THIS LINE ****"
+    private readonly key: string
+    private readonly pre: string
+    private readonly prop: string
+    private readonly status = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left)
+    private readonly title: string
+    constructor(key: string, prop: string, cmd: string, tip: string, title: string, pre: string) {
+        this.key = key
+        this.pre = pre
+        this.prop = prop
+        this.status.command = cmd
+        this.status.tooltip = tip
+        this.title = title
+    }
+    private display(name: string) {
+        this.status.text = `${this.title}: ${name}`
+        this.status.show()
+    }
+    get(): string {
+        let conf = Vsc.workspace.getConfiguration('emscript', Vsc.Uri.file(rootPath()))
+        return conf.get(this.key) ?? '<unknown>'
+    }
+    init(): void {
+        this.display(this.get())
+    }
+    abstract pickList(): string[]
+    set(name: string) {
+        this.display(name)
+        updateSettings('emscript', this.key, name)
+        let ppath = Path.join(workPath(), 'emscript-local.ini')
+        if (!Fs.existsSync(ppath)) return
+        let lines = Fs.readFileSync(ppath, 'utf-8').split('\n')
+        for (let i = 0; i < lines.length; i++) {
+            let ln = lines[i].trim()
+            if (!ln.endsWith(StatusItem.COMMENT)) break
+            if (!ln.startsWith(this.prop)) continue
+            lines.splice(i, 1)
+        }
+        if (name != '') {
+            lines.unshift(`${this.prop} = ${name}   ${StatusItem.COMMENT}`)
+        }
+        Fs.writeFileSync(ppath, lines.join('\n'))
+        this.setAux(name)
+    }
+    protected setAux(name: string) { }
+    trim(name: string): string {
+        return name.substring(this.pre.length).trim()
+    }
+}
+
+// export const boardC = new class Board extends StatusItem{
+//     private static PRE = '$(circuit-board)  '
+//     constructor() {
+//         super('board', Session.PROP_BOARD_KIND, 'em.bindBoard', 'EM board - click to edit', '$(circuit-board) Boards', Board.PRE)
+//     }
+//     pickList(): string[] {
+//         Session.activateSetup(rootPath(), setupC.get())
+//         let dpkg = Session.props.get(Session.PROP_DISTRO)
+//         if (!dpkg) return []
+//         let file = Session.findFile(`${dpkg}/em-boards`)
+//         if (!file) return []
+//         let yobj = Session.$EXPS.Yaml.load(String(Fs.readFileSync(file)))
+//         let bset = new Set<string>()
+//         Object.keys(yobj).filter(k => !(k.startsWith('$'))).forEach(k => bset.add(`${Board.PRE}${k}`))
+//         // TODO -- em-boards-local
+//         return Array.from(bset.keys()).sort()
+//     }
+// }
+// 
+export const setupC = new class Setup extends StatusItem {
+    private static PRE = '$(gear)  '
+    constructor() {
+        super('setup', Props.PROP_EXTENDS, 'em.bindSetup', 'Setup - click to edit', '$(gear) Setups', Setup.PRE)
+    }
+    pickList(): string[] {
+        return mkSetupNames().map(sn => `${Setup.PRE}${sn}`)
+    }
+    setAux(name: string) {
+        // boardC.set('')
+        Session.activate(rootPath(), Session.Mode.PROPS, name)
+        // let brd = Session.props.get(Session.PROP_BOARD_KIND)
+        // boardC.set(brd)
     }
 }
 
@@ -98,6 +185,19 @@ export function mkPackageNames(): string[] {
     return res;
 }
 
+function mkSetupNames(): string[] {
+    let res = new Array<string>();
+    const wpath = workPath()
+    for (const pkg of mkPackageNames()) {
+        for (const f of Fs.readdirSync(Path.join(wpath, pkg))) {
+            const m = f.match(/^setup-(.+)\.ini$/)
+            if (m == undefined) continue
+            res.push(`${pkg}://${m[1]}`)
+        }
+    }
+    return res
+}
+
 export function mkTime(): string {
     return (new Date).toISOString()
 }
@@ -143,6 +243,7 @@ export function updateConfig(): void {
 }
 
 export async function updateSettings(sect: string, key: string, val: any) {
+    console.log(`*** update ${sect}.${key}`)
     let conf = Vsc.workspace.getConfiguration(sect, Vsc.Uri.file(rootPath()))
     await conf.update(key, val, Vsc.ConfigurationTarget.Workspace)
 }
