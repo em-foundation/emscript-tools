@@ -13,6 +13,10 @@ const PROP_EXTENDS = 'em.lang.SetupExtends'
 const PROP_PROG = 'em.lang.Prog'
 const PROP_REQUIRES = 'em.lang.PackageRequires'
 
+const PROP_R_ADRFMT = 'em.regs.AdrFmt'
+const PROP_R_FLDFMT = 'em.regs.FldFmt'
+const PROP_R_REGFMT = 'em.regs.RegFmt'
+
 const PROP_TOOLS_HOME = 'em.build.ToolsHome'
 
 const SETUP_SEP = '://'
@@ -20,6 +24,11 @@ const SETUP_SEP = '://'
 type PkgList = Array<string>
 type PropMap = Map<string, string>
 type PropSet = Set<string>
+type RegInfo = {
+    adrFmt: string
+    fldFmt: string
+    regFmt: string
+}
 
 let cur_pkgs: PkgList = new Array
 let cur_props: PropMap = new Map
@@ -114,6 +123,14 @@ export function getProg(): string {
 
 export function getProps(): PropMap {
     return cur_props
+}
+
+export function getRegInfo(): RegInfo {
+    return {
+        adrFmt: cur_props.get(PROP_R_ADRFMT) ?? '',
+        regFmt: cur_props.get(PROP_R_REGFMT) ?? '',
+        fldFmt: cur_props.get(PROP_R_FLDFMT) ?? '',
+    }
 }
 
 export function getSetup(): string {

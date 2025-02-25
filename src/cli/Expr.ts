@@ -1,8 +1,8 @@
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
-import * as Err from './Err'
 import * as Config from './Config'
+import * as Props from './Props'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
@@ -50,18 +50,7 @@ export function make(expr: Ts.Expression): string {
         const DEBUG = false
         if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
         if (sa[0] == '$R') {
-            if (sa[sa.length - 1] == '$$') {
-                const mod = sa[1].match(/([A-Za-z]+)/)![1]
-                let idx = ''
-                if (sa.length == 5) {
-                    const e = sa[3].match(/\[(.+)\]/)![1]
-                    idx = ` + (${e}) * 4`
-                }
-                return `*em::$reg32(${sa[1]}_BASE + ${mod}_O_${sa[2]}${idx})`
-            }
-            else {
-                return sa[1]
-            }
+            return mkReg(sa)
         }
         else if (Config.getKind(expr.expression) != 'NONE') {
             return sa.join('.')
@@ -212,6 +201,25 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
     if (!txt.endsWith('.$make()')) return null
     if (!Ts.isPropertyAccessExpression(expr.expression)) return null
     return `${make(expr.expression.expression)}::$make()`
+}
+
+function mkReg(sa: string[]): string {
+    const info = Props.getRegInfo()
+    if (sa[sa.length - 1] == '$$') {
+        const mod = sa[1].match(/([A-Za-z]+)/)![1]
+        let idx = ''
+        if (sa.length == 5) {
+            const e = sa[3].match(/\[(.+)\]/)![1]
+            idx = ` + (${e}) * 4`
+        }
+        const adr = info.adrFmt.replaceAll('%m', sa[1])
+        const reg = info.regFmt.replaceAll('%m', mod).replaceAll('%r', sa[2])
+        return `*em::$reg32(${adr} + ${reg}${idx})`
+    }
+    else {
+        const fld = info.fldFmt.replaceAll('%f', sa[1])
+        return fld
+    }
 }
 
 function mkSelOp(tn: string): string {
