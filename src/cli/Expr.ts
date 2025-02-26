@@ -207,18 +207,19 @@ function mkReg(sa: string[]): string {
     const info = Props.getRegInfo()
     if (sa[sa.length - 1] == '$$') {
         const mod = sa[1].match(/([A-Za-z]+)/)![1]
-        let idx = ''
-        if (sa.length == 5) {
-            const e = sa[3].match(/\[(.+)\]/)![1]
-            idx = ` + (${e}) * 4`
+        const m = sa[1].match(/.+\[(.+)\]/)!
+        if (m != null) {
+            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', m[1]]])
+        } else if (sa.length == 5) {
+            const idx = sa[3].match(/\[(.+)\]/)![1]
+            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', idx]])
+        } else {
+            const adr = replace(info.adrFmt, [['%m', sa[1]]])
+            const reg = replace(info.regFmt, [['%m', mod], ['%r', sa[2]]])
+            return `*em::$reg32(${adr} + ${reg})`
         }
-        const adr = info.adrFmt.replaceAll('%m', sa[1])
-        const reg = info.regFmt.replaceAll('%m', mod).replaceAll('%r', sa[2])
-        return `*em::$reg32(${adr} + ${reg}${idx})`
-    }
-    else {
-        const fld = info.fldFmt.replaceAll('%f', sa[1])
-        return fld
+    } else {
+        return replace(info.fldFmt, [['%f', sa[1]]])
     }
 }
 
@@ -257,4 +258,12 @@ function mkText(expr: Ts.CallExpression, txt: string): string | null {
 export function mkTextVal(txt: string): string {
     const len = (unescapeJs(txt) as string).length
     return `em::text_t(${JSON.stringify(txt)}, ${len})`
+}
+
+function replace(fmt: string, subst: [string, string][]): string {
+    let res = fmt
+    for (const [s1, s2] of subst) {
+        res = res.replaceAll(s1, s2)
+    }
+    return res
 }

@@ -11,6 +11,7 @@ export const PROP_REQUIRES = 'em.lang.PackageRequires'
 
 export const PROP_R_ADRFMT = 'em.regs.AdrFmt'
 export const PROP_R_FLDFMT = 'em.regs.FldFmt'
+export const PROP_R_IDXFMT = 'em.regs.IdxFmt'
 export const PROP_R_REGFMT = 'em.regs.RegFmt'
 
 export const PROP_TOOLS_HOME = 'em.build.ToolsHome'
@@ -28,6 +29,7 @@ type PropSet = Set<string>
 type RegInfo = {
     adrFmt: string
     fldFmt: string
+    idxFmt: string
     regFmt: string
 }
 
@@ -129,8 +131,9 @@ export function getProps(): PropMap {
 export function getRegInfo(): RegInfo {
     return {
         adrFmt: cur_props.get(PROP_R_ADRFMT) ?? '',
-        regFmt: cur_props.get(PROP_R_REGFMT) ?? '',
         fldFmt: cur_props.get(PROP_R_FLDFMT) ?? '',
+        idxFmt: cur_props.get(PROP_R_IDXFMT) ?? '',
+        regFmt: cur_props.get(PROP_R_REGFMT) ?? '',
     }
 }
 
