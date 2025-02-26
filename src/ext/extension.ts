@@ -28,6 +28,7 @@ export async function activate(context: Vsc.ExtensionContext) {
         context.subscriptions.push(Vsc.commands.registerCommand(cmd, (uri: Vsc.Uri) => Cmd.build(uri, cmd)))
     }
 
+    context.subscriptions.push(Vsc.commands.registerCommand("em.bindBoard", Cmd.bindBoard))
     context.subscriptions.push(Vsc.commands.registerCommand("em.bindSetup", Cmd.bindSetup))
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.newComposite", Cmd.newComposite))
@@ -48,7 +49,7 @@ export async function activate(context: Vsc.ExtensionContext) {
     Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersFull()} ]`)
 
     let sbi = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left)
-    sbi.text = `EM•Script v${Utils.getVers()}`
+    sbi.text = `$(terminal) EM•Script v${Utils.getVers()}`
     sbi.command = "em.showVersion"
     sbi.show()
     context.subscriptions.push(sbi)
@@ -60,6 +61,8 @@ export async function activate(context: Vsc.ExtensionContext) {
             await Cmd.bindSetup()
         }
     }
+    console.log(`board = '${Utils.boardC.get()}'`)
+    Utils.boardC.init()
 }
 
 async function refreshIcons() {

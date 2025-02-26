@@ -29,8 +29,10 @@
         "watch": "npm run build-cli -- --sourcemap --watch"
     },
     "dependencies": {
+        "@types/js-yaml": "^4.0.9",
         "@types/sprintf-js": "^1.1.4",
         "commander": "^8.3.0",
+        "js-yaml": "^4.1.0",
         "json5": "^2.2.3",
         "sprintf-js": "1.1.3",
         "unescape-js": "^1.1.4"
@@ -62,6 +64,10 @@
             }
         },
         "commands": [
+            {
+                "command": "em.bindBoard",
+                "title": " EM•Script — Bind Board..."
+            },
             {
                 "command": "em.bindSetup",
                 "title": " EM•Script — Bind Setup..."
@@ -173,6 +179,11 @@
                 }
             ],
             "explorer/context": [
+                {
+                    "command": "em.bindBoard",
+                    "group": "ZZZemscript@2",
+                    "when": "resourceFilename == em-boards"
+                },
                 {
                     "command": "em.bindSetup",
                     "group": "ZZZemscript@2",

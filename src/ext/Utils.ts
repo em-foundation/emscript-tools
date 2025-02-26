@@ -1,7 +1,8 @@
 import ChildProc from 'child_process'
-import Fs from "fs";
-import Path from "path";
-import Vsc from "vscode";
+import Fs from 'fs'
+import Path from 'path'
+import Vsc from 'vscode'
+import Yaml from 'js-yaml'
 
 import * as JSON5 from 'json5'
 
@@ -44,18 +45,19 @@ abstract class StatusItem {
         this.title = title
     }
     private display(name: string) {
-        this.status.text = `${this.title}: ${name}`
+        this.status.text = `${this.title} – ${name}`
         this.status.show()
     }
     get(): string {
-        let conf = Vsc.workspace.getConfiguration('emscript', Vsc.Uri.file(rootPath()))
-        return conf.get(this.key) ?? '<unknown>'
+        const conf = Vsc.workspace.getConfiguration('emscript', Vsc.Uri.file(rootPath()))
+        const res = conf.get(this.key) as string
+        return res
     }
     init(): void {
         this.display(this.get())
     }
     abstract pickList(): string[]
-    set(name: string) {
+    async set(name: string) {
         this.display(name)
         updateSettings('emscript', this.key, name)
         let ppath = Path.join(workPath(), 'emscript-local.ini')
@@ -79,38 +81,38 @@ abstract class StatusItem {
     }
 }
 
-// export const boardC = new class Board extends StatusItem{
-//     private static PRE = '$(circuit-board)  '
-//     constructor() {
-//         super('board', Session.PROP_BOARD_KIND, 'em.bindBoard', 'EM board - click to edit', '$(circuit-board) Boards', Board.PRE)
-//     }
-//     pickList(): string[] {
-//         Session.activateSetup(rootPath(), setupC.get())
-//         let dpkg = Session.props.get(Session.PROP_DISTRO)
-//         if (!dpkg) return []
-//         let file = Session.findFile(`${dpkg}/em-boards`)
-//         if (!file) return []
-//         let yobj = Session.$EXPS.Yaml.load(String(Fs.readFileSync(file)))
-//         let bset = new Set<string>()
-//         Object.keys(yobj).filter(k => !(k.startsWith('$'))).forEach(k => bset.add(`${Board.PRE}${k}`))
-//         // TODO -- em-boards-local
-//         return Array.from(bset.keys()).sort()
-//     }
-// }
-// 
+export const boardC = new class Board extends StatusItem {
+    private static PRE = '$(circuit-board)  '
+    constructor() {
+        super('board', Props.PROP_BOARD, 'em.bindBoard', 'Board – click to edit', '$(circuit-board) Board', Board.PRE)
+    }
+    pickList(): string[] {
+        Session.activate(rootPath(), Session.Mode.PROPS, setupC.get())
+        const distro = Session.getDistro()
+        const file = Path.join(workPath(), distro.package, distro.bucket, 'em-boards')
+        if (!Fs.existsSync(file)) return []
+        let yobj = Yaml.load(String(Fs.readFileSync(file))) as Object
+        let bset = new Set<string>()
+        Object.keys(yobj).filter(k => !(k.startsWith('$'))).forEach(k => bset.add(`${Board.PRE}${k}`))
+        // TODO -- em-boards-local
+        return Array.from(bset.keys()).sort()
+    }
+}
+
 export const setupC = new class Setup extends StatusItem {
     private static PRE = '$(gear)  '
     constructor() {
-        super('setup', Props.PROP_EXTENDS, 'em.bindSetup', 'Setup - click to edit', '$(gear) Setups', Setup.PRE)
+        super('setup', Props.PROP_EXTENDS, 'em.bindSetup', 'Setup – click to edit', '$(gear) Setup', Setup.PRE)
     }
     pickList(): string[] {
         return mkSetupNames().map(sn => `${Setup.PRE}${sn}`)
     }
-    setAux(name: string) {
+    async setAux(name: string) {
         // boardC.set('')
         Session.activate(rootPath(), Session.Mode.PROPS, name)
-        // let brd = Session.props.get(Session.PROP_BOARD_KIND)
-        // boardC.set(brd)
+        const brd = Props.getBoardKind()
+        console.log(`setAux: ${name} ${brd}`)
+        await boardC.set(brd)
     }
 }
 
@@ -243,7 +245,6 @@ export function updateConfig(): void {
 }
 
 export async function updateSettings(sect: string, key: string, val: any) {
-    console.log(`*** update ${sect}.${key}`)
     let conf = Vsc.workspace.getConfiguration(sect, Vsc.Uri.file(rootPath()))
     await conf.update(key, val, Vsc.ConfigurationTarget.Workspace)
 }
