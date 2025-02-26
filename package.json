@@ -180,16 +180,6 @@
             ],
             "explorer/context": [
                 {
-                    "command": "em.bindBoard",
-                    "group": "ZZZemscript@2",
-                    "when": "resourceFilename == em-boards"
-                },
-                {
-                    "command": "em.bindSetup",
-                    "group": "ZZZemscript@2",
-                    "when": "resourceFilename =~ /^setup-.+\\.ini$/"
-                },
-                {
                     "command": "em.build",
                     "group": "ZZZemscript@2",
                     "when": "resourceFilename =~ /^.+\\.em\\.ts$/"

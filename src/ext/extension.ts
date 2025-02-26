@@ -54,6 +54,7 @@ export async function activate(context: Vsc.ExtensionContext) {
     sbi.show()
     context.subscriptions.push(sbi)
 
+    Utils.boardC.init()
     Utils.setupC.init()
     if (!Utils.setupC.get()) {
         let opts: Vsc.MessageOptions = { detail: "Click below to select a tooling setup", modal: true }
@@ -61,8 +62,6 @@ export async function activate(context: Vsc.ExtensionContext) {
             await Cmd.bindSetup()
         }
     }
-    console.log(`board = '${Utils.boardC.get()}'`)
-    Utils.boardC.init()
 }
 
 async function refreshIcons() {

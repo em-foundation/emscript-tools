@@ -108,10 +108,9 @@ export const setupC = new class Setup extends StatusItem {
         return mkSetupNames().map(sn => `${Setup.PRE}${sn}`)
     }
     async setAux(name: string) {
-        // boardC.set('')
+        boardC.set('')
         Session.activate(rootPath(), Session.Mode.PROPS, name)
         const brd = Props.getBoardKind()
-        console.log(`setAux: ${name} ${brd}`)
         await boardC.set(brd)
     }
 }
