@@ -14,6 +14,7 @@ export async function activate(context: Vsc.ExtensionContext) {
     Utils.updateSettings('workbench', 'colorTheme', 'EM•Script Dark')
     Utils.updateSettings('files', 'associations', {
         "*.em.ts": "typescript",
+        "em-boards": "yaml",
     })
 
     Vsc.languages.setLanguageConfiguration('typescript', {
@@ -26,6 +27,9 @@ export async function activate(context: Vsc.ExtensionContext) {
     for (let cmd of ["em.build", "em.buildLoad", "em.buildMeta"]) {
         context.subscriptions.push(Vsc.commands.registerCommand(cmd, (uri: Vsc.Uri) => Cmd.build(uri, cmd)))
     }
+
+    context.subscriptions.push(Vsc.commands.registerCommand("em.bindBoard", Cmd.bindBoard))
+    context.subscriptions.push(Vsc.commands.registerCommand("em.bindSetup", Cmd.bindSetup))
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.newComposite", Cmd.newComposite))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newInterface", Cmd.newInterface))
@@ -42,14 +46,22 @@ export async function activate(context: Vsc.ExtensionContext) {
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.showVersion", Utils.showVersion))
 
+    Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersFull()} ]`)
+
     let sbi = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left)
-    let vers
-    sbi.text = `EM•Script v${Utils.getVers()}`
+    sbi.text = `$(terminal) EM•Script v${Utils.getVers()}`
     sbi.command = "em.showVersion"
     sbi.show()
     context.subscriptions.push(sbi)
 
-    Vsc.window.showInformationMessage(`EM•Script activated [ version ${Utils.getVersFull()} ]`)
+    Utils.boardC.init()
+    Utils.setupC.init()
+    if (!Utils.setupC.get()) {
+        let opts: Vsc.MessageOptions = { detail: "Click below to select a tooling setup", modal: true }
+        if (await Vsc.window.showWarningMessage(`EM•Script Setups`, opts, 'Select...')) {
+            await Cmd.bindSetup()
+        }
+    }
 }
 
 async function refreshIcons() {
@@ -64,6 +76,7 @@ async function refreshIcons() {
     ], Vsc.ConfigurationTarget.Workspace)
     await conf.update('associations.files', [
         { icon: 'emunit', extensions: ['.em.ts', '.em-ts'], format: 'svg' },
+        { icon: 'emboards', extensions: ['em-boards', 'em-boards-local'], filename: true, format: 'svg' },
     ], Vsc.ConfigurationTarget.Workspace)
     await conf.update('customIconFolderPath', Path.join(Vsc.extensions.getExtension('the-em-foundation.emscript')!.extensionPath, 'etc'))
     Vsc.commands.executeCommand('vscode-icons.regenerateIcons')

@@ -1,10 +1,12 @@
 import ChildProc from 'child_process'
-import Fs from "fs";
-import Path from "path";
-import Vsc from "vscode";
+import Fs from 'fs'
+import Path from 'path'
+import Vsc from 'vscode'
+import Yaml from 'js-yaml'
 
 import * as JSON5 from 'json5'
 
+import * as Props from '../cli/Props'
 import * as Session from '../cli/Session'
 
 const EXT = ".em.ts"
@@ -24,6 +26,92 @@ const loggerC = new class Logger {
             if (ln.length) this.output.appendLine(`${mkTime()} ${kind}: ${ln.trimEnd()}`)
         })
         this.output.show(true)
+    }
+}
+
+abstract class StatusItem {
+    private static COMMENT = "## **** DO NOT EDIT THIS LINE ****"
+    private readonly key: string
+    private readonly pre: string
+    private readonly prop: string
+    private readonly status = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left)
+    private readonly title: string
+    constructor(key: string, prop: string, cmd: string, tip: string, title: string, pre: string) {
+        this.key = key
+        this.pre = pre
+        this.prop = prop
+        this.status.command = cmd
+        this.status.tooltip = tip
+        this.title = title
+    }
+    private display(name: string) {
+        this.status.text = `${this.title} – ${name}`
+        this.status.show()
+    }
+    get(): string {
+        const conf = Vsc.workspace.getConfiguration('emscript', Vsc.Uri.file(rootPath()))
+        const res = conf.get(this.key) as string
+        return res
+    }
+    init(): void {
+        this.display(this.get())
+    }
+    abstract pickList(): string[]
+    async set(name: string) {
+        this.display(name)
+        updateSettings('emscript', this.key, name)
+        let ppath = Path.join(workPath(), 'emscript-local.ini')
+        if (!Fs.existsSync(ppath)) return
+        let lines = Fs.readFileSync(ppath, 'utf-8').split('\n')
+        for (let i = 0; i < lines.length; i++) {
+            let ln = lines[i].trim()
+            if (!ln.endsWith(StatusItem.COMMENT)) break
+            if (!ln.startsWith(this.prop)) continue
+            lines.splice(i, 1)
+        }
+        if (name != '') {
+            lines.unshift(`${this.prop} = ${name}   ${StatusItem.COMMENT}`)
+        }
+        Fs.writeFileSync(ppath, lines.join('\n'))
+        this.setAux(name)
+    }
+    protected setAux(name: string) { }
+    trim(name: string): string {
+        return name.substring(this.pre.length).trim()
+    }
+}
+
+export const boardC = new class Board extends StatusItem {
+    private static PRE = '$(circuit-board)  '
+    constructor() {
+        super('board', Props.PROP_BOARD, 'em.bindBoard', 'Board – click to edit', '$(circuit-board) Board', Board.PRE)
+    }
+    pickList(): string[] {
+        Session.activate(rootPath(), Session.Mode.PROPS, setupC.get())
+        const distro = Session.getDistro()
+        const file = Path.join(workPath(), distro.package, distro.bucket, 'em-boards')
+        if (!Fs.existsSync(file)) return []
+        let yobj = Yaml.load(String(Fs.readFileSync(file))) as Object
+        let bset = new Set<string>()
+        Object.keys(yobj).filter(k => !(k.startsWith('$'))).forEach(k => bset.add(`${Board.PRE}${k}`))
+        // TODO -- em-boards-local
+        return Array.from(bset.keys()).sort()
+    }
+}
+
+export const setupC = new class Setup extends StatusItem {
+    private static PRE = '$(gear)  '
+    constructor() {
+        super('setup', Props.PROP_EXTENDS, 'em.bindSetup', 'Setup – click to edit', '$(gear) Setup', Setup.PRE)
+    }
+    pickList(): string[] {
+        return mkSetupNames().map(sn => `${Setup.PRE}${sn}`)
+    }
+    async setAux(name: string) {
+        boardC.set('')
+        Session.activate(rootPath(), Session.Mode.PROPS, name)
+        const brd = Props.getBoardKind()
+        await boardC.set(brd)
     }
 }
 
@@ -96,6 +184,19 @@ export function mkPackageNames(): string[] {
         if (isPackage(Path.join(wpath, f))) res.push(f);
     });
     return res;
+}
+
+function mkSetupNames(): string[] {
+    let res = new Array<string>();
+    const wpath = workPath()
+    for (const pkg of mkPackageNames()) {
+        for (const f of Fs.readdirSync(Path.join(wpath, pkg))) {
+            const m = f.match(/^setup-(.+)\.ini$/)
+            if (m == undefined) continue
+            res.push(`${pkg}://${m[1]}`)
+        }
+    }
+    return res
 }
 
 export function mkTime(): string {

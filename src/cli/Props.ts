@@ -3,23 +3,35 @@ import * as Path from 'path'
 
 import * as Err from './Err'
 
+export const PROP_BOARD = 'em.lang.BoardKind'
+export const PROP_DISTRO = 'em.lang.Distro'
+export const PROP_EXTENDS = 'em.lang.SetupExtends'
+export const PROP_PROG = 'em.lang.Prog'
+export const PROP_REQUIRES = 'em.lang.PackageRequires'
+
+export const PROP_R_ADRFMT = 'em.regs.AdrFmt'
+export const PROP_R_FLDFMT = 'em.regs.FldFmt'
+export const PROP_R_IDXFMT = 'em.regs.IdxFmt'
+export const PROP_R_REGFMT = 'em.regs.RegFmt'
+
+export const PROP_TOOLS_HOME = 'em.build.ToolsHome'
+
 const LOCAL_INI_FILE = 'emscript-local.ini'
 const PKG_INI_FILE = 'em-package.ini'
 const ROOT_INI_FILE = 'emscript.ini'
 
-const PROP_BOARD = 'em.lang.BoardKind'
-const PROP_DISTRO = 'em.lang.Distro'
-const PROP_EXTENDS = 'em.lang.SetupExtends'
-const PROP_PROG = 'em.lang.Prog'
-const PROP_REQUIRES = 'em.lang.PackageRequires'
-
-const PROP_TOOLS_HOME = 'em.build.ToolsHome'
 
 const SETUP_SEP = '://'
 
 type PkgList = Array<string>
 type PropMap = Map<string, string>
 type PropSet = Set<string>
+type RegInfo = {
+    adrFmt: string
+    fldFmt: string
+    idxFmt: string
+    regFmt: string
+}
 
 let cur_pkgs: PkgList = new Array
 let cur_props: PropMap = new Map
@@ -114,6 +126,15 @@ export function getProg(): string {
 
 export function getProps(): PropMap {
     return cur_props
+}
+
+export function getRegInfo(): RegInfo {
+    return {
+        adrFmt: cur_props.get(PROP_R_ADRFMT) ?? '',
+        fldFmt: cur_props.get(PROP_R_FLDFMT) ?? '',
+        idxFmt: cur_props.get(PROP_R_IDXFMT) ?? '',
+        regFmt: cur_props.get(PROP_R_REGFMT) ?? '',
+    }
 }
 
 export function getSetup(): string {

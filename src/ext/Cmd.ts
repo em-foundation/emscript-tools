@@ -1,5 +1,35 @@
+import * as Path from 'path'
+
 import * as Utils from './Utils'
 import * as Vsc from 'vscode'
+
+export async function bindBoard(uri?: Vsc.Uri) {
+    let name = ''
+    if (uri) {
+        let ppath = uri.fsPath
+        name = Path.parse(ppath).name
+    }
+    else {
+        let curName = Utils.boardC.get()
+        let newName = await Vsc.window.showQuickPick(Utils.boardC.pickList())
+        name = newName ? Utils.boardC.trim(newName) : curName
+    }
+    await Utils.boardC.set(name)
+}
+
+export async function bindSetup(uri?: Vsc.Uri) {
+    let name = ''
+    if (uri) {
+        let ppath = uri.fsPath
+        name = Path.parse(ppath).name
+    }
+    else {
+        let curName = Utils.setupC.get()
+        let newName = await Vsc.window.showQuickPick(Utils.setupC.pickList())
+        name = newName ? Utils.setupC.trim(newName) : curName
+    }
+    await Utils.setupC.set(name)
+}
 
 export function build(uri: Vsc.Uri, cid: string) {
     const opt = cid === 'em.buildLoad' ? '--load' : cid === 'em.buildMeta' ? '--meta' : ''

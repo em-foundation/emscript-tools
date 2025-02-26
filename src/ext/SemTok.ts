@@ -59,12 +59,12 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
                 let tokType = ''
                 if (name === 'em') tokType = 'em-ident'
                 else if (name === '$$') tokType = 'em-deref'
+                else if (name.match(/^\$bkpt|fail|halt|printf$/)) tokType = 'em-debug'
                 else if (unitSet.has(name) && isFirst(node, sf)) tokType = 'em-unit'
                 else if (name.startsWith('$')) tokType = 'em-special'
                 else if (name.match(/^em\$(meta|targ|template)$/)) tokType = 'em-domain'
                 else if (name.match(/^em\$_[CDIRTU]$/)) tokType = 'em-special'
                 else if (name.match(/^em\$(configure|construct|fail|generate|halt|init|onexit|ready|reset|run|startup)/)) tokType = 'em-special'
-                else if (name.match(/^fail|halt|printf$/)) tokType = 'em-debug'
                 else if (name.match(/^[cet]\$/)) tokType = 'em-deref'
                 else if (name.match(/^em\$/)) tokType = 'em-wrong'
                 if (tokType) addTok(doc, builder, node, tokType)
@@ -79,7 +79,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             }
             else if (Ts.isPropertyAccessExpression(node)) {
                 const txt = node.getText(sf)
-                if (txt.match(/^em\.(fail|halt|printf|\$reg)/)) {
+                if (txt.match(/^em\.(\$bkpt|fail|halt|printf|\$reg)/)) {
                     addTok(doc, builder, node.expression, 'em-debug')
                     addTok(doc, builder, node.name, 'em-debug')
                     return

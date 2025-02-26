@@ -1,8 +1,8 @@
 import * as Ts from 'typescript'
 
 import * as Ast from './Ast'
-import * as Err from './Err'
 import * as Config from './Config'
+import * as Props from './Props'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
@@ -35,6 +35,7 @@ export function make(expr: Ts.Expression): string {
         return 'em::null'
     }
     else if (Ts.isIdentifier(expr)) {
+        if (txt == '$bkpt') return `asm volatile("bkpt")`
         if (txt.startsWith('$')) return `em::${txt}`
         return txt
     }
@@ -49,18 +50,7 @@ export function make(expr: Ts.Expression): string {
         const DEBUG = false
         if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
         if (sa[0] == '$R') {
-            if (sa[sa.length - 1] == '$$') {
-                const mod = sa[1].match(/([A-Za-z]+)/)![1]
-                let idx = ''
-                if (sa.length == 5) {
-                    const e = sa[3].match(/\[(.+)\]/)![1]
-                    idx = ` + (${e}) * 4`
-                }
-                return `*em::$reg32(${sa[1]}_BASE + ${mod}_O_${sa[2]}${idx})`
-            }
-            else {
-                return sa[1]
-            }
+            return mkReg(sa)
         }
         else if (Config.getKind(expr.expression) != 'NONE') {
             return sa.join('.')
@@ -213,6 +203,26 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
     return `${make(expr.expression.expression)}::$make()`
 }
 
+function mkReg(sa: string[]): string {
+    const info = Props.getRegInfo()
+    if (sa[sa.length - 1] == '$$') {
+        const mod = sa[1].match(/([A-Za-z]+)/)![1]
+        const m = sa[1].match(/.+\[(.+)\]/)!
+        if (m != null) {
+            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', m[1]]])
+        } else if (sa.length == 5) {
+            const idx = sa[3].match(/\[(.+)\]/)![1]
+            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', idx]])
+        } else {
+            const adr = replace(info.adrFmt, [['%m', sa[1]]])
+            const reg = replace(info.regFmt, [['%m', mod], ['%r', sa[2]]])
+            return `*em::$reg32(${adr} + ${reg})`
+        }
+    } else {
+        return replace(info.fldFmt, [['%f', sa[1]]])
+    }
+}
+
 function mkSelOp(tn: string): string {
     let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
     return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
@@ -248,4 +258,12 @@ function mkText(expr: Ts.CallExpression, txt: string): string | null {
 export function mkTextVal(txt: string): string {
     const len = (unescapeJs(txt) as string).length
     return `em::text_t(${JSON.stringify(txt)}, ${len})`
+}
+
+function replace(fmt: string, subst: [string, string][]): string {
+    let res = fmt
+    for (const [s1, s2] of subst) {
+        res = res.replaceAll(s1, s2)
+    }
+    return res
 }
