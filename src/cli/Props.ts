@@ -107,11 +107,11 @@ export function bindProg(prog: string) {
 }
 
 export function getBoardKind(): string {
-    return cur_props.get(PROP_BOARD)!
+    return cur_props.get(PROP_BOARD) || 'LP_EM_CC2340R5'
 }
 
 export function getDistro() {
-    const ds = cur_props.get(PROP_DISTRO)!
+    const ds = cur_props.get(PROP_DISTRO) || `ti.cc23xx${SETUP_SEP}ti.distro.cc23xx`
     const sa = ds.split(SETUP_SEP)
     return { package: sa[0], bucket: sa[1] }
 }
