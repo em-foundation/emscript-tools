@@ -45,7 +45,7 @@ export function getBuildDir(): string {
 }
 
 export function getDistro(): { package: string, bucket: string } {
-    return Props.getDistro()
+    return Props.getDistro()!
 }
 
 export function getShellPath(): string {
@@ -67,6 +67,10 @@ export function getUnits(): typeof $$units {
 
 export function getWorkDir(): string {
     return workDir
+}
+
+export function hasDistro(): boolean {
+    return Props.getDistro() != undefined
 }
 
 export function isPackage(path: string): boolean {

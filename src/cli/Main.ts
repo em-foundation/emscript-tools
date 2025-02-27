@@ -134,8 +134,10 @@ function doConfig(opts: any) {
             }
         });
     });
-    const d = Session.getDistro()
-    json.compilerOptions.paths[`@$distro/*`] = [`./workspace/${d.package}/${d.bucket}/*`]
+    if (Session.hasDistro()) {
+        const d = Session.getDistro()
+        json.compilerOptions.paths[`@$distro/*`] = [`./workspace/${d.package}/${d.bucket}/*`]
+    }
     Fs.writeFileSync(file, JSON.stringify(json, null, 4), 'utf-8')
 }
 

@@ -111,7 +111,8 @@ export function getBoardKind(): string {
 }
 
 export function getDistro() {
-    const ds = cur_props.get(PROP_DISTRO)!
+    const ds = cur_props.get(PROP_DISTRO)
+    if (ds == undefined) return undefined
     const sa = ds.split(SETUP_SEP)
     return { package: sa[0], bucket: sa[1] }
 }
