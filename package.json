@@ -66,47 +66,51 @@
         "commands": [
             {
                 "command": "em.bindBoard",
-                "title": " EM•Script — Bind Board..."
+                "title": " EM•Script – Bind Board..."
             },
             {
                 "command": "em.bindSetup",
-                "title": " EM•Script — Bind Setup..."
+                "title": " EM•Script – Bind Setup..."
             },
             {
                 "command": "em.build",
-                "title": "EM•Script — Build"
+                "title": "EM•Script – Build"
             },
             {
                 "command": "em.buildLoad",
-                "title": "EM•Script — Build and Load"
+                "title": "EM•Script – Build and Load"
             },
             {
                 "command": "em.buildMeta",
-                "title": "EM•Script — Build Meta-Program"
+                "title": "EM•Script – Build Meta-Program"
+            },
+            {
+                "command": "em.clearSetup",
+                "title": "EM•Script – Clear Setup"
             },
             {
                 "command": "em.newComposite",
-                "title": "EM•Script — New Composite..."
+                "title": "EM•Script – New Composite..."
             },
             {
                 "command": "em.newInterface",
-                "title": "EM•Script — New Interface..."
+                "title": "EM•Script – New Interface..."
             },
             {
                 "command": "em.newModule",
-                "title": "EM•Script — New Module..."
+                "title": "EM•Script – New Module..."
             },
             {
                 "command": "em.newProgram",
-                "title": "EM•Script — New Program..."
+                "title": "EM•Script – New Program..."
             },
             {
                 "command": "em.newTemplate",
-                "title": "EM•Script — New Template..."
+                "title": "EM•Script – New Template..."
             },
             {
                 "command": "em.version",
-                "title": "EM•Script — Show Version"
+                "title": "EM•Script – Show Version"
             }
         ],
         "grammars": [
