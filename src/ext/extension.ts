@@ -8,11 +8,13 @@ export async function activate(context: Vsc.ExtensionContext) {
     console.log("emscript active")
 
     await refreshIcons()
-    Utils.updateConfig()
-    Utils.updateSettings('editor', 'tabCompletion', 'on')
-    Utils.updateSettings('workbench', 'tree.indent', 20)
-    Utils.updateSettings('workbench', 'colorTheme', 'EM•Script Dark')
-    Utils.updateSettings('files', 'associations', {
+
+    await Utils.updateConfig()
+
+    await Utils.updateSettings('editor', 'tabCompletion', 'on')
+    await Utils.updateSettings('workbench', 'tree.indent', 20)
+    await Utils.updateSettings('workbench', 'colorTheme', 'EM•Script Dark')
+    await Utils.updateSettings('files', 'associations', {
         "*.em.ts": "typescript",
         "em-boards": "yaml",
     })
@@ -23,13 +25,13 @@ export async function activate(context: Vsc.ExtensionContext) {
         ],
     })
 
-
     for (let cmd of ["em.build", "em.buildLoad", "em.buildMeta"]) {
         context.subscriptions.push(Vsc.commands.registerCommand(cmd, (uri: Vsc.Uri) => Cmd.build(uri, cmd)))
     }
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.bindBoard", Cmd.bindBoard))
     context.subscriptions.push(Vsc.commands.registerCommand("em.bindSetup", Cmd.bindSetup))
+    context.subscriptions.push(Vsc.commands.registerCommand("em.clearSetup", Cmd.clearSetup))
 
     context.subscriptions.push(Vsc.commands.registerCommand("em.newComposite", Cmd.newComposite))
     context.subscriptions.push(Vsc.commands.registerCommand("em.newInterface", Cmd.newInterface))
@@ -54,9 +56,13 @@ export async function activate(context: Vsc.ExtensionContext) {
     sbi.show()
     context.subscriptions.push(sbi)
 
-    Utils.boardC.init()
     Utils.setupC.init()
-    if (!Utils.setupC.get()) {
+    Utils.boardC.init()
+    await Utils.refreshProps()
+    const defSetup = Utils.getDefaultSetup()
+    if (defSetup) {
+        Utils.setupC.set(defSetup)
+    } else {
         let opts: Vsc.MessageOptions = { detail: "Click below to select a tooling setup", modal: true }
         if (await Vsc.window.showWarningMessage(`EM•Script Setups`, opts, 'Select...')) {
             await Cmd.bindSetup()

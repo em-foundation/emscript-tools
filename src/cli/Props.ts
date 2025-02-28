@@ -139,18 +139,21 @@ export function getRegInfo(): RegInfo {
 }
 
 export function getSetup(): string {
-    return cur_props.get(PROP_EXTENDS)!
+    return cur_props.get(PROP_EXTENDS) ?? ''
 }
 
 export function init(dir: string, sname?: string) {
     root_dir = dir
+    cur_props.clear()
+    cur_pkgs = []
     if (!sname) return
     has_setup = true
     cur_props.set(PROP_EXTENDS, sname)
 }
 
 export function print() {
-    cur_props.forEach((v, k) => console.log(`${k} = ${v}`))
+    const ents = [...cur_props.entries()].sort(([k1], [k2]) => k1.localeCompare(k2))
+    ents.forEach(([k, v]) => console.log(`${k} = ${v}`))
     cur_pkgs.forEach(pn => console.log(`package ${pn}`))
 }
 

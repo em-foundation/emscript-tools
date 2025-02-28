@@ -4,13 +4,13 @@ import Path from 'path'
 import Vsc from 'vscode'
 import Yaml from 'js-yaml'
 
-import * as JSON5 from 'json5'
-
 import * as Props from '../cli/Props'
 import * as Session from '../cli/Session'
 
 const EXT = ".em.ts"
 const EXTENSION_ID = "the-em-foundation.emscript"
+
+const curPropMap = new Map<string, string>()
 
 const loggerC = new class Logger {
     readonly output = Vsc.window.createOutputChannel('EM•Script', 'em-log')
@@ -30,7 +30,8 @@ const loggerC = new class Logger {
 }
 
 abstract class StatusItem {
-    private static COMMENT = "## **** DO NOT EDIT THIS LINE ****"
+    private static UNK = '<empty>'
+    private static COMMENT = '## **** DO NOT EDIT THIS LINE ****'
     private readonly key: string
     private readonly pre: string
     private readonly prop: string
@@ -45,7 +46,8 @@ abstract class StatusItem {
         this.title = title
     }
     private display(name: string) {
-        this.status.text = `${this.title} – ${name}`
+        const text = name ? name : StatusItem.UNK
+        this.status.text = `${this.title} – ${text}`
         this.status.show()
     }
     get(): string {
@@ -53,13 +55,13 @@ abstract class StatusItem {
         const res = conf.get(this.key) as string
         return res
     }
-    init(): void {
-        this.display(this.get())
+    init() {
+        this.display('')
     }
     abstract pickList(): string[]
     async set(name: string) {
         this.display(name)
-        updateSettings('emscript', this.key, name)
+        updateSettings('emscript', this.key, name ? name : undefined)
         let ppath = Path.join(workPath(), 'emscript-local.ini')
         if (!Fs.existsSync(ppath)) return
         let lines = Fs.readFileSync(ppath, 'utf-8').split('\n')
@@ -73,6 +75,7 @@ abstract class StatusItem {
             lines.unshift(`${this.prop} = ${name}   ${StatusItem.COMMENT}`)
         }
         Fs.writeFileSync(ppath, lines.join('\n'))
+        refreshProps()
         this.setAux(name)
     }
     protected setAux(name: string) { }
@@ -88,6 +91,7 @@ export const boardC = new class Board extends StatusItem {
     }
     pickList(): string[] {
         Session.activate(rootPath(), Session.Mode.PROPS, setupC.get())
+        if (!Session.hasDistro()) return []
         const distro = Session.getDistro()
         const file = Path.join(workPath(), distro.package, distro.bucket, 'em-boards')
         if (!Fs.existsSync(file)) return []
@@ -108,9 +112,7 @@ export const setupC = new class Setup extends StatusItem {
         return mkSetupNames().map(sn => `${Setup.PRE}${sn}`)
     }
     async setAux(name: string) {
-        boardC.set('')
-        Session.activate(rootPath(), Session.Mode.PROPS, name)
-        const brd = Props.getBoardKind()
+        const brd = !name ? '' : curPropMap.get(Props.PROP_BOARD) ?? ''
         await boardC.set(brd)
     }
 }
@@ -141,6 +143,16 @@ export function format(upath: string): void {
 
 export function getExtRoot(): string {
     return Vsc.extensions.getExtension(EXTENSION_ID)!.extensionPath
+}
+
+export function getDefaultSetup(): string {
+    return curPropMap.get(Props.PROP_EXTENDS) ?? ''
+    // Session.activate(rootPath(), Session.Mode.PROPS)
+    // return Props.getSetup()
+}
+
+export function getProps() {
+    return curPropMap as ReadonlyMap<string, string>
 }
 
 export function getVers(): string {
@@ -232,11 +244,26 @@ export async function newUnit(uri: Vsc.Uri, uks: string, content: string) {
     Vsc.commands.executeCommand('vscode.open', Vsc.Uri.file(upath), { preview: true })
 }
 
+export async function refreshProps() {
+    const main = Path.join(getExtRoot(), 'out/cli/Main.js')
+    const args = [main, 'properties']
+    process.env['NODE_PATH'] = Path.join(getExtRoot(), 'node_modules')
+    const proc = ChildProc.spawnSync('node', args, { cwd: workPath() })
+    const lines = String(proc.stdout).split('\n')
+    curPropMap.clear()
+    for (const ln of lines) {
+        const m = ln.match(/^([\w.]+)\s+=\s+(.*)$/)
+        if (m) {
+            curPropMap.set(m[1], m[2])
+        }
+    }
+}
+
 export function showVersion() {
     Vsc.window.showInformationMessage(`EM•Script activated [ version ${getVersFull()} ]`)
 }
 
-export function updateConfig(): void {
+export async function updateConfig() {
     let main = Path.join(getExtRoot(), 'out/cli/Main.js')
     let args = [main, 'config']
     process.env['NODE_PATH'] = Path.join(getExtRoot(), 'node_modules')
@@ -244,7 +271,7 @@ export function updateConfig(): void {
 }
 
 export async function updateSettings(sect: string, key: string, val: any) {
-    let conf = Vsc.workspace.getConfiguration(sect, Vsc.Uri.file(rootPath()))
+    const conf = Vsc.workspace.getConfiguration(sect, Vsc.Uri.file(rootPath()))
     await conf.update(key, val, Vsc.ConfigurationTarget.Workspace)
 }
 
