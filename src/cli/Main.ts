@@ -89,6 +89,10 @@ function doBuild(opts: any): void {
     const setup = (opts.setupProperties ? opts.setupProperties : '') as string
     Session.activate(getRootDir(), Session.Mode.BUILD, setup)
     Props.bindProg(Session.mkUid(upath))
+    if (!Props.getSetup()) {
+        console.error('*** no setup defined')
+        process.exit(1)
+    }
     printProgress('building', true)
     Meta.parse(upath)
     Meta.exec()
