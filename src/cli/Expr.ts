@@ -46,8 +46,11 @@ export function make(expr: Ts.Expression): string {
         const sa = txt.split('.')
         const etxt = expr.expression.getText(sf)
         // const DEBUG = sa[0] == 'a'
+        const DEBUG = txt.startsWith('AppLed.$$.on')
         // const DEBUG = txt.startsWith('a._fiber')
-        const DEBUG = false
+        // const DEBUG = false
+        if (DEBUG) console.log(Targ.context().ud.id)
+        if (DEBUG) console.log(Targ.context().ud.imports)
         if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
         if (sa[0] == '$R') {
             return mkReg(sa)
@@ -66,7 +69,7 @@ export function make(expr: Ts.Expression): string {
         }
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
-            if (DEBUG) console.log(`    ${tn}`)
+            if (DEBUG) console.log(`    tn = ${tn}`)
             if (sa.length == 2 && tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
             const op = mkSelOp(tn)
             if (op == '::') return sa.join(op)
