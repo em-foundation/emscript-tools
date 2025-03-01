@@ -16,10 +16,8 @@ export const PROP_R_REGFMT = 'em.regs.RegFmt'
 
 export const PROP_TOOLS_HOME = 'em.build.ToolsHome'
 
-const LOCAL_INI_FILE = 'emscript-local.ini'
 const PKG_INI_FILE = 'em-package.ini'
 const ROOT_INI_FILE = 'emscript.ini'
-
 
 const SETUP_SEP = '://'
 
@@ -73,16 +71,15 @@ export function addToolsHome(projDir: string) {
 
 export function addWorkspace() {
     let path = Path.join(root_dir, ROOT_INI_FILE)
-    if (!Fs.existsSync(path)) Err.fail(`can't find '${root_dir}/${ROOT_INI_FILE}'`)
-    addWorkspaceProps(path)
-    path = Path.join(root_dir, LOCAL_INI_FILE)
-    if (!Fs.existsSync(path)) return
+    if (!Fs.existsSync(path)) {
+        Fs.writeFileSync(path, '')
+    }
     addWorkspaceProps(path)
 }
 
 function addWorkspaceProps(ppath: string) {
     const pm = readProps(ppath)
-    if (!ppath.endsWith(LOCAL_INI_FILE) || !has_setup) applyExtends(pm)
+    if (!has_setup) applyExtends(pm)
     applyRequires(pm)
     pm.forEach((v, k) => {
         if (has_setup && k == PROP_EXTENDS) return

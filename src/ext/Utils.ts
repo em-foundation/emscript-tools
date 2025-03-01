@@ -62,8 +62,8 @@ abstract class StatusItem {
     async set(name: string) {
         this.display(name)
         updateSettings('emscript', this.key, name ? name : undefined)
-        let ppath = Path.join(workPath(), 'emscript-local.ini')
-        if (!Fs.existsSync(ppath)) return
+        let ppath = Path.join(workPath(), 'emscript.ini')
+        if (!Fs.existsSync(ppath)) return  // should always exist ???
         let lines = Fs.readFileSync(ppath, 'utf-8').split('\n')
         for (let i = 0; i < lines.length; i++) {
             let ln = lines[i].trim()
