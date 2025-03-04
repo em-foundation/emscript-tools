@@ -3,6 +3,17 @@ import * as Vsc from 'vscode'
 
 import * as Ast from '../cli/Ast'
 
+function addComments(doc: Vsc.TextDocument, builder: Vsc.SemanticTokensBuilder) {
+    const txt = doc.getText()
+    const re = /^\/\/\>.+$/gm
+    let m
+    while ((m = re.exec(txt)) !== null) {
+        const start = doc.positionAt(m.index)
+        const end = doc.positionAt(m.index + m[0].length)
+        builder.push(new Vsc.Range(start, end), 'em-domain')
+    }
+}
+
 function addTok(doc: Vsc.TextDocument, builder: Vsc.SemanticTokensBuilder, node: Ts.Node, tokType: string) {
     const start = doc.positionAt(node.getStart())
     const end = doc.positionAt(node.getEnd())
@@ -25,6 +36,7 @@ export class Provider implements Vsc.DocumentSemanticTokensProvider {
             /*setParentNodes*/ true
         );
         const builder = new Vsc.SemanticTokensBuilder(legend())
+        addComments(doc, builder)
         const unitSet = new Set<string>()
         sf.statements.map((stmt) => {
             if (Ts.isImportDeclaration(stmt)) {

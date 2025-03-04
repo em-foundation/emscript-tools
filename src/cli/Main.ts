@@ -42,6 +42,7 @@ CMD
 CMD
     .command('config')
     .description('auto configure this project')
+    .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
     .action((opts: any) => doConfig(opts))
 CMD
     .command('fmt')
@@ -86,9 +87,17 @@ function doBuild(opts: any): void {
         doParse(opts)
         return
     }
-    const setup = (opts.setupProperties ? opts.setupProperties : '') as string
-    Session.activate(getRootDir(), Session.Mode.BUILD, setup)
+    if (opts.setupProperties) {
+        const cwd = process.cwd()
+        doConfig(opts)
+        process.chdir(cwd)
+    }
+    Session.activate(getRootDir(), Session.Mode.BUILD, opts.setupProperties ?? '')
     Props.bindProg(Session.mkUid(upath))
+    if (!Props.getSetup()) {
+        console.error('*** no setup defined')
+        process.exit(1)
+    }
     printProgress('building', true)
     Meta.parse(upath)
     Meta.exec()
@@ -123,7 +132,7 @@ function doConfig(opts: any) {
         }
     }
     json.compilerOptions.paths = { "@$$emscript": ["./workspace/em.core/em.lang/emscript"] }
-    Session.activate(getRootDir(), Session.Mode.PROPS)
+    Session.activate(getRootDir(), Session.Mode.PROPS, (opts.setupProperties ?? ''))
     const wdir = Session.getWorkDir()
     Fs.readdirSync(wdir).forEach(f1 => {
         let ppath = Path.join(wdir, f1);
