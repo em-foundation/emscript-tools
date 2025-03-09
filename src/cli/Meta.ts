@@ -32,6 +32,7 @@ export function exec() {
         let uobj: any = require(upath)
         $$units.set(uid, uobj)
     }
+    process.chdir(Session.getWorkDir())
     const $$uarrBot = Array.from($$units.values())
     const $$uarrTop = Array.from($$units.values()).reverse()
     $$uarrBot.forEach(u => call('em$init', u))

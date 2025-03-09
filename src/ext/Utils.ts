@@ -183,7 +183,9 @@ export function mkBucketNames(): string[] {
         let ppath = Path.join(wpath, f);
         if (isPackage(ppath)) Fs.readdirSync(ppath).forEach(f => {
             let bpath = Path.join(ppath, f);
-            if (Fs.statSync(bpath).isDirectory()) res.push(f);
+            if (!f.startsWith('.') && Fs.statSync(bpath).isDirectory()) {
+                res.push(f);
+            }
         });
     });
     return res;
