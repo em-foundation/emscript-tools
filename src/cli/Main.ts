@@ -40,11 +40,11 @@ CMD.command('build')
     )
     .requiredOption(
         '-u --unit <qualified-name>',
-        '<package-name>/<bundle-name>/<unit-name>'
+        '<package-name>/<bucket-name>/<unit-name>'
     )
     .action((opts: any) => doBuild(opts))
 CMD.command('clean')
-    .description('clean a bundle')
+    .description('clean this workspace')
     .action((opts: any) => doClean(opts))
 CMD.command('config')
     .description('auto configure this project')
@@ -57,9 +57,16 @@ CMD.command('fmt')
     .description('format a unit')
     .requiredOption(
         '-u --unit <qualified-name>',
-        '<package-name>/<bundle-name>/<unit-name>'
+        '<package-name>/<bucket-name>/<unit-name>'
     )
     .action((opts: any) => doFormat(opts))
+CMD.command('genregs')
+    .description('generate distro REGS unit')
+    .requiredOption(
+        '-d --distro <qualified-name>',
+        '<package-name>/<distro-bucket-name>'
+    )
+    .action((opts: any) => doGenRegs(opts))
 CMD.command('load')
     .description('load program')
     .action((opts: any) => doLoad(opts))
@@ -77,14 +84,14 @@ CMD.command('parse')
     .description('display AST for a unit')
     .requiredOption(
         '-u --unit <qualified-name>',
-        '<package-name>/<bundle-name>/<unit-name>'
+        '<package-name>/<bucket-name>/<unit-name>'
     )
     .action((opts: any) => doParse(opts))
 CMD.command('prettier')
     .description("format using 'prettier'")
     .requiredOption(
         '-u --unit <qualified-name>',
-        '<package-name>/<bundle-name>/<unit-name>'
+        '<package-name>/<bucket-name>/<unit-name>'
     )
     .action((opts: any) => doPrettier(opts))
 CMD.command('properties')
@@ -98,7 +105,7 @@ CMD.command('render')
     .description('render a unit')
     .requiredOption(
         '-u --unit <qualified-name>',
-        '<package-name>/<bundle-name>/<unit-name>'
+        '<package-name>/<bucket-name>/<unit-name>'
     )
     .option('--verbose', 'additional output', false)
     .action((opts: any) => doRender(opts))
@@ -193,6 +200,22 @@ function doConfig(opts: any) {
 
 function doFormat(opts: any): void {
     Format.exec(opts.unit)
+}
+
+function doGenRegs(opts: any): void {
+    const distro = opts.distro as string
+    const genprog = Path.join(distro, 'genregs.ts')
+    if (!Fs.existsSync(genprog)) {
+        console.error(`*** 'genreg.ts' not found in ${distro}`)
+        process.exit(1)
+    }
+    console.log('generating...')
+    const proc = ChildProc.spawnSync('npx', ['ts-node', 'genregs.ts'], {
+        cwd: distro,
+        shell: Session.getShellPath(),
+    })
+    if (proc.error) console.log(String(proc.error))
+    console.log('done')
 }
 
 function doLoad(opts: any) {
