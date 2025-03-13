@@ -284,6 +284,7 @@
                     "group": "ZZYemscript@2",
                     "when": "resourceExtname == .emtour"
                 }
+
             ],
             "editor/context": [
                 {
