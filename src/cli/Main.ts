@@ -115,6 +115,10 @@ CMD.parse(process.argv)
 
 function doBuild(opts: any): void {
     const upath = opts.unit
+    if (!Fs.existsSync(upath)) {
+        console.error(`*** unit '${upath}' not found`)
+        process.exit(1)
+    }
     if (opts.ast) {
         doParse(opts)
         return
