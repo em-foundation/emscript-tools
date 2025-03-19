@@ -99,7 +99,9 @@ export const boardC = new class Board extends StatusItem {
         let bset = new Set<string>()
         Object.keys(yobj).filter(k => !(k.startsWith('$'))).forEach(k => bset.add(`${Board.PRE}${k}`))
         // TODO -- em-boards-local
-        return Array.from(bset.keys()).sort()
+        const res = Array.from(bset.keys()).sort()
+        res.push(`${Board.PRE}<bare-metal>`)
+        return res
     }
 }
 
