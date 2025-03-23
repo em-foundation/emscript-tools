@@ -7,6 +7,8 @@ import Yaml from 'js-yaml'
 import * as Props from '../cli/Props'
 import * as Session from '../cli/Session'
 
+export const EM_COLOR = '#00f0b5'
+
 const EXT = ".em.ts"
 const EXTENSION_ID = "the-em-foundation.emscript"
 
@@ -43,6 +45,7 @@ abstract class StatusItem {
         this.prop = prop
         this.status.command = cmd
         this.status.tooltip = tip
+        this.status.color = EM_COLOR
         this.title = title
     }
     private display(name: string) {
