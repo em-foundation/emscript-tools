@@ -209,17 +209,33 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
 function mkReg(sa: string[]): string {
     const info = Props.getRegInfo()
     if (sa[sa.length - 1] == '$$') {
-        const mod = sa[1].match(/([A-Za-z]+)/)![1]
-        const m = sa[1].match(/.+\[(.+)\]/)!
-        if (m != null) {
-            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', m[1]]])
-        } else if (sa.length == 5) {
-            const idx = sa[3].match(/\[(.+)\]/)![1]
-            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', idx]])
+        if (info.modFmt) {
+            let res = ''
+            let op = '->'
+            const m = sa[1].match(/(.+)\[(.+)\]/)
+            if (m) {
+                res = replace(info.idxFmt, [['%m', m[1]], ['%i', m[2]]])
+            } else {
+                res = replace(info.modFmt, [['%m', sa[1]]])
+            }
+            for (const seg of sa.slice(2, -1)) {
+                res += replace(info.selFmt, [['%s', seg], ['%o', op]])
+                op = '.'
+            }
+            return res
         } else {
-            const adr = replace(info.adrFmt, [['%m', sa[1]]])
-            const reg = replace(info.regFmt, [['%m', mod], ['%r', sa[2]]])
-            return `*em::$reg32(${adr} + ${reg})`
+            const mod = sa[1].match(/([A-Za-z]+)/)![1]
+            const m = sa[1].match(/.+\[(.+)\]/)!
+            if (m != null) {
+                return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', m[1]]])
+            } else if (sa.length == 5) {
+                const idx = sa[3].match(/\[(.+)\]/)![1]
+                return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', idx]])
+            } else {
+                const adr = replace(info.adrFmt, [['%m', sa[1]]])
+                const reg = replace(info.regFmt, [['%m', mod], ['%r', sa[2]]])
+                return `*em::$reg32(${adr} + ${reg})`
+            }
         }
     } else {
         return replace(info.fldFmt, [['%f', sa[1]]])

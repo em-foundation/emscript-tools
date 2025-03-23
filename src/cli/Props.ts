@@ -11,8 +11,10 @@ export const PROP_REQUIRES = 'em.lang.PackageRequires'
 
 export const PROP_R_ADRFMT = 'em.regs.AdrFmt'
 export const PROP_R_FLDFMT = 'em.regs.FldFmt'
+export const PROP_R_MODFMT = 'em.regs.ModFmt'
 export const PROP_R_IDXFMT = 'em.regs.IdxFmt'
 export const PROP_R_REGFMT = 'em.regs.RegFmt'
+export const PROP_R_SELFMT = 'em.regs.SelFmt'
 
 export const PROP_TOOLS_HOME = 'em.build.ToolsHome'
 
@@ -28,7 +30,9 @@ type RegInfo = {
     adrFmt: string
     fldFmt: string
     idxFmt: string
+    modFmt: string
     regFmt: string
+    selFmt: string
 }
 
 let cur_pkgs: PkgList = new Array
@@ -130,8 +134,10 @@ export function getRegInfo(): RegInfo {
     return {
         adrFmt: cur_props.get(PROP_R_ADRFMT) ?? '',
         fldFmt: cur_props.get(PROP_R_FLDFMT) ?? '',
+        modFmt: cur_props.get(PROP_R_MODFMT) ?? '',
         idxFmt: cur_props.get(PROP_R_IDXFMT) ?? '',
         regFmt: cur_props.get(PROP_R_REGFMT) ?? '',
+        selFmt: cur_props.get(PROP_R_SELFMT) ?? '',
     }
 }
 
