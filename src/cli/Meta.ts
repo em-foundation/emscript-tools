@@ -37,8 +37,8 @@ export function exec() {
     const $$uarrTop = Array.from($$units.values()).reverse()
     $$uarrBot.forEach(u => call('em$init', u))
     $$uarrTop.forEach(u => call('em$configure', u))
-    $$uarrTop[0].$U._used = true // main unit
     $$units.get(`${Session.getDistro().bucket}/BuildC`).$U._used = true
+    $$units.get(`${Session.mkUid(curUpath)}`).$U._used = true
     const workSet = new Set<string>()
     $$units.forEach((uobj, uid) => {
         if (uobj.$U._used) workSet.add(uid)
