@@ -13,11 +13,13 @@ const builtins = new Set<string>([
     'i8',
     'i16',
     'i32',
+    'i64',
     'ptr_t',
     'ref_t',
     'u8',
     'u16',
     'u32',
+    'u64',
     'text_t',
     'volatile_t'
 ])

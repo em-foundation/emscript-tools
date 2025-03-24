@@ -7,11 +7,13 @@ const primitiveSizes: Record<string, number> = {
     i8: 1,
     i16: 2,
     i32: 4,
+    i64: 8,
     ptr_t: 4,
     ref_t: 4,
     u8: 1,
     u16: 2,
     u32: 4,
+    u64: 8,
 }
 const aliasSizes: Record<string, number> = {}
 const aliasTypes: Record<string, Ts.TypeNode> = {}
