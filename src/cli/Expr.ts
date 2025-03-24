@@ -210,19 +210,19 @@ function mkReg(sa: string[]): string {
     const info = Props.getRegInfo()
     if (sa[sa.length - 1] == '$$') {
         if (info.modFmt) {
-            let res = ''
+            let res = '*em::$reg32((uint32_t)&'
             let op = '->'
             const m = sa[1].match(/(.+)\[(.+)\]/)
             if (m) {
-                res = replace(info.idxFmt, [['%m', m[1]], ['%i', m[2]]])
+                res += replace(info.idxFmt, [['%m', m[1]], ['%i', m[2]]])
             } else {
-                res = replace(info.modFmt, [['%m', sa[1]]])
+                res += replace(info.modFmt, [['%m', sa[1]]])
             }
             for (const seg of sa.slice(2, -1)) {
                 res += replace(info.selFmt, [['%s', seg], ['%o', op]])
                 op = '.'
             }
-            return res
+            return res + ')'
         } else {
             const mod = sa[1].match(/([A-Za-z]+)/)![1]
             const m = sa[1].match(/.+\[(.+)\]/)!
