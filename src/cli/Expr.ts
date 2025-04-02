@@ -178,7 +178,7 @@ function mkDbg(expr: Ts.Expression, txt: string): string | null {
         const addr = make(expr.argumentExpression)
         return `*em::${m![1]}(${addr})`
     }
-    if (!(txt.startsWith('$') || txt.startsWith('em.$'))) return null
+    if (!(txt.startsWith('$[') || txt.startsWith('em.$['))) return null
     const dbg = expr.argumentExpression.getText(sf)
     if (dbg.startsWith("'%%>")) return 'em_lang_Console::wr('
     const m = dbg.match(/^'\%\%([a-d])([-+:]?)'$/)
