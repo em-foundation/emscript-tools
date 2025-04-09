@@ -8,6 +8,7 @@ let unitTab = new Map<string, Desc>()
 export type Kind = 'MODULE' | 'INTERFACE' | 'COMPOSITE' | 'TEMPLATE'
 
 export class Desc {
+    $uobj: any = {}
     constructor(
         readonly id: string,
         readonly kind: Kind,

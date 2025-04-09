@@ -30,6 +30,7 @@ export function exec() {
         if (ud.kind == 'TEMPLATE') continue
         const upath = `${Session.getBuildDir()}/${uid}.em.js`
         let uobj: any = require(upath)
+        ud.$uobj = uobj
         $$units.set(uid, uobj)
     }
     process.chdir(Session.getWorkDir())
