@@ -206,11 +206,17 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
     return `${make(expr.expression.expression)}::$make()`
 }
 
+const REG_WIDTH = new Map<string, number>([
+    ['$$', 32],
+    ['$h', 16],
+])
+
 function mkReg(sa: string[]): string {
     const info = Props.getRegInfo()
-    if (sa[sa.length - 1] == '$$') {
+    const rwid = REG_WIDTH.get(sa[sa.length - 1]) ?? 0
+    if (rwid > 0) {
         if (info.modFmt) {
-            let res = '*em::$reg32((uint32_t)&'
+            let res = `*em::$reg${rwid}((uint32_t)&`
             let op = '->'
             const m = sa[1].match(/(.+)\[(.+)\]/)
             if (m) {
@@ -234,7 +240,7 @@ function mkReg(sa: string[]): string {
             } else {
                 const adr = replace(info.adrFmt, [['%m', sa[1]]])
                 const reg = replace(info.regFmt, [['%m', mod], ['%r', sa[2]]])
-                return `*em::$reg32(${adr} + ${reg})`
+                return `*em::$reg${rwid}(${adr} + ${reg})`
             }
         }
     } else {
