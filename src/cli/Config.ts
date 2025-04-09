@@ -69,11 +69,12 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
     const call = decl.initializer! as Ts.CallExpression
     const cs = Targ.isHdr() ? 'extern const ' : 'const '
-    const ts = `em::config<${Type.make(call.typeArguments![0])}>`
-    Out.print("%t%1%2 %3", cs, ts, dn)
+    const ts = Type.make(call.typeArguments![0])
+    Out.print("%t%1em::config<%2> %3", cs, ts, dn)
     if (Targ.isMain()) {
-        Out.print(" = ")
+        Out.print(" = ((%1)(", ts)
         printVal(cobj.val, ts)
+        Out.print("))")
     }
     Out.print(";\n")
 }
