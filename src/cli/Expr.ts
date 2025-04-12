@@ -47,11 +47,13 @@ export function make(expr: Ts.Expression): string {
         const etxt = expr.expression.getText(sf)
         // const DEBUG = sa[0] == 'a'
         // const DEBUG = txt.startsWith('AppLed.$$.on')
-        // const DEBUG = txt.startsWith('a._fiber')
+        // const DEBUG = txt.startsWith('e.$$.tempCoeff')
         const DEBUG = false
         if (DEBUG) console.log(Targ.context().ud.id)
         if (DEBUG) console.log(Targ.context().ud.imports)
         if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
+        if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.expression))
+
         if (sa[0] == '$R') {
             return mkReg(sa)
         }
@@ -70,8 +72,11 @@ export function make(expr: Ts.Expression): string {
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
             if (DEBUG) console.log(`    tn = ${tn}`)
+            // const sym = tc.getTypeAtLocation(expr.expression).getSymbol()
+            // console.log(tn, sym?.flags)
             if (sa.length == 2 && tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
             const op = mkSelOp(tn)
+            // console.log(`op = '${op}, tn = ${tn}`)
             if (op == '::') return sa.join(op)
             if (sa.length == 2 && (tn.match(/^(ptr_t|ref_t)/))) {
                 return (sa[1] == '$$') ? `(*(${sa[0]}))` : `${sa[0]}.${sa[1]}`
@@ -249,8 +254,13 @@ function mkReg(sa: string[]): string {
 }
 
 function mkSelOp(tn: string): string {
-    let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
-    return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
+    if (tn == 'any') return ''
+    if (tn == '$I') return '::'
+    if (tn.startsWith('typeof import(')) return '::'
+    if (tn == 'ReturnType<M["$clone"]>') return '::'
+    return '.'
+    // let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
+    // return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
 }
 
 function mkPrintf(expr: Ts.CallExpression): string | null {

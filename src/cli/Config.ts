@@ -120,12 +120,20 @@ export function getObj(name: string): any {
     return cobj
 }
 
+function isArrayLike(x: any): x is ArrayLike<any> {
+    return x != null && typeof x !== 'function' && typeof x.length === 'number'
+}
+
 function printVal(val: any, ts?: string) {
     if (typeof val === 'number' || typeof val === 'boolean') {
         Out.print("%1", val)
         return
     }
     if (typeof val === 'object') {
+        if (val === null) {
+            Out.print("nullptr")
+            return
+        }
         if (val?.constructor?.name === 'em$text_t') {
             Out.print("%1", Expr.mkTextVal(val.str))
             return
@@ -137,6 +145,18 @@ function printVal(val: any, ts?: string) {
             else {
                 Out.print("%1::%2", val.cname, val.fxn.name)
             }
+            return
+        }
+        if (val.__em$class == 'em$frame') {
+            // em::frame_t<em::u8>((em::u8[]){ 1, 2 }, 2)
+            const ts = val.__$type
+            Out.print("em::frame_t<%1>((%1[]){\n%+", ts)
+            for (const e of val.items) {
+                Out.print("%t")
+                printVal(e)
+                Out.print(",\n")
+            }
+            Out.print("%-%t}, %1)", val.items.length)
             return
         }
         if (val.__em$class == 'em$ref') {

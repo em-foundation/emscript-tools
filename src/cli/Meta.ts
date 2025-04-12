@@ -199,6 +199,7 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.declareTransformer(uid),
                     Trans.exportTransformer,
                     Trans.factoryTransformer(ud.cname),
+                    Trans.frameTransformer(),
                     Trans.implementsTransformer(),
                     Trans.sizeofTransformer(),
                     Trans.structTransformer(ud.cname)
