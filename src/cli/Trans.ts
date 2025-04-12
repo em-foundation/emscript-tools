@@ -2,6 +2,8 @@ import * as Ast from './Ast'
 
 import * as Ts from 'typescript'
 
+import * as Type from './Type'
+
 const primitiveSizes: Record<string, number> = {
     bool_t: 1,
     i8: 1,
@@ -163,6 +165,24 @@ export function factoryTransformer(cname: string): Ts.TransformerFactory<Ts.Sour
     }
 }
 
+export function frameTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        function visit(node: Ts.Node): Ts.Node {
+            if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$frame") {
+                const ts = Type.make(node.typeArguments![0], undefined, sourceFile)
+                return Ts.factory.updateCallExpression(
+                    node,
+                    node.expression,
+                    node.typeArguments,
+                    [...node.arguments, Ts.factory.createStringLiteral(ts)]
+                )
+            }
+            return Ts.visitEachChild(node, visit, context)
+        }
+        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
+
 export function implementsTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         const updatedStatements = sourceFile.statements.filter(stmt =>
@@ -184,6 +204,13 @@ function getDefaultValueForType(type: Ts.TypeNode | undefined): Ts.Expression | 
             }
             if (Ts.isIdentifier(type.typeName)) {
                 const tname = type.typeName.text
+                if (tname === 'frame_t') {
+                    return Ts.factory.createCallExpression(
+                        Ts.factory.createIdentifier('$frame'),
+                        undefined,
+                        undefined,
+                    )
+                }
                 if (tname === 'ref_t') {
                     return Ts.factory.createCallExpression(
                         Ts.factory.createIdentifier('$ref'),

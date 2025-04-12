@@ -30,10 +30,11 @@ export function isVoid(type: Ts.TypeNode): boolean {
     return type.kind === Ts.SyntaxKind.VoidKeyword
 }
 
-export function make(type: Ts.TypeNode, tdef?: string): string {
+export function make(type: Ts.TypeNode, tdef?: string, sf?: Ts.SourceFile): string {
     let res = ""
+    sf = sf ?? Targ.context().ud.sf
     if (Ts.isTypeReferenceNode(type)) {
-        let tn = type.typeName.getText(Targ.context().ud.sf)
+        let tn = type.typeName.getText(sf)
         if (tn == 'cb_t') {
             res = makeCb(type.typeArguments![0] as Ts.TupleTypeNode, tdef!)
         }
