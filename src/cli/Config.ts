@@ -84,11 +84,14 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     const acc = cobj.access
     const es = Targ.isHdr() ? 'extern ' : ''
     const cs = acc == 'ro' ? 'const ' : ''
-    const len = cobj.elems.length
+    const len = Math.max(cobj.elems.length, cobj.elem_cnt)
     const call = decl.initializer! as Ts.CallExpression
+    if (cobj.tab_align > 0) {
+        Out.print("alignas(%1) ", cobj.tab_align)
+    }
     const ts = `em::table_${acc}<${Type.make(call.typeArguments![0])}, ${len}>`
     Out.print("%t%1%2%3 %4", es, cs, ts, dn)
-    if (Targ.isMain()) {
+    if (Targ.isMain() && cobj.elems.length > 0) {
         Out.print(" = {%+\n")
         for (let i = 0; i < len; i++) {
             Out.print("%t")
