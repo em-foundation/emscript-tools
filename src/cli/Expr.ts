@@ -256,7 +256,7 @@ function mkReg(sa: string[]): string {
 function mkSelOp(tn: string): string {
     if (tn == 'any') return ''
     if (tn == '$I') return '::'
-    if (tn.startsWith('typeof import(')) return '::'
+    if (tn.startsWith('typeof ')) return '::'
     if (tn == 'ReturnType<M["$clone"]>') return '::'
     return '.'
     // let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
