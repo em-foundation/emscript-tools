@@ -80,7 +80,7 @@ export function generate(decl: Ts.Declaration) {
         Out.print("\n%-%t};\n")
     }
     else if (Ts.isClassDeclaration(decl) && decl.heritageClauses) {
-        genStruct(decl, 'DECL')
+        genHeritage(decl, decl.heritageClauses[0])
     }
     else if (Ts.isPropertyDeclaration(decl)) {
         const pn = (decl.name as Ts.Identifier).text
@@ -123,6 +123,20 @@ function genMethodDecl(decl: Ts.PropertyDeclaration) {
     Out.print(");\n")
 }
 
+function genHeritage(decl: Ts.ClassDeclaration, ext: Ts.HeritageClause) {
+    const m = ext.getText(Targ.context().ud.sf).match(/^extends (\$\w+)/)
+    if (m) {
+        switch (m[1]) {
+            case '$struct':
+                genStruct(decl, 'DECL')
+                break
+            case '$vector':
+                genVector(decl, ext)
+                break
+        }
+    }
+}
+
 export function genStruct(decl: Ts.ClassDeclaration, kind: 'BODY' | 'DECL') {
     const name = decl.name!.text
     if (kind == 'DECL') {
@@ -144,6 +158,24 @@ export function genStruct(decl: Ts.ClassDeclaration, kind: 'BODY' | 'DECL') {
             genMethodBody(e, name)
         }
     })
+}
+
+function genVector(decl: Ts.ClassDeclaration, ext: Ts.HeritageClause) {
+    const ns = decl.name!.text
+    const et = Type.make(ext.types[0].typeArguments![0])
+    let ls = '0'
+    for (const e of decl.members) {
+        if (Ts.isPropertyDeclaration(e) && e.name.getText(Targ.context().ud.sf) == '$len') {
+            ls = Expr.make(e.initializer!)
+            break
+        }
+    }
+    Out.print("%ttypedef em::vec_t<%1, %2> %3;\n", et, ls, ns)
+}
+
+export function isStructDecl(node: Ts.ClassDeclaration): boolean {
+    if (!node.heritageClauses) return false
+    return node.heritageClauses[0].getText(Targ.context().ud.sf).startsWith('extends $struct')
 }
 
 export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = ''): string {

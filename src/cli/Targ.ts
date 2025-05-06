@@ -201,7 +201,7 @@ function genStmts(node: Ts.Node) {
 
 function genStructBodies(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
-        if (Ts.isClassDeclaration(node)) {
+        if (Ts.isClassDeclaration(node) && Decl.isStructDecl(node)) {
             Decl.genStruct(node, 'BODY')
         }
     })
@@ -209,7 +209,7 @@ function genStructBodies(ud: Unit.Desc) {
 
 function genStructFwds(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
-        if (Ts.isClassDeclaration(node)) {
+        if (Ts.isClassDeclaration(node) && Decl.isStructDecl(node)) {
             Out.print("%tstruct %1;\n", node.name!.text)
         }
     })

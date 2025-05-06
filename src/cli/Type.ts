@@ -21,6 +21,7 @@ const builtins = new Set<string>([
     'u32',
     'u64',
     'text_t',
+    'vec_t',
     'volatile_t'
 ])
 
@@ -63,7 +64,12 @@ export function make(type: Ts.TypeNode, tdef?: string, sf?: Ts.SourceFile): stri
     else if (type.kind === Ts.SyntaxKind.UnknownKeyword) {
         res = UNKNOWN
     }
+    else if (type.kind === Ts.SyntaxKind.LiteralType) {
+        return type.getText(sf)
+    }
     else {
+        console.log(type.getText(sf))
+        console.log(type.kind)
         Ast.fail('Type', type)
     }
     return res

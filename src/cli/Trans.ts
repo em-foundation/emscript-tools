@@ -353,3 +353,40 @@ export function structTransformer(cname: string): Ts.TransformerFactory<Ts.Sourc
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
     }
 }
+
+export function vectorTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        function visit(node: Ts.Node): Ts.Node {
+            if (Ts.isClassDeclaration(node)) {
+                const extendsClause = node.heritageClauses?.find(
+                    (clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword
+                )
+                if (extendsClause) {
+                    const extendsType = extendsClause.types[0]
+                    if (Ts.isExpressionWithTypeArguments(extendsType) &&
+                        Ts.isIdentifier(extendsType.expression) &&
+                        extendsType.expression.text === "$vector") {
+                        const defvalProp = Ts.factory.createPropertyDeclaration(
+                            [],
+                            '_defval',
+                            undefined,
+                            undefined,
+                            getDefaultValueForType(extendsClause.types[0].typeArguments![0])
+                        )
+                        return Ts.factory.updateClassDeclaration(
+                            node,
+                            node.modifiers,
+                            node.name,
+                            node.typeParameters,
+                            node.heritageClauses,
+                            [...node.members, defvalProp]
+                        )
+                    }
+                }
+            }
+            return Ts.visitEachChild(node, visit, context)
+        }
+
+        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
