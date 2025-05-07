@@ -7,6 +7,8 @@ import Yaml from 'js-yaml'
 import * as Props from '../cli/Props'
 import * as Session from '../cli/Session'
 
+export const EM_COLOR = '#00f0b5'
+
 const EXT = ".em.ts"
 const EXTENSION_ID = "the-em-foundation.emscript"
 
@@ -43,6 +45,7 @@ abstract class StatusItem {
         this.prop = prop
         this.status.command = cmd
         this.status.tooltip = tip
+        this.status.color = EM_COLOR
         this.title = title
     }
     private display(name: string) {
@@ -99,7 +102,9 @@ export const boardC = new class Board extends StatusItem {
         let bset = new Set<string>()
         Object.keys(yobj).filter(k => !(k.startsWith('$'))).forEach(k => bset.add(`${Board.PRE}${k}`))
         // TODO -- em-boards-local
-        return Array.from(bset.keys()).sort()
+        const res = Array.from(bset.keys()).sort()
+        res.push(`${Board.PRE}<bare-metal>`)
+        return res
     }
 }
 
@@ -112,7 +117,18 @@ export const setupC = new class Setup extends StatusItem {
         return mkSetupNames().map(sn => `${Setup.PRE}${sn}`)
     }
     async setAux(name: string) {
-        const brd = !name ? '' : curPropMap.get(Props.PROP_BOARD) ?? ''
+        let brd = ''
+        const cur_brd = boardC.get()
+        if (name) {
+            brd = curPropMap.get(Props.PROP_BOARD) ?? ''
+            for (const b of boardC.pickList()) {
+                const bn = b.split('  ')[1]
+                if (cur_brd == bn) {
+                    brd = cur_brd
+                    break
+                }
+            }
+        }
         await boardC.set(brd)
     }
 }

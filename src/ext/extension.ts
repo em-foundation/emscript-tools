@@ -95,7 +95,8 @@ export async function activate(context: Vsc.ExtensionContext) {
     );
 
     let sbi = Vsc.window.createStatusBarItem(Vsc.StatusBarAlignment.Left);
-    sbi.text = `$(terminal) EM•Script v${Utils.getVers()}`;
+    sbi.text = `$(terminal) EM•Script v${Utils.getVers()}`
+    sbi.color = Utils.EM_COLOR
     sbi.command = "em.showVersion";
     sbi.show();
     context.subscriptions.push(sbi);

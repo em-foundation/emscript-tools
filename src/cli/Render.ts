@@ -16,12 +16,14 @@ const types = new Set<string>([
     'i8',
     'i16',
     'i32',
+    'i64',
     'ptr_t',
     'ref_t',
     'text_t',
     'u8',
     'u16',
     'u32',
+    'u64',
     'volatile_t'
 ])
 

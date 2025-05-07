@@ -44,7 +44,7 @@
     "devDependencies": {
         "@types/node": "^22.10.1",
         "@types/vscode": "^1.80.0",
-        "tsx": "^4.19.2",
+        "tsx": "^4.19.3",
         "typescript": "^5.7.2",
         "uglify-js": "^3.19.3"
     },

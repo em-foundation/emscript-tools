@@ -47,11 +47,13 @@ export function make(expr: Ts.Expression): string {
         const etxt = expr.expression.getText(sf)
         // const DEBUG = sa[0] == 'a'
         // const DEBUG = txt.startsWith('AppLed.$$.on')
-        // const DEBUG = txt.startsWith('a._fiber')
+        // const DEBUG = txt.startsWith('e.$$.tempCoeff')
         const DEBUG = false
         if (DEBUG) console.log(Targ.context().ud.id)
         if (DEBUG) console.log(Targ.context().ud.imports)
         if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
+        if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.expression))
+
         if (sa[0] == '$R') {
             return mkReg(sa)
         }
@@ -70,8 +72,11 @@ export function make(expr: Ts.Expression): string {
         else {
             const tn = Ast.getTypeExpr(tc, expr.expression)
             if (DEBUG) console.log(`    tn = ${tn}`)
+            // const sym = tc.getTypeAtLocation(expr.expression).getSymbol()
+            // console.log(tn, sym?.flags)
             if (sa.length == 2 && tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
             const op = mkSelOp(tn)
+            // console.log(`op = '${op}, tn = ${tn}`)
             if (op == '::') return sa.join(op)
             if (sa.length == 2 && (tn.match(/^(ptr_t|ref_t)/))) {
                 return (sa[1] == '$$') ? `(*(${sa[0]}))` : `${sa[0]}.${sa[1]}`
@@ -178,7 +183,7 @@ function mkDbg(expr: Ts.Expression, txt: string): string | null {
         const addr = make(expr.argumentExpression)
         return `*em::${m![1]}(${addr})`
     }
-    if (!(txt.startsWith('$') || txt.startsWith('em.$'))) return null
+    if (!(txt.startsWith('$[') || txt.startsWith('em.$['))) return null
     const dbg = expr.argumentExpression.getText(sf)
     if (dbg.startsWith("'%%>")) return 'em_lang_Console::wr('
     const m = dbg.match(/^'\%\%([a-d])([-+:]?)'$/)
@@ -206,20 +211,42 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
     return `${make(expr.expression.expression)}::$make()`
 }
 
+const REG_WIDTH = new Map<string, number>([
+    ['$$', 32],
+    ['$h', 16],
+])
+
 function mkReg(sa: string[]): string {
     const info = Props.getRegInfo()
-    if (sa[sa.length - 1] == '$$') {
-        const mod = sa[1].match(/([A-Za-z]+)/)![1]
-        const m = sa[1].match(/.+\[(.+)\]/)!
-        if (m != null) {
-            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', m[1]]])
-        } else if (sa.length == 5) {
-            const idx = sa[3].match(/\[(.+)\]/)![1]
-            return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', idx]])
+    const rwid = REG_WIDTH.get(sa[sa.length - 1]) ?? 0
+    if (rwid > 0) {
+        if (info.modFmt) {
+            let res = `*em::$reg${rwid}((uint32_t)&`
+            let op = '->'
+            const m = sa[1].match(/(.+)\[(.+)\]/)
+            if (m) {
+                res += replace(info.idxFmt, [['%m', m[1]], ['%i', m[2]]])
+            } else {
+                res += replace(info.modFmt, [['%m', sa[1]]])
+            }
+            for (const seg of sa.slice(2, -1)) {
+                res += replace(info.selFmt, [['%s', seg], ['%o', op]])
+                op = '.'
+            }
+            return res + ')'
         } else {
-            const adr = replace(info.adrFmt, [['%m', sa[1]]])
-            const reg = replace(info.regFmt, [['%m', mod], ['%r', sa[2]]])
-            return `*em::$reg32(${adr} + ${reg})`
+            const mod = sa[1].match(/([A-Za-z]+)/)![1]
+            const m = sa[1].match(/.+\[(.+)\]/)!
+            if (m != null) {
+                return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', m[1]]])
+            } else if (sa.length == 5) {
+                const idx = sa[3].match(/\[(.+)\]/)![1]
+                return replace(info.idxFmt, [['%m', mod], ['%r', sa[2]], ['%i', idx]])
+            } else {
+                const adr = replace(info.adrFmt, [['%m', sa[1]]])
+                const reg = replace(info.regFmt, [['%m', mod], ['%r', sa[2]]])
+                return `*em::$reg${rwid}(${adr} + ${reg})`
+            }
         }
     } else {
         return replace(info.fldFmt, [['%f', sa[1]]])
@@ -227,8 +254,13 @@ function mkReg(sa: string[]): string {
 }
 
 function mkSelOp(tn: string): string {
-    let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
-    return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
+    if (tn == 'any') return ''
+    if (tn == '$I') return '::'
+    if (tn.startsWith('typeof ')) return '::'
+    if (tn == 'ReturnType<M["$clone"]>') return '::'
+    return '.'
+    // let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
+    // return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
 }
 
 function mkPrintf(expr: Ts.CallExpression): string | null {

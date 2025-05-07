@@ -73,6 +73,9 @@ function genHeader(ud: Unit.Desc) {
     Out.addText(`#ifndef ${ud.cname}__M\n`)
     Out.addText(`#define ${ud.cname}__M\n`)
     Out.addText('#include <emscript.hpp>\n\n')
+    if (ud.$uobj.$U._aux_h) {
+        genIncludeAux(ud, 'hpp')
+    }
     const rid = ud.imports.get('$R')
     if (rid) {
         const rud = unitTab.get(rid)!
@@ -99,6 +102,11 @@ function genHeader(ud: Unit.Desc) {
     genUsing(ud)
     Out.addText(`#endif // ${ud.cname}__M\n`)
     Out.close()
+}
+
+function genIncludeAux(ud: Unit.Desc, suf: string) {
+    const path = ud.sf.fileName.replace('.em.ts', `_aux.${suf}`)
+    Out.addText(`#include "${path}"\n`)
 }
 
 function genMain() {
@@ -193,7 +201,7 @@ function genStmts(node: Ts.Node) {
 
 function genStructBodies(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
-        if (Ts.isClassDeclaration(node)) {
+        if (Ts.isClassDeclaration(node) && Decl.isStructDecl(node)) {
             Decl.genStruct(node, 'BODY')
         }
     })
@@ -201,7 +209,7 @@ function genStructBodies(ud: Unit.Desc) {
 
 function genStructFwds(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
-        if (Ts.isClassDeclaration(node)) {
+        if (Ts.isClassDeclaration(node) && Decl.isStructDecl(node)) {
             Out.print("%tstruct %1;\n", node.name!.text)
         }
     })

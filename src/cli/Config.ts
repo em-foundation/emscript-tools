@@ -69,11 +69,12 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
     const call = decl.initializer! as Ts.CallExpression
     const cs = Targ.isHdr() ? 'extern const ' : 'const '
-    const ts = `em::config<${Type.make(call.typeArguments![0])}>`
-    Out.print("%t%1%2 %3", cs, ts, dn)
+    const ts = Type.make(call.typeArguments![0])
+    Out.print("%t%1em::config<%2> %3", cs, ts, dn)
     if (Targ.isMain()) {
-        Out.print(" = ")
+        Out.print(" = ((%1)(", ts)
         printVal(cobj.val, ts)
+        Out.print("))")
     }
     Out.print(";\n")
 }
@@ -83,11 +84,14 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     const acc = cobj.access
     const es = Targ.isHdr() ? 'extern ' : ''
     const cs = acc == 'ro' ? 'const ' : ''
-    const len = cobj.elems.length
+    const len = Math.max(cobj.elems.length, cobj.elem_cnt)
     const call = decl.initializer! as Ts.CallExpression
+    if (cobj.tab_align > 0) {
+        Out.print("alignas(%1) ", cobj.tab_align)
+    }
     const ts = `em::table_${acc}<${Type.make(call.typeArguments![0])}, ${len}>`
     Out.print("%t%1%2%3 %4", es, cs, ts, dn)
-    if (Targ.isMain()) {
+    if (Targ.isMain() && cobj.elems.length > 0) {
         Out.print(" = {%+\n")
         for (let i = 0; i < len; i++) {
             Out.print("%t")
@@ -119,12 +123,20 @@ export function getObj(name: string): any {
     return cobj
 }
 
+function isArrayLike(x: any): x is ArrayLike<any> {
+    return x != null && typeof x !== 'function' && typeof x.length === 'number'
+}
+
 function printVal(val: any, ts?: string) {
     if (typeof val === 'number' || typeof val === 'boolean') {
         Out.print("%1", val)
         return
     }
     if (typeof val === 'object') {
+        if (val === null) {
+            Out.print("nullptr")
+            return
+        }
         if (val?.constructor?.name === 'em$text_t') {
             Out.print("%1", Expr.mkTextVal(val.str))
             return
@@ -136,6 +148,18 @@ function printVal(val: any, ts?: string) {
             else {
                 Out.print("%1::%2", val.cname, val.fxn.name)
             }
+            return
+        }
+        if (val.__em$class == 'em$frame') {
+            // em::frame_t<em::u8>((em::u8[]){ 1, 2 }, 2)
+            const ts = val.__$type
+            Out.print("em::frame_t<%1>((%1[]){\n%+", ts)
+            for (const e of val.items) {
+                Out.print("%t")
+                printVal(e)
+                Out.print(",\n")
+            }
+            Out.print("%-%t}, %1)", val.items.length)
             return
         }
         if (val.__em$class == 'em$ref') {

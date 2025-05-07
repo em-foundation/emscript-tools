@@ -13,12 +13,15 @@ const builtins = new Set<string>([
     'i8',
     'i16',
     'i32',
+    'i64',
     'ptr_t',
     'ref_t',
     'u8',
     'u16',
     'u32',
+    'u64',
     'text_t',
+    'vec_t',
     'volatile_t'
 ])
 
@@ -28,10 +31,11 @@ export function isVoid(type: Ts.TypeNode): boolean {
     return type.kind === Ts.SyntaxKind.VoidKeyword
 }
 
-export function make(type: Ts.TypeNode, tdef?: string): string {
+export function make(type: Ts.TypeNode, tdef?: string, sf?: Ts.SourceFile): string {
     let res = ""
+    sf = sf ?? Targ.context().ud.sf
     if (Ts.isTypeReferenceNode(type)) {
-        let tn = type.typeName.getText(Targ.context().ud.sf)
+        let tn = type.typeName.getText(sf)
         if (tn == 'cb_t') {
             res = makeCb(type.typeArguments![0] as Ts.TupleTypeNode, tdef!)
         }
@@ -60,7 +64,12 @@ export function make(type: Ts.TypeNode, tdef?: string): string {
     else if (type.kind === Ts.SyntaxKind.UnknownKeyword) {
         res = UNKNOWN
     }
+    else if (type.kind === Ts.SyntaxKind.LiteralType) {
+        return type.getText(sf)
+    }
     else {
+        console.log(type.getText(sf))
+        console.log(type.kind)
         Ast.fail('Type', type)
     }
     return res

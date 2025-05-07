@@ -30,6 +30,7 @@ export function exec() {
         if (ud.kind == 'TEMPLATE') continue
         const upath = `${Session.getBuildDir()}/${uid}.em.js`
         let uobj: any = require(upath)
+        ud.$uobj = uobj
         $$units.set(uid, uobj)
     }
     process.chdir(Session.getWorkDir())
@@ -37,8 +38,8 @@ export function exec() {
     const $$uarrTop = Array.from($$units.values()).reverse()
     $$uarrBot.forEach(u => call('em$init', u))
     $$uarrTop.forEach(u => call('em$configure', u))
-    $$uarrTop[0].$U._used = true // main unit
     $$units.get(`${Session.getDistro().bucket}/BuildC`).$U._used = true
+    $$units.get(`${Session.mkUid(curUpath)}`).$U._used = true
     const workSet = new Set<string>()
     $$units.forEach((uobj, uid) => {
         if (uobj.$U._used) workSet.add(uid)
@@ -198,9 +199,11 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.declareTransformer(uid),
                     Trans.exportTransformer,
                     Trans.factoryTransformer(ud.cname),
+                    Trans.frameTransformer(),
                     Trans.implementsTransformer(),
                     Trans.sizeofTransformer(),
-                    Trans.structTransformer(ud.cname)
+                    Trans.structTransformer(ud.cname),
+                    Trans.vectorTransformer()
                 ]
             },
         })
