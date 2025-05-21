@@ -89,11 +89,6 @@ export function make(expr: Ts.Expression): string {
             return `${make(expr.expression)}.${expr.name.text}`
         }
     }
-    else if (Ts.isExpressionWithTypeArguments(expr)) {
-        const op = expr.expression.getText(sf).replace('$', '')
-        const ts = Type.make(expr.typeArguments![0])
-        return `${op}(${ts})`
-    }
     else if (Ts.isCallExpression(expr)) {
         if (txt.startsWith('$cb')) return make(expr.arguments[0])
         const dbg = mkDbg(expr.expression, txt)
@@ -106,6 +101,8 @@ export function make(expr: Ts.Expression): string {
         if (textVal) return textVal
         const makeCall = mkMakeCall(expr, txt)
         if (makeCall) return makeCall
+        const size = mkSize(expr, txt)
+        if (size) return size
         let res = make(expr.expression) + '('
         let sep = ''
         expr.arguments.forEach(arg => {
@@ -211,6 +208,20 @@ function mkMakeCall(expr: Ts.CallExpression, txt: string): string | null {
     return `${make(expr.expression.expression)}::$make()`
 }
 
+function mkPrintf(expr: Ts.CallExpression): string | null {
+    if (!Ts.isTaggedTemplateExpression(expr.expression)) return null
+    const texpr = expr.expression
+    const sf = Targ.context().ud.sf
+    const tag = texpr.tag.getText(sf)
+    if (!tag.endsWith('printf')) return null
+    const ts = texpr.template.getText(sf).slice(1, -1)
+    const len = (unescapeJs(ts) as string).length
+    const fmt = `em::text_t("${ts}", ${len})`
+    let res = `em_lang_Console::print(${fmt}`
+    expr.arguments.forEach(e => res += ', ' + make(e))
+    return res + ')'
+}
+
 const REG_WIDTH = new Map<string, number>([
     ['$$', 32],
     ['$h', 16],
@@ -263,18 +274,10 @@ function mkSelOp(tn: string): string {
     // return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
 }
 
-function mkPrintf(expr: Ts.CallExpression): string | null {
-    if (!Ts.isTaggedTemplateExpression(expr.expression)) return null
-    const texpr = expr.expression
-    const sf = Targ.context().ud.sf
-    const tag = texpr.tag.getText(sf)
-    if (!tag.endsWith('printf')) return null
-    const ts = texpr.template.getText(sf).slice(1, -1)
-    const len = (unescapeJs(ts) as string).length
-    const fmt = `em::text_t("${ts}", ${len})`
-    let res = `em_lang_Console::print(${fmt}`
-    expr.arguments.forEach(e => res += ', ' + make(e))
-    return res + ')'
+function mkSize(expr: Ts.CallExpression, txt: string): string | null {
+    if (!txt.startsWith('$sizeof')) return null
+    const ts = Type.make(expr.typeArguments![0])
+    return `em::$sizeof<${ts}>()`
 }
 
 function mkText(expr: Ts.CallExpression, txt: string): string | null {
