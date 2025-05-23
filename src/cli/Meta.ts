@@ -11,7 +11,9 @@ import * as Unit from './Unit'
 let curUpath: string
 let curUidList: Array<string>
 
-let $$units = new Map<string, any>()
+// let $$units = new Map<string, any>()
+(global as any).$$units = new Map<string, any>()
+let $$units = (global as any).$$units as Map<string, any>
 
 function call(fn: string, u: any) {
     if (fn in u) {

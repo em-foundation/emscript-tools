@@ -338,7 +338,7 @@ export function structTransformer(cname: string): Ts.TransformerFactory<Ts.Sourc
                         })
                         return Ts.factory.updateClassDeclaration(
                             node,
-                            node.modifiers,
+                            withMod(node.modifiers, Ts.SyntaxKind.ExportKeyword),
                             node.name,
                             node.typeParameters,
                             undefined,
@@ -375,7 +375,7 @@ export function vectorTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                         )
                         return Ts.factory.updateClassDeclaration(
                             node,
-                            node.modifiers,
+                            withMod(node.modifiers, Ts.SyntaxKind.ExportKeyword),
                             node.name,
                             node.typeParameters,
                             node.heritageClauses,
@@ -389,4 +389,9 @@ export function vectorTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
 
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
     }
+}
+
+function withMod(mods: Ts.NodeArray<Ts.ModifierLike> | undefined, kind: Ts.ModifierSyntaxKind): Ts.NodeArray<Ts.ModifierLike> {
+    return mods?.some(m => m.kind === kind) ? mods
+        : Ts.factory.createNodeArray([Ts.factory.createModifier(kind), ...(mods ?? [])])
 }
