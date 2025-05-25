@@ -3,6 +3,7 @@ import * as Ast from './Ast'
 import * as Ts from 'typescript'
 
 import * as Type from './Type'
+import * as Unit from './Unit'
 
 const primitiveSizes: Record<string, number> = {
     bool_t: 1,
@@ -265,11 +266,11 @@ function resolveTypeAlias(type: Ts.TypeNode | undefined): Ts.TypeNode | undefine
 }
 
 
-export function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+export function sizeofTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$sizeof") {
-                const ts = node.typeArguments![0].getText(sourceFile)
+                const ts = ud.resolveType(node.typeArguments![0].getText(sourceFile)) ?? 'unknown'
                 return Ts.factory.updateCallExpression(
                     node,
                     node.expression,

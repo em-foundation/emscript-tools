@@ -20,6 +20,16 @@ export class Desc {
     get cname(): string { return this.id.replaceAll(/[./]/g, '_') }
     get imports(): ReadonlyMap<string, string> { return this._imports }
     isMetaOnly(): boolean { return this.kind == 'COMPOSITE' || this.kind == 'TEMPLATE' }
+    resolveType(ts: string): string | null {
+        let m = ts.match(/^(\w+)$/)
+        if (m) return m[1]
+        m = ts.match(/^(\w+)\</)
+        if (m) return `${m[1]}`
+        m = ts.match(/^(\w+)\.(\w+)$/)
+        if (!m) return null
+        const iid = this._imports.get(m[1]) ?? '$'
+        return `${iid}:${m[2]}`
+    }
 }
 
 
@@ -47,7 +57,7 @@ function addTdefs(ud: Desc) {
             continue
         }
         if (Ts.isTypeAliasDeclaration(stmt) && Ts.isIdentifier(stmt.name)) {
-            const t = resolveType(stmt.type.getText(sf), ud.imports)
+            const t = ud.resolveType(stmt.type.getText(sf))
             if (t) {
                 $$tdefs.set(stmt.name.text, t)
             }
@@ -82,17 +92,6 @@ function printSf(sf: Ts.SourceFile) {
 interface ScanResult {
     kind: Kind,
     imps: Map<string, string>
-}
-
-function resolveType(ts: string, imps: ReadonlyMap<string, string>): string | null {
-    let m = ts.match(/^(\w+)$/)
-    if (m) return m[1]
-    m = ts.match(/^(\w+)\</)
-    if (m) return `<${m[1]}`
-    m = ts.match(/^(\w+)\.(\w+)$/)
-    if (!m) return null
-    const iid = imps.get(m[1]) ?? '$'
-    return `${iid}:${m[2]}`
 }
 
 function scanDecls(sf: Ts.SourceFile): ScanResult {
