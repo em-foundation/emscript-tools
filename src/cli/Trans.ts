@@ -269,11 +269,13 @@ export function sizeofTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$sizeof") {
-                const typeArg = node.typeArguments?.[0]
-                if (typeArg && Ts.isTypeNode(typeArg)) {
-                    const size = getSizeOfNode(typeArg)
-                    return Ts.factory.createNumericLiteral(size.toString())
-                }
+                const ts = node.typeArguments![0].getText(sourceFile)
+                return Ts.factory.updateCallExpression(
+                    node,
+                    node.expression,
+                    node.typeArguments,
+                    [Ts.factory.createStringLiteral(ts)]
+                )
             }
             return Ts.visitEachChild(node, visit, context)
         }

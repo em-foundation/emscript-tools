@@ -20,6 +20,15 @@ import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Unit from './Unit'
 
+declare global {
+    const $$tdefs: Map<string, string>
+    const $$units: Map<string, any>
+}
+
+
+(global as any).$$tdefs = new Map();
+(global as any).$$units = new Map();
+
 let curTab = ''
 
 const CMD = new Commander.Command('emscript')
