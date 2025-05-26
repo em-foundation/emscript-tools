@@ -28,7 +28,7 @@ export class Desc {
         m = ts.match(/^(\w+)\.(\w+)$/)
         if (!m) return null
         const iid = this._imports.get(m[1]) ?? '$'
-        return `${iid}:${m[2]}`
+        return `@${iid}:${m[2]}`
     }
 }
 
@@ -49,18 +49,28 @@ function cloneNode<T extends Ts.Node>(node: T): T {
 function addTdefs(ud: Desc) {
     const sf = ud.sf
     for (const stmt of sf.statements) {
-        if (Ts.isClassDeclaration(stmt)) {
-            const m = stmt.getText(sf).match(/^class\s+(\w+)\s+extends\s\$(struct|vector)/)
-            if (m) {
-                $$tdefs.set(m[1], `$${m[2]}`)
+        let key: string | undefined
+        let val: string | undefined
+
+        if (Ts.isClassDeclaration(stmt) && stmt.name) {
+            const extClause = stmt.heritageClauses?.find((clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword)
+            const extType = extClause ? extClause.types[0] : undefined
+            const extCls = extType && Ts.isExpressionWithTypeArguments(extType) && Ts.isIdentifier(extType.expression)
+                ? extType.expression.text : undefined
+            if (extCls === '$vector') {
+                key = stmt.name.text
+                val = `[${ud.resolveType(extType!.typeArguments![0].getText(sf))}`
             }
-            continue
         }
-        if (Ts.isTypeAliasDeclaration(stmt) && Ts.isIdentifier(stmt.name)) {
-            const t = ud.resolveType(stmt.type.getText(sf))
-            if (t) {
-                $$tdefs.set(stmt.name.text, t)
+        else if (Ts.isTypeAliasDeclaration(stmt) && stmt.name) {
+            const ts = ud.resolveType(stmt.type.getText(sf))
+            if (ts) {
+                key = stmt.name.text
+                val = ts
             }
+        }
+        if (key) {
+            $$tdefs.set(`${ud.id}:${key}`, val!)
         }
     }
 }

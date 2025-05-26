@@ -275,7 +275,7 @@ export function sizeofTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
                     node,
                     node.expression,
                     node.typeArguments,
-                    [Ts.factory.createStringLiteral(ts)]
+                    [Ts.factory.createStringLiteral(ts), Ts.factory.createStringLiteral(ud.id)]
                 )
             }
             return Ts.visitEachChild(node, visit, context)
