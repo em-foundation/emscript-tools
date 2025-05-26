@@ -61,6 +61,18 @@ function addTdefs(ud: Desc) {
                 key = stmt.name.text
                 val = `[${ud.resolveType(extType!.typeArguments![0].getText(sf))}`
             }
+            else if (extCls === '$struct') {
+                key = stmt.name.text
+                val = '{'
+                let sep = ''
+                for (const mbr of stmt.members) {
+                    if (Ts.isPropertyDeclaration(mbr) && mbr.type && !Ts.isFunctionTypeNode(mbr.type)) {
+                        const mt = mbr.type ? ud.resolveType(mbr.type.getText(sf)) : 'unknown'
+                        val += sep + mt
+                        sep = ','
+                    }
+                }
+            }
         }
         else if (Ts.isTypeAliasDeclaration(stmt) && stmt.name) {
             const ts = ud.resolveType(stmt.type.getText(sf))
