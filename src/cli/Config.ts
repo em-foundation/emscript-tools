@@ -181,6 +181,16 @@ function printVal(val: any, ts?: string) {
             }
             return
         }
+        if (val.__em$class == 'em$vector') {
+            Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
+            for (const e of val.items) {
+                Out.print("%t")
+                printVal(e, ts)
+                Out.print(",\n")
+            }
+            Out.print("%-%t})")
+            return
+        }
         if (val.constructor?.em$metaData) {
             Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
             for (let p in val) {

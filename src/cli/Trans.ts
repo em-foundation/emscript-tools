@@ -270,13 +270,20 @@ export function vectorTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
                             undefined,
                             Ts.factory.createStringLiteral(`${ts}|${ud.id}`)
                         )
+                        const metaData = Ts.factory.createPropertyDeclaration(
+                            [Ts.factory.createModifier(Ts.SyntaxKind.StaticKeyword)],
+                            'em$metaData',
+                            undefined,
+                            undefined,
+                            Ts.factory.createStringLiteral(ud.cname)
+                        )
                         return Ts.factory.updateClassDeclaration(
                             node,
                             withMod(node.modifiers, Ts.SyntaxKind.ExportKeyword),
                             node.name,
                             node.typeParameters,
                             node.heritageClauses,
-                            [...node.members, rttProp]
+                            [...node.members, rttProp, metaData]
                         )
                     }
                 }
