@@ -28,6 +28,7 @@ export function exec() {
         if (ud.kind == 'TEMPLATE') continue
         const upath = `${Session.getBuildDir()}/${uid}.em.js`
         let uobj: any = require(upath)
+        uobj.$$init()
         ud.$uobj = uobj
         $$units.set(uid, uobj)
     }
@@ -131,6 +132,20 @@ function expand(doneSet: Set<string>): Array<string> {
     return res
 }
 
+function mkInitFxn(ud: Unit.Desc): string {
+    let res = '\nfunction $$init() {\n'
+    for (const stmt of ud.sf.statements) {
+        if (!Ts.isVariableStatement(stmt)) continue
+        if (stmt.modifiers?.some((mod) => mod.kind === Ts.SyntaxKind.DeclareKeyword)) continue
+        const decl = stmt.declarationList.declarations[0]
+        if (decl.initializer || !decl.type || !Ts.isIdentifier(decl.name)) continue
+        const ts = ud.resolveType(decl.type.getText(ud.sf)) ?? 'unknown'
+        res += `    ${decl.name.text} = $default('${ts}', '${ud.id}')\n`
+    }
+    res += '}\nexports.$$init = $$init\n'
+    return res
+}
+
 export function parse(upath: string): void {
     curUpath = upath
     const dist = Session.getDistro()
@@ -187,7 +202,6 @@ function transpile(options: Ts.CompilerOptions) {
     const buildDir = Session.getBuildDir()
     for (const uid of curUidList) {
         const ud = Unit.units().get(uid)!
-        Trans.collectAliasInfo(ud.sf)
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName,
@@ -216,6 +230,7 @@ function transpile(options: Ts.CompilerOptions) {
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \$clone\((\w+)\);/g, `$1 = __importStar(require("../${uid}__$2.em"))`)
+        src += mkInitFxn(ud)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
     }
     const emFile = 'em.lang/emscript'
