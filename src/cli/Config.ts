@@ -73,7 +73,7 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     Out.print("%t%1em::config<%2> %3", cs, ts, dn)
     if (Targ.isMain()) {
         Out.print(" = ((%1)(", ts)
-        printVal(cobj.val, ts)
+        printVal(cobj._val, ts)
         Out.print("))")
     }
     Out.print(";\n")

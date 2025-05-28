@@ -28,9 +28,9 @@ export function exec() {
         if (ud.kind == 'TEMPLATE') continue
         const upath = `${Session.getBuildDir()}/${uid}.em.js`
         let uobj: any = require(upath)
-        uobj.$$init()
         ud.$uobj = uobj
         $$units.set(uid, uobj)
+        uobj.$$init()
     }
     process.chdir(Session.getWorkDir())
     const $$uarrBot = Array.from($$units.values())
@@ -137,10 +137,18 @@ function mkInitFxn(ud: Unit.Desc): string {
     for (const stmt of ud.sf.statements) {
         if (!Ts.isVariableStatement(stmt)) continue
         if (stmt.modifiers?.some((mod) => mod.kind === Ts.SyntaxKind.DeclareKeyword)) continue
+        const es = stmt.modifiers?.some((mod) => mod.kind === Ts.SyntaxKind.ExportKeyword) ? 'exports.' : ''
         const decl = stmt.declarationList.declarations[0]
-        if (decl.initializer || !decl.type || !Ts.isIdentifier(decl.name)) continue
+        if (!Ts.isIdentifier(decl.name)) continue
+        if (decl.initializer) {
+            if (decl.initializer.getText(ud.sf).startsWith('$config<')) {
+                res += `    ${es}${decl.name.text}._$$init()\n`
+            }
+            continue
+        }
+        if (!decl.type) continue
         const ts = ud.resolveType(decl.type.getText(ud.sf)) ?? 'unknown'
-        res += `    ${decl.name.text} = $default('${ts}', '${ud.id}')\n`
+        res += `    ${es}${decl.name.text} = $default('${ts}', '${ud.id}')\n`
     }
     res += '}\nexports.$$init = $$init\n'
     return res
