@@ -266,25 +266,7 @@ function resolveTypeAlias(type: Ts.TypeNode | undefined): Ts.TypeNode | undefine
 }
 
 
-export function sizeofTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
-    return (context) => (sourceFile) => {
-        function visit(node: Ts.Node): Ts.Node {
-            if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === "$sizeof") {
-                const ts = ud.resolveType(node.typeArguments![0].getText(sourceFile)) ?? 'unknown'
-                return Ts.factory.updateCallExpression(
-                    node,
-                    node.expression,
-                    node.typeArguments,
-                    [Ts.factory.createStringLiteral(ts), Ts.factory.createStringLiteral(ud.id)]
-                )
-            }
-            return Ts.visitEachChild(node, visit, context)
-        }
-        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
-    }
-}
-
-export function structTransformer(cname: string): Ts.TransformerFactory<Ts.SourceFile> {
+export function structTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isClassDeclaration(node)) {
@@ -320,22 +302,25 @@ export function structTransformer(cname: string): Ts.TransformerFactory<Ts.Sourc
                             'em$metaData',
                             undefined,
                             undefined,
-                            Ts.factory.createStringLiteral(cname)
+                            Ts.factory.createStringLiteral(ud.cname)
                         )
                         const updatedMembers = node.members.map((member) => {
-                            if (Ts.isPropertyDeclaration(member) && !member.initializer) {
-                                const fieldType = resolveTypeAlias(member.type)
-                                const defaultValue = getDefaultValueForType(fieldType)
-                                if (defaultValue !== undefined) {
-                                    return Ts.factory.updatePropertyDeclaration(
-                                        member,
-                                        member.modifiers,
-                                        member.name,
-                                        member.questionToken,
-                                        member.type,
-                                        defaultValue
-                                    )
-                                }
+                            if (Ts.isPropertyDeclaration(member) && member.type && !member.initializer) {
+                                const ts = ud.resolveType(member.type.getText(sourceFile)) ?? 'unknown'
+                                const defaultVal = Ts.factory.createCallExpression(
+                                    Ts.factory.createIdentifier('$default'),
+                                    [member.type],
+                                    undefined
+                                    // [Ts.factory.createStringLiteral(ts), Ts.factory.createStringLiteral(ud.id)]
+                                )
+                                return Ts.factory.updatePropertyDeclaration(
+                                    member,
+                                    member.modifiers,
+                                    member.name,
+                                    member.questionToken,
+                                    member.type,
+                                    defaultVal
+                                )
                             }
                             return member
                         })
@@ -357,7 +342,25 @@ export function structTransformer(cname: string): Ts.TransformerFactory<Ts.Sourc
     }
 }
 
-export function vectorTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+export function typeopTransformer(ud: Unit.Desc, op: string): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        function visit(node: Ts.Node): Ts.Node {
+            if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === op) {
+                const ts = ud.resolveType(node.typeArguments![0].getText(sourceFile)) ?? 'unknown'
+                return Ts.factory.updateCallExpression(
+                    node,
+                    node.expression,
+                    node.typeArguments,
+                    [...node.arguments, Ts.factory.createStringLiteral(ts), Ts.factory.createStringLiteral(ud.id)]
+                )
+            }
+            return Ts.visitEachChild(node, visit, context)
+        }
+        return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
+
+export function vectorTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isClassDeclaration(node)) {
@@ -369,12 +372,13 @@ export function vectorTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                     if (Ts.isExpressionWithTypeArguments(extendsType) &&
                         Ts.isIdentifier(extendsType.expression) &&
                         extendsType.expression.text === "$vector") {
-                        const defvalProp = Ts.factory.createPropertyDeclaration(
+                        const ts = ud.resolveType(extendsClause.types[0].typeArguments![0].getText(sourceFile)) ?? 'unknown'
+                        const rttProp = Ts.factory.createPropertyDeclaration(
                             [],
-                            '_defval',
+                            '_elem_rtt',
                             undefined,
                             undefined,
-                            getDefaultValueForType(extendsClause.types[0].typeArguments![0])
+                            Ts.factory.createStringLiteral(`${ts}|${ud.id}`)
                         )
                         return Ts.factory.updateClassDeclaration(
                             node,
@@ -382,7 +386,7 @@ export function vectorTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
                             node.name,
                             node.typeParameters,
                             node.heritageClauses,
-                            [...node.members, defvalProp]
+                            [...node.members, rttProp]
                         )
                     }
                 }

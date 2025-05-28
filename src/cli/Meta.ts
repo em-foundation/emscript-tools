@@ -199,9 +199,11 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.factoryTransformer(ud.cname),
                     Trans.frameTransformer(),
                     Trans.implementsTransformer(),
-                    Trans.sizeofTransformer(ud),
-                    Trans.structTransformer(ud.cname),
-                    Trans.vectorTransformer()
+                    Trans.structTransformer(ud),
+                    Trans.typeopTransformer(ud, '$config'),
+                    Trans.typeopTransformer(ud, '$sizeof'),
+                    Trans.vectorTransformer(ud),
+                    Trans.typeopTransformer(ud, '$default'), // prior transformers generate $default nodes
                 ]
             },
         })
