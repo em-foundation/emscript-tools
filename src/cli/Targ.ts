@@ -1,6 +1,7 @@
 import * as ChildProc from 'child_process'
 import * as Ts from 'typescript'
 
+import * as Ast from './Ast'
 import * as Decl from './Decl'
 import * as Err from './Err'
 import * as Out from './Out'
@@ -46,7 +47,7 @@ function genBody(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
     Out.addText(`#include <${ud.id}.hpp>\n\n`)
     Out.print("namespace %1 {\n\n%+", ud.cname)
-    genFxns(ud.sf)
+    genFxns(ud)
     Out.print("\n%-};\n")
     Out.close()
 }
@@ -55,15 +56,15 @@ function genConfigs(ud: Unit.Desc) {
     curCtx.ud = ud
     curCtx.gen = 'MAIN'
     Out.print("namespace %1 {\n%+", ud.cname)
-    genStmts(ud.sf)
+    genStmts(ud)
     Out.print("%-};\n", ud.cname)
     curCtx.gen = 'UNK'
 }
 
-function genFxns(node: Ts.Node) {
-    node.forEachChild(child => {
-        if (Ts.isFunctionDeclaration(child)) {
-            Decl.generate(child)
+function genFxns(ud: Unit.Desc) {
+    ud.sf.statements.forEach(node => {
+        if (Ts.isFunctionDeclaration(node)) {
+            Decl.generate(node)
         }
     })
 }
@@ -96,7 +97,7 @@ function genHeader(ud: Unit.Desc) {
         Out.print(`%tnamespace %1 = %2;\n`, key, iud.cname)
     })
     genStructFwds(ud)
-    genStmts(ud.sf)
+    genStmts(ud)
     genStructBodies(ud)
     Out.print("\n%-};\n\n")
     genUsing(ud)
@@ -191,10 +192,10 @@ function genSpecial(ulist: Array<[string, any]>, name: string, card: 'ALL' | 'FI
     }
 }
 
-function genStmts(node: Ts.Node) {
-    node.forEachChild(child => {
-        if (Ts.isStatement(child)) {
-            Stmt.generate(child)
+function genStmts(ud: Unit.Desc) {
+    ud.sf.statements.forEach(node => {
+        if (Ts.isStatement(node)) {
+            Stmt.generate(node)
         }
     })
 }
