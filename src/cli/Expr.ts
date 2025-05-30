@@ -28,7 +28,7 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isLiteralExpression(expr)) {
         return txt
     }
-    else if (expr.kind === Ts.SyntaxKind.FalseKeyword || expr.kind === Ts.SyntaxKind.TrueKeyword) {
+    else if (expr.kind === Ts.SyntaxKind.FalseKeyword || expr.kind === Ts.SyntaxKind.TrueKeyword || expr.kind === Ts.SyntaxKind.ThisKeyword) {
         return txt
     }
     else if (expr.kind === Ts.SyntaxKind.NullKeyword) {
@@ -45,7 +45,7 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isPropertyAccessExpression(expr)) {
         const sa = txt.split('.')
         const etxt = expr.expression.getText(sf)
-        // const DEBUG = sa[0] == 'a'
+        // const DEBUG = sa[0] == 'this'
         // const DEBUG = txt.startsWith('AppLed.$$.on')
         // const DEBUG = txt.startsWith('e.$$.tempCoeff')
         const DEBUG = false
@@ -67,6 +67,9 @@ export function make(expr: Ts.Expression): string {
                 const base = (expr.expression as Ts.PropertyAccessExpression).expression
                 return `${make(base)}->${expr.name.text}`
             }
+            if (etxt == 'this') {
+                return `this->${expr.name.text}`
+            }
             return `${make(expr.expression)}.${expr.name.text}`
         }
         else {
@@ -85,7 +88,6 @@ export function make(expr: Ts.Expression): string {
                 const base = (expr.expression as Ts.PropertyAccessExpression).expression
                 return `${make(base)}->${expr.name.text}`
             }
-
             return `${make(expr.expression)}.${expr.name.text}`
         }
     }
@@ -165,6 +167,9 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isParenthesizedExpression(expr)) {
         const e = make(expr.expression)
         return `(${e})`
+    }
+    else if (Ts.isFunctionExpression(expr)) {
+        return '<<fxn>>'
     }
     else {
         Ast.fail('Expr', expr)

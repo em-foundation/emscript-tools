@@ -1,13 +1,13 @@
 import * as ChildProc from 'child_process'
 import * as Ts from 'typescript'
 
-import * as Ast from './Ast'
 import * as Decl from './Decl'
 import * as Err from './Err'
 import * as Out from './Out'
 import * as Props from './Props'
 import * as Session from './Session'
 import * as Stmt from './Stmt'
+import * as Type from './Type'
 import * as Unit from './Unit'
 
 export interface Context {
@@ -48,6 +48,7 @@ function genBody(ud: Unit.Desc) {
     Out.addText(`#include <${ud.id}.hpp>\n\n`)
     Out.print("namespace %1 {\n\n%+", ud.cname)
     genFxns(ud)
+    genStructMethods(ud)
     Out.print("\n%-};\n")
     Out.close()
 }
@@ -98,7 +99,7 @@ function genHeader(ud: Unit.Desc) {
     })
     genStructFwds(ud)
     genStmts(ud)
-    genStructBodies(ud)
+    genStructDecls(ud)
     Out.print("\n%-};\n\n")
     genUsing(ud)
     Out.addText(`#endif // ${ud.cname}__M\n`)
@@ -194,16 +195,54 @@ function genSpecial(ulist: Array<[string, any]>, name: string, card: 'ALL' | 'FI
 
 function genStmts(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
-        if (Ts.isStatement(node)) {
+        if (testForMethod(node) === null) {
             Stmt.generate(node)
         }
     })
 }
 
-function genStructBodies(ud: Unit.Desc) {
+function genStructMethods(ud: Unit.Desc) {
+    ud.sf.statements.forEach(node => {
+        const tup = testForMethod(node)
+        if (tup) {
+            const [def, cls, met] = tup
+            const ts = def.type ? Type.make(def.type) : 'void'
+            Out.print("%t%1 %2::%3(", ts, cls, met)
+            Decl.genParameters(def.parameters.slice(1))
+            Out.print(") {\n%+")
+            def.body.statements.forEach(stmt => Stmt.generate(stmt))
+            Out.print('%-%t}\n')
+        }
+    })
+}
+
+function genStructDecls(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
         if (Ts.isClassDeclaration(node) && Decl.isStructDecl(node)) {
-            Decl.genStruct(node, 'BODY')
+            const name = node.name!.text
+            Out.print("%tstruct %1 {\n%+", name)
+            Out.print("%tstatic %1 $make() { return %1(); }\n", name)
+            node.members.forEach(e => {
+                Decl.generate(e)
+            })
+            genStructMethodDecls(ud, name)
+            Out.print("%-%t};\n")
+        }
+    })
+}
+
+function genStructMethodDecls(ud: Unit.Desc, name: string) {
+    ud.sf.statements.forEach(node => {
+        if (Ts.isInterfaceDeclaration(node) && node.name.text == name) {
+            node.members.forEach(decl => {
+                if (Ts.isMethodSignature(decl) && Ts.isIdentifier(decl.name)) {
+                    const name = decl.name.text
+                    const ts = (decl.type) ? Type.make(decl.type) : 'void'
+                    Out.print("%t%1 %2(", ts, name)
+                    Decl.genParameters(decl.parameters.slice(1))
+                    Out.addText(');\n')
+                }
+            })
         }
     })
 }
@@ -253,3 +292,15 @@ export function generate() {
 export function isBody() { return curCtx.gen == 'BODY' }
 export function isHdr() { return curCtx.gen == 'HDR' }
 export function isMain() { return curCtx.gen == 'MAIN' }
+
+function testForMethod(stmt: Ts.Statement): [Ts.FunctionExpression, string, string] | null {
+    if (!Ts.isExpressionStatement(stmt)) return null
+    const expr = stmt.expression
+    if (!Ts.isBinaryExpression(expr)) return null
+    const lhs = expr.left
+    if (!Ts.isPropertyAccessExpression(lhs)) return null
+    const rhs = expr.right
+    if (!Ts.isFunctionExpression(rhs)) return null
+    const m = lhs.getText(curCtx.ud.sf).match(/^(\w+)\.prototype\.(\w+)$/)
+    return m ? [rhs, m[1], m[2]] : null
+}
