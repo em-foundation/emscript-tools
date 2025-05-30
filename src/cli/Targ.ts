@@ -99,7 +99,7 @@ function genHeader(ud: Unit.Desc) {
     })
     genStructFwds(ud)
     genStmts(ud)
-    genStructDecls(ud)
+    // genStructDecls(ud)
     Out.print("\n%-};\n\n")
     genUsing(ud)
     Out.addText(`#endif // ${ud.cname}__M\n`)
@@ -195,9 +195,14 @@ function genSpecial(ulist: Array<[string, any]>, name: string, card: 'ALL' | 'FI
 
 function genStmts(ud: Unit.Desc) {
     ud.sf.statements.forEach(node => {
-        if (testForMethod(node) === null) {
-            Stmt.generate(node)
+        if (testForMethod(node) !== null) return
+        if (Ts.isClassDeclaration(node) && Decl.isStructDecl(node)) {
+            if (isHdr()) {
+                genStructDecl(ud, node)
+            }
+            return
         }
+        Stmt.generate(node)
     })
 }
 
@@ -214,6 +219,19 @@ function genStructMethods(ud: Unit.Desc) {
             Out.print('%-%t}\n')
         }
     })
+}
+
+function genStructDecl(ud: Unit.Desc, node: Ts.ClassDeclaration) {
+    if (Ts.isClassDeclaration(node) && Decl.isStructDecl(node)) {
+        const name = node.name!.text
+        Out.print("%tstruct %1 {\n%+", name)
+        Out.print("%tstatic %1 $make() { return %1(); }\n", name)
+        node.members.forEach(e => {
+            Decl.generate(e)
+        })
+        genStructMethodDecls(ud, name)
+        Out.print("%-%t};\n")
+    }
 }
 
 function genStructDecls(ud: Unit.Desc) {

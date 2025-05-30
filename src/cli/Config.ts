@@ -194,7 +194,7 @@ function printVal(val: any, ts?: string) {
         if (val.constructor?.em$metaData) {
             Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
             for (let p in val) {
-                if (val[p] === undefined) continue
+                if (typeof val[p] == 'function' || val[p] === undefined) continue
                 Out.print("%t.%1 = ", p)
                 printVal(val[p], ts)
                 Out.print(",\n")
