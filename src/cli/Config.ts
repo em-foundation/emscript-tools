@@ -8,7 +8,21 @@ import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
-export type Kind = 'NONE' | 'FACTORY' | 'PARAM' | 'PROXY' | 'TABLE'
+export type Kind = 'NONE' | 'CONFIG' | 'FACTORY' | 'PROXY' | 'TABLE'
+
+export function genConfig(decl: Ts.VariableDeclaration, dn: string) {
+    const cobj = getObj(dn)
+    const call = decl.initializer! as Ts.CallExpression
+    const cs = Targ.isHdr() ? 'extern const ' : 'const '
+    const ts = Type.make(call.typeArguments![0])
+    Out.print("%t%1em::config<%2> %3", cs, ts, dn)
+    if (Targ.isMain()) {
+        Out.print(" = ((%1)(", ts)
+        printVal(cobj._val, ts)
+        Out.print("))")
+    }
+    Out.print(";\n")
+}
 
 export function genFactory(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
@@ -25,20 +39,6 @@ export function genFactory(decl: Ts.VariableDeclaration, dn: string) {
             Out.print(",\n")
         }
         Out.print("%-%t}")
-    }
-    Out.print(";\n")
-}
-
-export function genParam(decl: Ts.VariableDeclaration, dn: string) {
-    const cobj = getObj(dn)
-    const call = decl.initializer! as Ts.CallExpression
-    const cs = Targ.isHdr() ? 'extern const ' : 'const '
-    const ts = Type.make(call.typeArguments![0])
-    Out.print("%t%1em::config<%2> %3", cs, ts, dn)
-    if (Targ.isMain()) {
-        Out.print(" = ((%1)(", ts)
-        printVal(cobj._val, ts)
-        Out.print("))")
     }
     Out.print(";\n")
 }
@@ -70,7 +70,7 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
 export function getKind(node: Ts.Node): Kind {
     const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
     if (te.startsWith('factory_t<')) return 'FACTORY'
-    if (te.startsWith('em$config_t')) return 'PARAM'
+    if (te.startsWith('em$config_t')) return 'CONFIG'
     if (te.startsWith('em$proxy_t')) return 'PROXY'
     if (te.startsWith('table_t<')) return 'TABLE'
     return 'NONE'

@@ -22,11 +22,11 @@ export function generate(decl: Ts.Declaration) {
         const dn = (decl.name as Ts.Identifier).text
         if (dn == '$U') return
         switch (Config.getKind(decl.name)) {
+            case 'CONFIG':
+                Config.genConfig(decl, dn)
+                return
             case 'FACTORY':
                 Config.genFactory(decl, dn)
-                return
-            case 'PARAM':
-                Config.genParam(decl, dn)
                 return
             case 'PROXY':
                 return
