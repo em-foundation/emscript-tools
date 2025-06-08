@@ -8,7 +8,7 @@ import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
-export type Kind = 'NONE' | 'CONFIG' | 'FACTORY' | 'PROXY' | 'TABLE'
+export type Kind = 'NONE' | 'CONFIG' | 'FACTORY' | 'PARAM' | 'PROXY' | 'TABLE'
 
 export function genConfig(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
@@ -69,8 +69,9 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
 
 export function getKind(node: Ts.Node): Kind {
     const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
-    if (te.startsWith('factory_t<')) return 'FACTORY'
     if (te.startsWith('em$config_t')) return 'CONFIG'
+    if (te.startsWith('factory_t<')) return 'FACTORY'
+    if (te.startsWith('em$param_t')) return 'PARAM'
     if (te.startsWith('em$proxy_t')) return 'PROXY'
     if (te.startsWith('table_t<')) return 'TABLE'
     return 'NONE'
@@ -83,10 +84,6 @@ export function getObj(name: string): any {
     if (!cobj) cobj = uobj.em$decls[name]
     if (!cobj) Err.fail(`no object corresponding to '${name}'`)
     return cobj
-}
-
-function isArrayLike(x: any): x is ArrayLike<any> {
-    return x != null && typeof x !== 'function' && typeof x.length === 'number'
 }
 
 function printVal(val: any, ts?: string) {
