@@ -8,43 +8,7 @@ import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
-export type Kind = 'NONE' | 'ARRAY_P' | 'ARRAY_V' | 'FACTORY' | 'PARAM' | 'PROXY' | 'TABLE'
-
-export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
-    if (!Targ.isHdr()) return
-    const cobj = getObj(dn)
-    const len = cobj.$len
-    const ts = cobj.$base.$cname
-    Out.addText(`
-    struct ${dn} {
-        static constexpr em::u16 $len = ${len};
-        static ${dn} $make() { return ${dn}(); }
-        ${ts} items[${len}] = {0};
-        ${ts} &operator[](em::u16 index) { return items[index]; }
-        const ${ts} &operator[](em::u16 index) const { return items[index]; }
-        em::frame_t<${ts}> $frame(em::i16 beg, em::u16 len = 0) { return em::frame_t<${ts}>::create(items, ${len}, beg, len); }
-        operator em::frame_t<${ts}>() { return $frame(0, 0); }
-        operator em::index_t<${ts}>() { return em::index_t<${ts}>(&items[0]); }
-        em::ptr_t<${ts}> $ptr() { return em::ptr_t<${ts}>(&items[0]); }
-        struct Iter {
-            ${ts} *ptr_;
-            Iter(${ts} *ptr) : ptr_(ptr) {}
-            ${ts} &operator*() { return *ptr_; }
-            Iter &operator++() { ++ptr_; return *this; }
-            bool operator==(const Iter &other) const { return ptr_ == other.ptr_; }
-            bool operator!=(const Iter &other) const { return ptr_ != other.ptr_; }
-        };
-        Iter begin() { return Iter(&items[0]); }
-        Iter end() { return Iter(&items[5]); }
-    };
-`)
-}
-
-export function genArrayVal(decl: Ts.VariableDeclaration, dn: string) {
-    if (!Targ.isHdr()) return
-    Ast.printTree(decl)
-    Out.print("%t// %1\n", dn)
-}
+export type Kind = 'NONE' | 'FACTORY' | 'PARAM' | 'PROXY' | 'TABLE'
 
 export function genFactory(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
@@ -105,8 +69,6 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
 
 export function getKind(node: Ts.Node): Kind {
     const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
-    if (te.startsWith('em$ArrayProto')) return 'ARRAY_P'
-    // if (te.startsWith('em$ArrayVal')) return 'ARRAY_V'
     if (te.startsWith('factory_t<')) return 'FACTORY'
     if (te.startsWith('em$config_t')) return 'PARAM'
     if (te.startsWith('em$proxy_t')) return 'PROXY'

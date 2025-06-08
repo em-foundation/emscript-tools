@@ -22,12 +22,6 @@ export function generate(decl: Ts.Declaration) {
         const dn = (decl.name as Ts.Identifier).text
         if (dn == '$U') return
         switch (Config.getKind(decl.name)) {
-            case 'ARRAY_P':
-                Config.genArrayProto(decl, dn)
-                return
-            case 'ARRAY_V':
-                Config.genArrayVal(decl, dn)
-                return
             case 'FACTORY':
                 Config.genFactory(decl, dn)
                 return
@@ -140,6 +134,5 @@ export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = '')
     const dn = (decl.name as Ts.Identifier).text
     const ts = decl.type ? Type.make(decl.type) : 'auto'
     const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
-    const ref = agg_type.startsWith('em$ArrayVal') ? '&' : ''
-    return `${ts}${ref} ${dn}${init}`
+    return `${ts} ${dn}${init}`
 }

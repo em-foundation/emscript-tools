@@ -275,8 +275,6 @@ function mkSelOp(tn: string): string {
     if (tn.startsWith('typeof ')) return '::'
     if (tn == 'ReturnType<M["$clone"]>') return '::'
     return '.'
-    // let re = /^(frame_t|ptr_t|ref_t|oref_t|text_t)|(em\$(ArrayVal|buffer|frame|ptr|ref|text))/
-    // return tn == 'any' ? '' : tn.match(re) ? '.' : '::'
 }
 
 function mkSize(expr: Ts.CallExpression, txt: string): string | null {
