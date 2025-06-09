@@ -22,17 +22,14 @@ export function generate(decl: Ts.Declaration) {
         const dn = (decl.name as Ts.Identifier).text
         if (dn == '$U') return
         switch (Config.getKind(decl.name)) {
-            case 'ARRAY_P':
-                Config.genArrayProto(decl, dn)
-                return
-            case 'ARRAY_V':
-                Config.genArrayVal(decl, dn)
+            case 'CONFIG':
+                Config.genConfig(decl, dn)
                 return
             case 'FACTORY':
                 Config.genFactory(decl, dn)
                 return
             case 'PARAM':
-                Config.genParam(decl, dn)
+                console.log(`*** ${dn}`)
                 return
             case 'PROXY':
                 return
@@ -57,12 +54,7 @@ export function generate(decl: Ts.Declaration) {
         const es = name.endsWith('$$') ? 'extern "C" ' : Targ.isHdr() ? 'static ' : ''
         const ts = (decl.type) ? Type.make(decl.type) : 'void'
         Out.print("%t%1%2 %3(", es, ts, name)
-        let sep = ''
-        decl.parameters.forEach(par => {
-            Out.addText(sep)
-            generate(par)
-            sep = ', '
-        })
+        genParameters([...decl.parameters])
         Out.addText(')')
         if (Targ.isHdr()) {
             Out.addText(';\n')
@@ -79,8 +71,10 @@ export function generate(decl: Ts.Declaration) {
         decl.members.forEach(e => Out.addText(`${e.getText(Targ.context().ud.sf)}, `))
         Out.print("\n%-%t};\n")
     }
-    else if (Ts.isClassDeclaration(decl) && decl.heritageClauses) {
-        genStruct(decl, 'DECL')
+    else if (Ts.isClassDeclaration(decl)) {
+        if (isVectorDecl(decl)) {
+            genVector(decl, decl.heritageClauses![0])
+        }
     }
     else if (Ts.isPropertyDeclaration(decl)) {
         const pn = (decl.name as Ts.Identifier).text
@@ -93,63 +87,55 @@ export function generate(decl: Ts.Declaration) {
     }
 }
 
-function genMethodBody(decl: Ts.PropertyDeclaration, kname: string) {
-    const mft = decl.type! as Ts.FunctionTypeNode
-    const mname = (decl.name as Ts.Identifier).text
-    const mfxn = `$$::${kname}__${mname}`
-    Out.print("%tinline %1 %2::%3(", Type.make(mft.type), kname, mname)
+export function genParameters(params: Array<Ts.ParameterDeclaration>) {
     let sep = ''
-    mft.parameters.forEach(p => {
-        Out.print("%3%1 %2", Type.make(p.type!), (p.name as Ts.Identifier).text, sep)
+    params.forEach(par => {
+        Out.addText(sep)
+        generate(par)
         sep = ', '
     })
-    const rs = !Type.isVoid(mft.type) ? 'return ' : ''
-    Out.print(") { %2%1(this", mfxn, rs)
-    mft.parameters.forEach(p => {
-        Out.print(", %1", (p.name as Ts.Identifier).text)
-    })
-    Out.print("); }\n")
 }
 
-function genMethodDecl(decl: Ts.PropertyDeclaration) {
-    const mft = decl.type! as Ts.FunctionTypeNode
-    const mname = (decl.name as Ts.Identifier).text
-    Out.print("%t%1 %2(", Type.make(mft.type), mname)
-    let sep = ''
-    mft.parameters.forEach(p => {
-        Out.print("%3%1 %2", Type.make(p.type!), (p.name as Ts.Identifier).text, sep)
-        sep = ', '
-    })
-    Out.print(");\n")
-}
-
-export function genStruct(decl: Ts.ClassDeclaration, kind: 'BODY' | 'DECL') {
-    const name = decl.name!.text
-    if (kind == 'DECL') {
-        Out.print("%tstruct %1 {\n%+", name)
-        Out.print("%tstatic %1 $make() { return %1(); }\n", name)
-        decl.members.forEach(e => {
-            if (Ts.isPropertyDeclaration(e) && e.type && Ts.isFunctionTypeNode(e.type)) {
-                genMethodDecl(e)
-            }
-            else {
-                generate(e)
-            }
-        })
-        Out.print("%-%t};\n")
-        return
-    }
-    decl.members.forEach(e => {
-        if (Ts.isPropertyDeclaration(e) && e.type && Ts.isFunctionTypeNode(e.type)) {
-            genMethodBody(e, name)
+function genHeritage(decl: Ts.ClassDeclaration, ext: Ts.HeritageClause) {
+    const m = ext.getText(Targ.context().ud.sf).match(/^extends (\$\w+)/)
+    if (m) {
+        switch (m[1]) {
+            case '$vector':
+                genVector(decl, ext)
+                break
         }
-    })
+    }
+}
+
+function genVector(decl: Ts.ClassDeclaration, ext: Ts.HeritageClause) {
+    const ns = decl.name!.text
+    const et = Type.make(ext.types[0].typeArguments![0])
+    let ls = '0'
+    for (const e of decl.members) {
+        if (Ts.isPropertyDeclaration(e) && e.name.getText(Targ.context().ud.sf) == '$len') {
+            ls = Expr.make(e.initializer!)
+            break
+        }
+    }
+    Out.print("%ttypedef em::vec_t<%1, %2> %3;\n", et, ls, ns)
+}
+
+export function isAggDecl(node: Ts.ClassDeclaration, kind: string): boolean {
+    if (!node.heritageClauses) return false
+    return node.heritageClauses[0].getText(Targ.context().ud.sf).startsWith(`extends $${kind}`)
+}
+
+export function isStructDecl(node: Ts.ClassDeclaration): boolean {
+    return isAggDecl(node, 'struct')
+}
+
+export function isVectorDecl(node: Ts.ClassDeclaration): boolean {
+    return isAggDecl(node, 'vector')
 }
 
 export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = ''): string {
     const dn = (decl.name as Ts.Identifier).text
     const ts = decl.type ? Type.make(decl.type) : 'auto'
     const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
-    const ref = agg_type.startsWith('em$ArrayVal') ? '&' : ''
-    return `${ts}${ref} ${dn}${init}`
+    return `${ts} ${dn}${init}`
 }

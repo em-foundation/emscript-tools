@@ -8,42 +8,20 @@ import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Type from './Type'
 
-export type Kind = 'NONE' | 'ARRAY_P' | 'ARRAY_V' | 'FACTORY' | 'PARAM' | 'PROXY' | 'TABLE'
+export type Kind = 'NONE' | 'CONFIG' | 'FACTORY' | 'PARAM' | 'PROXY' | 'TABLE'
 
-export function genArrayProto(decl: Ts.VariableDeclaration, dn: string) {
-    if (!Targ.isHdr()) return
+export function genConfig(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
-    const len = cobj.$len
-    const ts = cobj.$base.$cname
-    Out.addText(`
-    struct ${dn} {
-        static constexpr em::u16 $len = ${len};
-        static ${dn} $make() { return ${dn}(); }
-        ${ts} items[${len}] = {0};
-        ${ts} &operator[](em::u16 index) { return items[index]; }
-        const ${ts} &operator[](em::u16 index) const { return items[index]; }
-        em::frame_t<${ts}> $frame(em::i16 beg, em::u16 len = 0) { return em::frame_t<${ts}>::create(items, ${len}, beg, len); }
-        operator em::frame_t<${ts}>() { return $frame(0, 0); }
-        operator em::index_t<${ts}>() { return em::index_t<${ts}>(&items[0]); }
-        em::ptr_t<${ts}> $ptr() { return em::ptr_t<${ts}>(&items[0]); }
-        struct Iter {
-            ${ts} *ptr_;
-            Iter(${ts} *ptr) : ptr_(ptr) {}
-            ${ts} &operator*() { return *ptr_; }
-            Iter &operator++() { ++ptr_; return *this; }
-            bool operator==(const Iter &other) const { return ptr_ == other.ptr_; }
-            bool operator!=(const Iter &other) const { return ptr_ != other.ptr_; }
-        };
-        Iter begin() { return Iter(&items[0]); }
-        Iter end() { return Iter(&items[5]); }
-    };
-`)
-}
-
-export function genArrayVal(decl: Ts.VariableDeclaration, dn: string) {
-    if (!Targ.isHdr()) return
-    Ast.printTree(decl)
-    Out.print("%t// %1\n", dn)
+    const call = decl.initializer! as Ts.CallExpression
+    const cs = Targ.isHdr() ? 'extern const ' : 'const '
+    const ts = Type.make(call.typeArguments![0])
+    Out.print("%t%1em::config<%2> %3", cs, ts, dn)
+    if (Targ.isMain()) {
+        Out.print(" = ((%1)(", ts)
+        printVal(cobj._val, ts)
+        Out.print("))")
+    }
+    Out.print(";\n")
 }
 
 export function genFactory(decl: Ts.VariableDeclaration, dn: string) {
@@ -61,20 +39,6 @@ export function genFactory(decl: Ts.VariableDeclaration, dn: string) {
             Out.print(",\n")
         }
         Out.print("%-%t}")
-    }
-    Out.print(";\n")
-}
-
-export function genParam(decl: Ts.VariableDeclaration, dn: string) {
-    const cobj = getObj(dn)
-    const call = decl.initializer! as Ts.CallExpression
-    const cs = Targ.isHdr() ? 'extern const ' : 'const '
-    const ts = Type.make(call.typeArguments![0])
-    Out.print("%t%1em::config<%2> %3", cs, ts, dn)
-    if (Targ.isMain()) {
-        Out.print(" = ((%1)(", ts)
-        printVal(cobj.val, ts)
-        Out.print("))")
     }
     Out.print(";\n")
 }
@@ -105,10 +69,9 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
 
 export function getKind(node: Ts.Node): Kind {
     const te = Ast.getTypeExpr(Targ.context().ud.tc, node)
-    if (te.startsWith('em$ArrayProto')) return 'ARRAY_P'
-    // if (te.startsWith('em$ArrayVal')) return 'ARRAY_V'
+    if (te.startsWith('em$config_t')) return 'CONFIG'
     if (te.startsWith('factory_t<')) return 'FACTORY'
-    if (te.startsWith('em$config_t')) return 'PARAM'
+    if (te.startsWith('em$param_t')) return 'PARAM'
     if (te.startsWith('em$proxy_t')) return 'PROXY'
     if (te.startsWith('table_t<')) return 'TABLE'
     return 'NONE'
@@ -121,10 +84,6 @@ export function getObj(name: string): any {
     if (!cobj) cobj = uobj.em$decls[name]
     if (!cobj) Err.fail(`no object corresponding to '${name}'`)
     return cobj
-}
-
-function isArrayLike(x: any): x is ArrayLike<any> {
-    return x != null && typeof x !== 'function' && typeof x.length === 'number'
 }
 
 function printVal(val: any, ts?: string) {
@@ -181,10 +140,20 @@ function printVal(val: any, ts?: string) {
             }
             return
         }
+        if (val.__em$class == 'em$vector') {
+            Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
+            for (const e of val.items) {
+                Out.print("%t")
+                printVal(e, ts)
+                Out.print(",\n")
+            }
+            Out.print("%-%t})")
+            return
+        }
         if (val.constructor?.em$metaData) {
             Out.print("%1::%2({\n%+", val.constructor?.em$metaData, val.constructor?.name)
             for (let p in val) {
-                if (val[p] === undefined) continue
+                if (typeof val[p] == 'function' || val[p] === undefined) continue
                 Out.print("%t.%1 = ", p)
                 printVal(val[p], ts)
                 Out.print(",\n")

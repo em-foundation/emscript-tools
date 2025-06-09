@@ -14,12 +14,22 @@ export class Desc {
         readonly kind: Kind,
         readonly sf: Ts.SourceFile,
         readonly tc: Ts.TypeChecker,
-        private _imports: Map<string, string>
+        private _imports: Map<string, string>,
     ) { }
     addImport(impName: string, impUid: string) { this._imports.set(impName, impUid) }
     get cname(): string { return this.id.replaceAll(/[./]/g, '_') }
     get imports(): ReadonlyMap<string, string> { return this._imports }
     isMetaOnly(): boolean { return this.kind == 'COMPOSITE' || this.kind == 'TEMPLATE' }
+    resolveType(ts: string): string | null {
+        let m = ts.match(/^(\w+)$/)
+        if (m) return m[1]
+        m = ts.match(/^(\w+)\</)
+        if (m) return `${m[1]}`
+        m = ts.match(/^(\w+)\.(\w+)$/)
+        if (!m) return null
+        const iid = this._imports.get(m[1]) ?? '$'
+        return `@${iid}:${m[2]}`
+    }
 }
 
 
@@ -36,12 +46,55 @@ function cloneNode<T extends Ts.Node>(node: T): T {
 }
 */
 
+function addTdefs(ud: Desc) {
+    const sf = ud.sf
+    for (const stmt of sf.statements) {
+        let key: string | undefined
+        let val: string | undefined
+
+        if (Ts.isClassDeclaration(stmt) && stmt.name) {
+            const extClause = stmt.heritageClauses?.find((clause) => clause.token === Ts.SyntaxKind.ExtendsKeyword)
+            const extType = extClause ? extClause.types[0] : undefined
+            const extCls = extType && Ts.isExpressionWithTypeArguments(extType) && Ts.isIdentifier(extType.expression)
+                ? extType.expression.text : undefined
+            if (extCls === '$vector') {
+                key = stmt.name.text
+                val = `[${ud.resolveType(extType!.typeArguments![0].getText(sf))}`
+            }
+            else if (extCls === '$struct') {
+                key = stmt.name.text
+                val = '{'
+                let sep = ''
+                for (const mbr of stmt.members) {
+                    if (Ts.isPropertyDeclaration(mbr) && mbr.type && !Ts.isFunctionTypeNode(mbr.type)) {
+                        const mt = mbr.type ? ud.resolveType(mbr.type.getText(sf)) : 'unknown'
+                        val += sep + mt
+                        sep = ','
+                    }
+                }
+            }
+        }
+        else if (Ts.isTypeAliasDeclaration(stmt) && stmt.name) {
+            const ts = ud.resolveType(stmt.type.getText(sf))
+            if (ts) {
+                key = stmt.name.text
+                val = ts
+            }
+        }
+        if (key) {
+            $$tdefs.set(`${ud.id}:${key}`, val!)
+        }
+    }
+}
+
 export function create(sf: Ts.SourceFile, tc: Ts.TypeChecker): Desc {
     const uid = Session.mkUid(sf.fileName)
     if (unitTab.has(uid)) return unitTab.get(uid)!
-    const sobj = scan(sf)
+    const sobj = scanDecls(sf)
+    // if (sobj.sizes.size > 0) console.log(uid, sobj.sizes)
     const unit = new Desc(uid, sobj.kind, sf, tc, sobj.imps)
     unitTab.set(uid, unit)
+    addTdefs(unit)
     return unit
 }
 
@@ -63,10 +116,10 @@ interface ScanResult {
     imps: Map<string, string>
 }
 
-function scan(sf: Ts.SourceFile): ScanResult {
+function scanDecls(sf: Ts.SourceFile): ScanResult {
     let res = { kind: 'MODULE', imps: new Map<string, string> } as ScanResult
     const distro = Session.getDistro()
-    sf.statements.map((stmt) => {
+    for (const stmt of sf.statements) {
         if (Ts.isImportDeclaration(stmt)) {
             const modSpecNode = stmt.moduleSpecifier
             if (Ts.isStringLiteral(modSpecNode)) {
@@ -78,12 +131,14 @@ function scan(sf: Ts.SourceFile): ScanResult {
                     res.imps.set(inMatch![1], iupath)
                 }
             }
+            continue
         }
-        else if (Ts.isVariableStatement(stmt)) {
+        if (Ts.isVariableStatement(stmt)) {
             const m = stmt.getText(sf).match(/\$declare\(['"](\w+)['"]/)
             if (m) res.kind = m[1] as Kind
+            continue
         }
-    })
+    }
     return res
 }
 

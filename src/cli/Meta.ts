@@ -11,8 +11,6 @@ import * as Unit from './Unit'
 let curUpath: string
 let curUidList: Array<string>
 
-let $$units = new Map<string, any>()
-
 function call(fn: string, u: any) {
     if (fn in u) {
         // console.log(`call ${u.$U.uid}.${fn}`)  // TODO logging
@@ -32,6 +30,7 @@ export function exec() {
         let uobj: any = require(upath)
         ud.$uobj = uobj
         $$units.set(uid, uobj)
+        uobj.$$init()
     }
     process.chdir(Session.getWorkDir())
     const $$uarrBot = Array.from($$units.values())
@@ -133,6 +132,28 @@ function expand(doneSet: Set<string>): Array<string> {
     return res
 }
 
+function mkInitFxn(ud: Unit.Desc): string {
+    let res = '\nfunction $$init() {\n'
+    for (const stmt of ud.sf.statements) {
+        if (!Ts.isVariableStatement(stmt)) continue
+        if (stmt.modifiers?.some((mod) => mod.kind === Ts.SyntaxKind.DeclareKeyword)) continue
+        const es = stmt.modifiers?.some((mod) => mod.kind === Ts.SyntaxKind.ExportKeyword) ? 'exports.' : ''
+        const decl = stmt.declarationList.declarations[0]
+        if (!Ts.isIdentifier(decl.name)) continue
+        if (decl.initializer) {
+            if (decl.initializer.getText(ud.sf).startsWith('$config<')) {
+                res += `    ${es}${decl.name.text}._$$init()\n`
+            }
+            continue
+        }
+        if (!decl.type) continue
+        const ts = ud.resolveType(decl.type.getText(ud.sf)) ?? 'unknown'
+        res += `    ${es}${decl.name.text} = $default('${ts}', '${ud.id}')\n`
+    }
+    res += '}\nexports.$$init = $$init\n'
+    return res
+}
+
 export function parse(upath: string): void {
     curUpath = upath
     const dist = Session.getDistro()
@@ -189,7 +210,6 @@ function transpile(options: Ts.CompilerOptions) {
     const buildDir = Session.getBuildDir()
     for (const uid of curUidList) {
         const ud = Unit.units().get(uid)!
-        Trans.collectAliasInfo(ud.sf)
         const transOut = Ts.transpileModule(ud.sf.getText(ud.sf), {
             compilerOptions: options,
             fileName: ud.sf.fileName,
@@ -201,8 +221,11 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.factoryTransformer(ud.cname),
                     Trans.frameTransformer(),
                     Trans.implementsTransformer(),
-                    Trans.sizeofTransformer(),
-                    Trans.structTransformer(ud.cname)
+                    Trans.structTransformer(ud),
+                    Trans.typeopTransformer(ud, '$config'),
+                    Trans.typeopTransformer(ud, '$sizeof'),
+                    Trans.vectorTransformer(ud),
+                    Trans.typeopTransformer(ud, '$default'), // prior transformers generate $default nodes
                 ]
             },
         })
@@ -215,6 +238,7 @@ function transpile(options: Ts.CompilerOptions) {
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/require\("@(.+)\.em"\)/g, 'require("../$1.em")')
         src = src.replaceAll(/((\w+)) = \$clone\((\w+)\);/g, `$1 = __importStar(require("../${uid}__$2.em"))`)
+        src += mkInitFxn(ud)
         Fs.writeFileSync(`${buildDir}/${uid}.em.js`, src, 'utf-8')
     }
     const emFile = 'em.lang/emscript'
