@@ -50,8 +50,8 @@ export function make(expr: Ts.Expression): string {
         // const DEBUG = sa[0] == 'this'
         // const DEBUG = txt.startsWith('AppLed.$$.on')
         // const DEBUG = txt.startsWith('e.$$.tempCoeff')
-        const DEBUG = txt.startsWith('Common.BusyWait.wait')
-        // const DEBUG = false
+        // const DEBUG = txt.startsWith('Common.BusyWait.wait')
+        const DEBUG = false
         if (DEBUG) console.log(`*** 0    kind = ${kind}, len = ${sa.length}`)
         if (DEBUG) console.log(Targ.context().ud.id)
         if (DEBUG) console.log(Targ.context().ud.imports)
