@@ -45,24 +45,31 @@ export function make(expr: Ts.Expression): string {
     else if (Ts.isPropertyAccessExpression(expr)) {
         const sa = txt.split('.')
         const etxt = expr.expression.getText(sf)
+        const kind = Config.getKind(expr.expression)
+        const texp = Ast.getTypeExpr(tc, expr.expression)
         // const DEBUG = sa[0] == 'this'
         // const DEBUG = txt.startsWith('AppLed.$$.on')
         // const DEBUG = txt.startsWith('e.$$.tempCoeff')
-        const DEBUG = false
+        const DEBUG = txt.startsWith('Prx') || txt.startsWith('Prx2.')
+        // const DEBUG = false
+        if (DEBUG) console.log('*** 0')
         if (DEBUG) console.log(Targ.context().ud.id)
         if (DEBUG) console.log(Targ.context().ud.imports)
         if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
-        if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.expression))
+        if (DEBUG) console.log(txt, texp)
+        if (DEBUG) console.log(kind)
 
         if (sa[0] == '$R') {
             return mkReg(sa)
         }
-        else if (Config.getKind(expr.expression) != 'NONE') {
+        else if (sa.length == 2 && texp.startsWith('em$proxy2_t<')) {
+            return `${sa[0]}::${sa[1]}`
+        }
+        else if (kind != 'NONE') {
             return sa.join('.')
         }
         else if (tc.getTypeAtLocation(expr.expression).isClass()) {
-            const tn = Ast.getTypeExpr(tc, expr.expression)
-            if (DEBUG) console.log(`    class ${tn}: ${etxt}`)
+            if (DEBUG) console.log(`*** 1    class ${texp}: ${etxt}`)
             if (etxt.endsWith('.$$')) {
                 const base = (expr.expression as Ts.PropertyAccessExpression).expression
                 return `${make(base)}->${expr.name.text}`
@@ -73,15 +80,16 @@ export function make(expr: Ts.Expression): string {
             return `${make(expr.expression)}.${expr.name.text}`
         }
         else {
-            const tn = Ast.getTypeExpr(tc, expr.expression)
-            if (DEBUG) console.log(`    tn = ${tn}`)
+            if (DEBUG) console.log(`*** 2    tn = ${texp}, sa.len = ${sa.length}`)
             // const sym = tc.getTypeAtLocation(expr.expression).getSymbol()
             // console.log(tn, sym?.flags)
-            if (sa.length == 2 && tn == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
-            const op = mkSelOp(tn)
+            if (sa.length == 2 && texp == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
+            const op = mkSelOp(texp)
             // console.log(`op = '${op}, tn = ${tn}`)
-            if (op == '::') return sa.join(op)
-            if (sa.length == 2 && (tn.match(/^(ptr_t|ref_t)/))) {
+            if (op == '::') {
+                return sa.join(op)
+            }
+            if (sa.length == 2 && (texp.match(/^(ptr_t|ref_t)/))) {
                 return (sa[1] == '$$') ? `(*(${sa[0]}))` : `${sa[0]}.${sa[1]}`
             }
             if (sa.length > 2 && etxt.endsWith('.$$')) {
