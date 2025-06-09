@@ -141,7 +141,8 @@ function mkInitFxn(ud: Unit.Desc): string {
         const decl = stmt.declarationList.declarations[0]
         if (!Ts.isIdentifier(decl.name)) continue
         if (decl.initializer) {
-            if (decl.initializer.getText(ud.sf).startsWith('$config<')) {
+            const txt = decl.initializer.getText(ud.sf)
+            if (txt.startsWith('$config<') || txt.startsWith('$param<')) {
                 res += `    ${es}${decl.name.text}._$$init()\n`
             }
             continue
