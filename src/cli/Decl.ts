@@ -29,7 +29,7 @@ export function generate(decl: Ts.Declaration) {
                 Config.genFactory(decl, dn)
                 return
             case 'PARAM':
-                console.log(`*** ${dn}`)
+                Config.genParam(decl, dn)
                 return
             case 'PROXY':
                 return
