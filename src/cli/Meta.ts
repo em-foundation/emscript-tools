@@ -142,7 +142,7 @@ function mkInitFxn(ud: Unit.Desc): string {
         if (!Ts.isIdentifier(decl.name)) continue
         if (decl.initializer) {
             const txt = decl.initializer.getText(ud.sf)
-            if (txt.startsWith('$config<') || txt.startsWith('$param<')) {
+            if (txt.startsWith('$config<')) {
                 res += `    ${es}${decl.name.text}._$$init()\n`
             }
             continue
@@ -224,7 +224,6 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.implementsTransformer(),
                     Trans.structTransformer(ud),
                     Trans.typeopTransformer(ud, '$config'),
-                    Trans.typeopTransformer(ud, '$param'),
                     Trans.typeopTransformer(ud, '$sizeof'),
                     Trans.vectorTransformer(ud),
                     Trans.typeopTransformer(ud, '$default'), // prior transformers generate $default nodes

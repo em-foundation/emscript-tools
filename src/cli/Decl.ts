@@ -29,9 +29,6 @@ export function generate(decl: Ts.Declaration) {
             case 'FACTORY':
                 Config.genFactory(decl, dn)
                 return
-            case 'PARAM':
-                Config.genParam(decl, dn)
-                return
             case 'PROXY':
                 return
             case 'TABLE':
