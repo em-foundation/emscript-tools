@@ -90,7 +90,7 @@ function genHeader(ud: Unit.Desc) {
         Out.addText(`#include <${iud.id}.hpp>\n`)
     })
     Out.print("\nnamespace %1 {\n\n%+", ud.cname)
-    Out.print("%tnamespace $$ = %1;\n", ud.cname)
+    // Out.print("%tnamespace $$ = %1;\n", ud.cname)
     ud.imports.forEach((iid, key) => {
         if (key == '$R') return
         const iud = unitTab.get(iid)!

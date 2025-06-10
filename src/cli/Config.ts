@@ -87,7 +87,6 @@ export function getKind(node: Ts.Node): Kind {
     if (te.startsWith('factory_t<')) return 'FACTORY'
     if (te.startsWith('em$param_t')) return 'PARAM'
     if (te.startsWith('em$proxy_t')) return 'PROXY'
-    if (te.startsWith('em$proxy2_t')) return 'PROXY'
     if (te.startsWith('table_t<')) return 'TABLE'
     return 'NONE'
 }

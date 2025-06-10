@@ -48,33 +48,34 @@ export function make(expr: Ts.Expression): string {
         const kind = Config.getKind(expr.expression)
         const texp = Ast.getTypeExpr(tc, expr.expression)
         // const DEBUG = sa[0] == 'this'
-        // const DEBUG = txt.startsWith('AppLed.$$.on')
+        // const DEBUG = txt.startsWith('AppLed.on')
         // const DEBUG = txt.startsWith('e.$$.tempCoeff')
         // const DEBUG = txt.startsWith('Common.BusyWait.wait')
         const DEBUG = false
         if (DEBUG) console.log(`*** 0    kind = ${kind}, len = ${sa.length}`)
         if (DEBUG) console.log(Targ.context().ud.id)
         if (DEBUG) console.log(Targ.context().ud.imports)
+        if (DEBUG) console.log(Targ.context().ud._proxies)
         if (DEBUG) console.log(txt, Ast.getTypeExpr(tc, expr.name))
         if (DEBUG) console.log(txt, texp)
 
         if (sa[0] == '$R') {
             return mkReg(sa)
         }
-        else if (texp.startsWith('em$proxy2_t<')) {
-            if (DEBUG) console.log('*** 3')
+        else if (texp.startsWith('em$proxy_t')) {
+            if (DEBUG) console.log('*** 1')
             return `${make(expr.expression)}::${expr.name.text}`
         }
-        else if (sa.length == 2 && texp.startsWith('em$proxy2_t<')) {
-            if (DEBUG) console.log('*** 3')
+        else if (sa.length == 2 && Targ.context().ud._proxies.has(sa[0])) {
+            if (DEBUG) console.log('*** 2')
             return `${sa[0]}::${sa[1]}`
         }
         else if (kind != 'NONE' && kind != 'PROXY') {
-            if (DEBUG) console.log('*** 4')
+            if (DEBUG) console.log('*** 3')
             return sa.join('.')
         }
         else if (tc.getTypeAtLocation(expr.expression).isClass()) {
-            if (DEBUG) console.log(`*** 1    class ${texp}: ${etxt}`)
+            if (DEBUG) console.log(`*** 4    class ${texp}: ${etxt}`)
             if (etxt.endsWith('.$$')) {
                 const base = (expr.expression as Ts.PropertyAccessExpression).expression
                 return `${make(base)}->${expr.name.text}`
@@ -86,7 +87,7 @@ export function make(expr: Ts.Expression): string {
         }
         else {
             const op = mkSelOp(texp)
-            if (DEBUG) console.log(`*** 2    op = ${op}`)
+            if (DEBUG) console.log(`*** 5    op = ${op}`)
             // const sym = tc.getTypeAtLocation(expr.expression).getSymbol()
             // console.log(tn, sym?.flags)
             if (sa.length == 2 && texp == 'any' && sa[1] == '$$') return sa[0]  // em$BoxedVal
