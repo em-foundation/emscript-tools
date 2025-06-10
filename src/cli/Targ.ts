@@ -176,7 +176,7 @@ function genProxies(uid: string) {
         if (!txt.match(/\$(delegate|proxy)/)) return
         const pn = (decl.name as Ts.Identifier).text
         const pobj = uobj[pn] || uobj.em$decls[pn]
-        const did = pobj.prx.$U.uid
+        const did = pobj.$$dlg.$U.uid
         const dud = unitTab.get(did)
         if (dud) Out.print('namespace %1 { namespace %2 = %3; };\n', ud.cname, pn, dud.cname)
         else Err.fail(`unbound proxy: ${uid}.${pn}`)

@@ -51,7 +51,7 @@ export function genParam(decl: Ts.VariableDeclaration, dn: string) {
     Out.print("%t%1%2 %3", cs, ts, dn)
     if (Targ.isMain()) {
         Out.print(" = ((%1)(", ts)
-        printVal(cobj.$val, ts)
+        printVal(cobj.$$val, ts)
         Out.print("))")
     }
     Out.print(";\n")

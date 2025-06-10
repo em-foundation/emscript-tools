@@ -62,13 +62,13 @@ export function exec() {
                 const cobj = uobj[p]
                 if (cobj.$$em$config != 'proxy') continue
                 if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
-                nextSet.add(cobj.prx.$U.uid)
+                nextSet.add(cobj.$$dlg.$U.uid)
             }
             for (const p in uobj.em$decls) {
                 const cobj = uobj.em$decls[p]
                 if (!cobj || cobj.$$em$config != 'proxy') continue
                 if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
-                nextSet.add(cobj.prx.$U.uid)
+                nextSet.add(cobj.$$dlg.$U.uid)
             }
         })
         workSet.clear()
