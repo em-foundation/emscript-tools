@@ -50,10 +50,10 @@ export function getDistro(): { package: string, bucket: string } {
 
 export function getShellPath(): string {
     // TODO -- infer path if necessary
-    if (process.env['SHELL']) {
+    if (Fs.existsSync(`${process.env.SYSTEMDRIVE}\\git\\usr\\bin\\bash.exe`)) {
+        return `${process.env.SYSTEMDRIVE}\\git\\usr\\bin\\bash.exe`
+    } else if (process.env.SHELL) {
         return process.env.SHELL
-    } else if (Fs.existsSync('C:\\git\\usr\\bin\\bash.exe')) {
-        return 'C:\\git\\usr\\bin\\bash.exe'
     } else if (process.env.COMSPEC) {
         return process.env.COMSPEC
     } else {
