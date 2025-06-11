@@ -232,7 +232,7 @@ export function structTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
     }
 }
 
-export function tableTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+export function tableTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         const updatedStatements = sourceFile.statements.map(stmt => {
             if (!Ts.isVariableStatement(stmt)) return stmt
@@ -241,11 +241,14 @@ export function tableTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
             const init = decl.initializer
             if (init && Ts.isCallExpression(init) && Ts.isIdentifier(init.expression) && init.expression.text === '$table') {
                 const acc = declList.flags & Ts.NodeFlags.Const ? 'ro' : 'rw'
+                // let dname = ((node.parent as Ts.VariableDeclaration).name as Ts.Identifier).text
+
+                const cname = `${ud.cname}::${(decl.name as Ts.Identifier).text}`
                 const newInit = Ts.factory.updateCallExpression(
                     init,
                     init.expression,
                     init.typeArguments,
-                    [Ts.factory.createStringLiteral(acc)]
+                    [Ts.factory.createStringLiteral(acc), Ts.factory.createStringLiteral(cname)]
                 )
                 const newDecl = Ts.factory.updateVariableDeclaration(
                     decl,

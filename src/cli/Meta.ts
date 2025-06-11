@@ -223,7 +223,7 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.frameTransformer(),
                     Trans.implementsTransformer(),
                     Trans.structTransformer(ud),
-                    Trans.tableTransformer(),
+                    Trans.tableTransformer(ud),
                     Trans.typeopTransformer(ud, '$config'),
                     Trans.typeopTransformer(ud, '$sizeof'),
                     Trans.vectorTransformer(ud),
