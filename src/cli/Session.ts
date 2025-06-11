@@ -52,6 +52,8 @@ export function getShellPath(): string {
     // TODO -- infer path if necessary
     if (Fs.existsSync(`${process.env.SYSTEMDRIVE}\\git\\usr\\bin\\bash.exe`)) {
         return `${process.env.SYSTEMDRIVE}\\git\\usr\\bin\\bash.exe`
+    } else if (Fs.existsSync(`${process.env.SYSTEMDRIVE}\\Program Files\\Git\\usr\\bin\\bash.exe`)) {
+        return `${process.env.SYSTEMDRIVE}\\Program Files\\Git\\usr\\bin\\bash.exe`
     } else if (process.env.SHELL) {
         return process.env.SHELL
     } else if (process.env.COMSPEC) {
