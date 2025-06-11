@@ -48,7 +48,7 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     const acc = cobj.access
     const es = Targ.isHdr() ? 'extern ' : ''
     const cs = acc == 'ro' ? 'const ' : ''
-    const len = Math.max(cobj.elems.length, cobj.elem_cnt)
+    const len = cobj.elems.length
     const call = decl.initializer! as Ts.CallExpression
     if (cobj.tab_align > 0) {
         Out.print("alignas(%1) ", cobj.tab_align)

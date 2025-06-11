@@ -232,6 +232,37 @@ export function structTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
     }
 }
 
+export function tableTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        const updatedStatements = sourceFile.statements.map(stmt => {
+            if (!Ts.isVariableStatement(stmt)) return stmt
+            const declList = stmt.declarationList
+            const decl = declList.declarations[0]
+            const init = decl.initializer
+            if (init && Ts.isCallExpression(init) && Ts.isIdentifier(init.expression) && init.expression.text === '$table') {
+                const acc = declList.flags & Ts.NodeFlags.Const ? 'ro' : 'rw'
+                const newInit = Ts.factory.updateCallExpression(
+                    init,
+                    init.expression,
+                    init.typeArguments,
+                    [Ts.factory.createStringLiteral(acc)]
+                )
+                const newDecl = Ts.factory.updateVariableDeclaration(
+                    decl,
+                    decl.name,
+                    decl.exclamationToken,
+                    decl.type,
+                    newInit
+                )
+                const newDeclList = Ts.factory.updateVariableDeclarationList(declList, [newDecl])
+                return Ts.factory.updateVariableStatement(stmt, stmt.modifiers, newDeclList)
+            }
+            return stmt
+        })
+        return Ts.factory.updateSourceFile(sourceFile, updatedStatements)
+    }
+}
+
 export function typeopTransformer(ud: Unit.Desc, op: string): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
