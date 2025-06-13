@@ -226,6 +226,7 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.tableTransformer(ud),
                     Trans.typeopTransformer(ud, '$config'),
                     Trans.typeopTransformer(ud, '$sizeof'),
+                    Trans.typeopTransformer(ud, '$table'),
                     Trans.vectorTransformer(ud),
                     Trans.typeopTransformer(ud, '$default'), // prior transformers generate $default nodes
                 ]

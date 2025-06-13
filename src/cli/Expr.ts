@@ -115,7 +115,7 @@ export function make(expr: Ts.Expression): string {
             if (op == '::') {
                 return sa.join(op)
             }
-            if (sa.length == 2 && (texp.match(/^(ptr_t|ref_t)/))) {
+            if (sa.length == 2 && (texp.match(/^(ptr_t|ref_t|\$\$)/))) {
                 return (sa[1] == '$$') ? `(*(${sa[0]}))` : `${sa[0]}.${sa[1]}`
             }
             if (sa.length > 2 && etxt.endsWith('.$$')) {

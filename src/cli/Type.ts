@@ -42,6 +42,7 @@ export function make(type: Ts.TypeNode, tdef?: string, sf?: Ts.SourceFile): stri
         else {
             if (builtins.has(tn)) tn = `em.${tn}`
             if (tn == 'eref_t') tn = 'em.ref_t'
+            if (tn == '$$') tn = 'em.ref_t'         // TODO: generalize
             res = tn.replaceAll('.', '::') + makeTypeArgs(type.typeArguments)
             if (tdef) res += ` ${tdef}`
         }
