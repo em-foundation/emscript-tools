@@ -75,6 +75,18 @@ function printVal(val: any, ts?: string) {
             Out.print("nullptr")
             return
         }
+        if (val.__em$class == 'em$eref') {
+            if (val.$idx == -1) {
+                Out.print("nullptr")
+            }
+            else {
+                if (ts) Out.print("%1", ts)
+                Out.print("(&%1[%2])", val.$cname, val.$idx)
+            }
+            return
+        }
+
+
         if (val?.constructor?.name === 'em$text_t') {
             Out.print("%1", Expr.mkTextVal(val.str))
             return

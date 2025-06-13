@@ -43,13 +43,34 @@ export function make(expr: Ts.Expression): string {
         return `/// ${txt}`
     }
     else if (Ts.isPropertyAccessExpression(expr)) {
+        // const baseExpr = expr.expression
+        // const etxt = expr.expression.getText(sf)
+        // const texp = Ast.getTypeExpr(tc, expr.expression)
+        // if (txt.startsWith('Utils.Kind.STATE')) console.log(`${etxt} :: ${texp}`)
+        // const pn = expr.name.text
+        // const sa = txt.split('.')
+        // if (txt.startsWith('$R.')) {
+        //     return mkReg(sa)
+        // }
+        // if (sa.length == 2 && sa[1] == '$$') {
+        //     return `(*${make(baseExpr)})`
+        // }
+        // let sep = '.'
+        // if (texp.startsWith('typeof import(')) {
+        //     sep = '::'
+        // }
+        // if (texp.startsWith('em$proxy_t')) {
+        //     sep = '::'
+        // }
+        // return `${make(baseExpr)}${sep}${pn}`
+
         const sa = txt.split('.')
         const etxt = expr.expression.getText(sf)
         const kind = Config.getKind(expr.expression)
         const texp = Ast.getTypeExpr(tc, expr.expression)
         // const DEBUG = sa[0] == 'this'
         // const DEBUG = txt.startsWith('AppLed.on')
-        // const DEBUG = txt.startsWith('e.$$.tempCoeff')
+        // const DEBUG = txt.startsWith('efg')
         // const DEBUG = txt.startsWith('Common.BusyWait.wait')
         const DEBUG = false
         if (DEBUG) console.log(`*** 0    kind = ${kind}, len = ${sa.length}`)
