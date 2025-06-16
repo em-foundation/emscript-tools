@@ -62,13 +62,13 @@ export function exec() {
                 const cobj = uobj[p]
                 if (cobj.$$em$config != 'proxy') continue
                 if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
-                nextSet.add(cobj.prx.$U.uid)
+                nextSet.add(cobj.$$dlg.$U.uid)
             }
             for (const p in uobj.em$decls) {
                 const cobj = uobj.em$decls[p]
                 if (!cobj || cobj.$$em$config != 'proxy') continue
                 if (!cobj.bound) Err.fail(`unbound proxy: ${uid}.${p}`)
-                nextSet.add(cobj.prx.$U.uid)
+                nextSet.add(cobj.$$dlg.$U.uid)
             }
         })
         workSet.clear()
@@ -141,7 +141,8 @@ function mkInitFxn(ud: Unit.Desc): string {
         const decl = stmt.declarationList.declarations[0]
         if (!Ts.isIdentifier(decl.name)) continue
         if (decl.initializer) {
-            if (decl.initializer.getText(ud.sf).startsWith('$config<')) {
+            const txt = decl.initializer.getText(ud.sf)
+            if (txt.startsWith('$config<')) {
                 res += `    ${es}${decl.name.text}._$$init()\n`
             }
             continue
@@ -222,8 +223,10 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.frameTransformer(),
                     Trans.implementsTransformer(),
                     Trans.structTransformer(ud),
+                    Trans.tableTransformer(ud),
                     Trans.typeopTransformer(ud, '$config'),
                     Trans.typeopTransformer(ud, '$sizeof'),
+                    Trans.typeopTransformer(ud, '$table'),
                     Trans.vectorTransformer(ud),
                     Trans.typeopTransformer(ud, '$default'), // prior transformers generate $default nodes
                 ]

@@ -19,17 +19,12 @@ export function generate(decl: Ts.Declaration) {
     else if (Ts.isVariableDeclaration(decl)) {
         const txt = decl.getText(Targ.context().ud.sf)
         if (txt.indexOf('em$clone') != -1) return
+        if (txt.indexOf('$delegate') != -1) return
         const dn = (decl.name as Ts.Identifier).text
         if (dn == '$U') return
         switch (Config.getKind(decl.name)) {
             case 'CONFIG':
                 Config.genConfig(decl, dn)
-                return
-            case 'FACTORY':
-                Config.genFactory(decl, dn)
-                return
-            case 'PARAM':
-                console.log(`*** ${dn}`)
                 return
             case 'PROXY':
                 return
