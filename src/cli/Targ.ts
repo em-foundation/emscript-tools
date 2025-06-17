@@ -90,7 +90,7 @@ function genHeader(ud: Unit.Desc) {
         Out.addText(`#include <${iud.id}.hpp>\n`)
     })
     Out.print("\nnamespace %1 {\n\n%+", ud.cname)
-    Out.print("%tnamespace $$ = %1;\n", ud.cname)
+    // Out.print("%tnamespace $$ = %1;\n", ud.cname)
     ud.imports.forEach((iid, key) => {
         if (key == '$R') return
         const iud = unitTab.get(iid)!
@@ -176,7 +176,7 @@ function genProxies(uid: string) {
         if (!txt.match(/\$(delegate|proxy)/)) return
         const pn = (decl.name as Ts.Identifier).text
         const pobj = uobj[pn] || uobj.em$decls[pn]
-        const did = pobj.prx.$U.uid
+        const did = pobj.$$dlg.$U.uid
         const dud = unitTab.get(did)
         if (dud) Out.print('namespace %1 { namespace %2 = %3; };\n', ud.cname, pn, dud.cname)
         else Err.fail(`unbound proxy: ${uid}.${pn}`)

@@ -15,6 +15,7 @@ export class Desc {
         readonly sf: Ts.SourceFile,
         readonly tc: Ts.TypeChecker,
         private _imports: Map<string, string>,
+        readonly _proxies: Set<string>
     ) { }
     addImport(impName: string, impUid: string) { this._imports.set(impName, impUid) }
     get cname(): string { return this.id.replaceAll(/[./]/g, '_') }
@@ -92,7 +93,7 @@ export function create(sf: Ts.SourceFile, tc: Ts.TypeChecker): Desc {
     if (unitTab.has(uid)) return unitTab.get(uid)!
     const sobj = scanDecls(sf)
     // if (sobj.sizes.size > 0) console.log(uid, sobj.sizes)
-    const unit = new Desc(uid, sobj.kind, sf, tc, sobj.imps)
+    const unit = new Desc(uid, sobj.kind, sf, tc, sobj.imps, sobj.prxs)
     unitTab.set(uid, unit)
     addTdefs(unit)
     return unit
@@ -114,10 +115,11 @@ function printSf(sf: Ts.SourceFile) {
 interface ScanResult {
     kind: Kind,
     imps: Map<string, string>
+    prxs: Set<string>
 }
 
 function scanDecls(sf: Ts.SourceFile): ScanResult {
-    let res = { kind: 'MODULE', imps: new Map<string, string> } as ScanResult
+    let res = { kind: 'MODULE', imps: new Map<string, string>, prxs: new Set<string> } as ScanResult
     const distro = Session.getDistro()
     for (const stmt of sf.statements) {
         if (Ts.isImportDeclaration(stmt)) {
@@ -134,8 +136,16 @@ function scanDecls(sf: Ts.SourceFile): ScanResult {
             continue
         }
         if (Ts.isVariableStatement(stmt)) {
-            const m = stmt.getText(sf).match(/\$declare\(['"](\w+)['"]/)
-            if (m) res.kind = m[1] as Kind
+            const txt = stmt.getText(sf)
+            const ma = txt.match(/\$declare\(['"](\w+)['"]/)
+            if (ma) {
+                res.kind = ma[1] as Kind
+                continue
+            }
+            const mb = txt.match(/(\w+)\s*\=\s*\$(proxy|delegate)/)
+            if (mb) {
+                res.prxs.add(mb[1])
+            }
             continue
         }
     }
