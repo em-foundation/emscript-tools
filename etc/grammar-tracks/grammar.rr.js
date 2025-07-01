@@ -9,7 +9,7 @@ const $co = (text) => new Rd.Comment(text)
 const $cd = (...items) => new Rd.ComplexDiagram(...items)
 const $dg = (...items) => new Rd.Diagram(...items)
 const $nt = (text, title) => new Rd.NonTerminal(text, {title: title, href: `#${text.trim()}`})
-const $om = Rd.OneOrMore
+const $om = (item, rep) => new Rd.OneOrMore(item, rep)
 const $op = (item, skip) => new Rd.Optional(item, skip)
 const $sk = () => new Rd.Skip()
 const $sq = (...items) => new Rd.Sequence(...items)
@@ -88,6 +88,13 @@ G.set('type-decl', $cd(
         $nt('struct-type-decl'),
 )))
 
+G.set('var-decl', $cd(
+    $cf('var', 'b'),
+    $tn('name'),
+    $op($sq($cf(':'), $nt('type'))),
+    $op($sq($cf('= '), $nt('expr'))),
+))
+
 G.set('alias-type-decl', $cd(
     $op($cf('export', 'k')),
     $cf('type', 'b'),
@@ -112,21 +119,41 @@ G.set('struct-type-decl', $cd(
     $cf('class', 'b'),
     $tn('name'),
     $cf('extends $struct {', 'br'),
-    $zm($nt('struct-fld-decl')),
+    $om($nt('field-decl'), $co('*')),
+    $cf('}'),
+    $op($nt('struct-methods')),
+))
+
+G.set('field-decl', $cd(
+    $tn('name'),
+    $cf(':'),
+    $nt('type'),
+))
+
+G.set('struct-methods', $cd(
+    $op($cf('export', 'k')),
+    $cf('interface', 'b'),
+    $tn('struct-type-name'),
+    $cf('{'),
+    $om($nt('method-decl'), $co('*')),
     $cf('}'),
 ))
 
-G.set('var-decl', $cd(
-    $cf('var', 'b'),
+G.set('method-decl', $cd(
     $tn('name'),
-    $op($sq($cf(':'), $nt('type'))),
-    $op($sq($cf('= '), $nt('expr'))),
+    $cf('('),
+    $op($om($sq($tn('arg-name'), $cf(':'), $nt('type')), $sq($co('*'), $cf(',')))),
+    $cf(')'),
+    $cf(':'),
+    $nt('type'),
 ))
 
 const __TYPE__ = null
 
 G.set('type', $cd($ch(
     $nt('basic-type    '),
+    $nt('callback-type '),
+    $nt('enum-type     '),
     $nt('frame-type    '),
     $nt('ptr-type      '),
     $nt('ref-type      '),
@@ -148,6 +175,12 @@ G.set('basic-type', $dg($ch(
     $cf('u64   ', 't'),
     $cf('void  ', 't'),
 )))
+
+G.set('callback-type', $cd(
+    $cf('cb_t<[', 't'),
+    $op($nt('type')),
+    $cf(']>')
+))
 
 G.set('frame-type', $cd(
     $cf('frame_t<', 't'),
@@ -215,13 +248,12 @@ let html = `
 <body>
 <div align="center">
 `
-
 for (const [name, diag] of G) {
     console.log(name)
     const svg = fixup(diag.format(15).toString())
-    Fs.writeFileSync(`${name}.svg`, `<?xml version="1.0" encoding="UTF-8"?>\n${svg}`)
+    Fs.writeFileSync(`diagrams/${name}.svg`, `<?xml version="1.0" encoding="UTF-8"?>\n${svg}`)
     html += `<div id="${name}" class="diagramHeader">${name}</div>\n`
-    html += `<div>${svg}</div>\n`
+    html += `<div class="diagramFrame">${svg}</div>\n`
 }
 
 html += `

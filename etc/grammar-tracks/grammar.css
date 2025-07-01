@@ -3,6 +3,8 @@
 
 body {
     background-color: hsl(231, 15%, 18%);
+    width: 680px;
+    height: auto;
 }
 
 svg.railroad-diagram path {
@@ -33,7 +35,7 @@ svg.railroad-diagram text.label {
 
 svg.railroad-diagram text.code-frag {
     fill: rgb(213, 215, 226);
-    font: 13px 'Inconsolata';
+    font: bold 15px 'Inconsolata';
 }
 
 svg.railroad-diagram text.code-frag tspan.b {
@@ -66,12 +68,12 @@ svg.railroad-diagram text.code-frag tspan.t {
 }
 
 svg.railroad-diagram text.comment {
-    fill: hsl(101, 40%, 60%) !important;
-    font: italic 12px 'Inconsolata';
+    fill: hsl(203, 100%, 75%);
+    font: italic 14px 'Inconsolata';
 }
 
 svg.railroad-diagram g.non-terminal rect {
-    fill: hsl(165, 100%, 75%) !important;
+    fill: hsl(165, 80%, 60%) !important;
 }
 
 svg.railroad-diagram rect {
@@ -96,6 +98,13 @@ svg.railroad-diagram rect {
     margin-bottom: -8px;
     text-align: center;
 }
+
+/*
+.diagramFrame {
+    width: 680px;
+    height: auto;
+}
+*/
 
 .diagramHeaderDef {
     background-color: lightgreen;
@@ -137,81 +146,5 @@ svg {
 
 svg.railroad-diagram g.non-terminal text {
     cursor: pointer;
-}
-
-.language-ems .c1 {
-    color: #75ad5b;
-    font-style: italic;
-}
-
-.language-ems .k {
-    color: hsl(280, 50%, 65%);
-    font-weight: normal;
-}
-
-.language-ems .kr {
-    color: #569CD6;
-    font-weight: normal;
-}
-
-.language-ems .kt {
-    color: hsl(168, 80%, 55%);
-    font-weight: normal;
-}
-
-.language-ems .n {
-    color: hsl(201, 100%, 80%);
-    font-weight: bold;
-}
-
-.language-ems .nb {
-    color: #f99165;
-    font-weight: bold;
-}
-
-.language-ems .nc {
-    color: #d4efff;
-    font-weight: bold;
-}
-
-.language-ems .nf {
-    color: #DCDCAA;
-    font-weight: bold;
-}
-
-.language-ems .nn {
-    color: #53acf5;
-    font-weight: bold;
-}
-
-.language-ems .nt {
-    color: #bbffee;
-    font-weight: normal;
-}
-
-.language-ems .nx {
-    color: #ff4444;
-    font-weight: bold;
-}
-
-.language-ems .s {
-    color: #ce9178;
-}
-
-.language-ems .sd {
-    color: hsl(30, 10%, 40%);
-    font-style: italic;
-}
-
-.language-ems .se {
-    color: hsl(24, 89%, 63%);
-}
-
-.language-ems .sh {
-    color: hsl(30, 10%, 40%);
-}
-
-.language-ems .si {
-    color: hsl(39, 94%, 40%);
 }
 
