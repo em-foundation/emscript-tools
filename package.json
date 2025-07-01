@@ -33,6 +33,7 @@
         "@types/prettier": "^2.7.3",
         "@types/sprintf-js": "^1.1.4",
         "commander": "^8.3.0",
+        "he": "^1.2.0",
         "js-yaml": "^4.1.0",
         "json5": "^2.2.3",
         "markdown-it": "^14.1.0",
@@ -42,8 +43,10 @@
         "unescape-js": "^1.1.4"
     },
     "devDependencies": {
+        "@prantlf/railroad-diagrams": "^1.0.1",
         "@types/node": "^22.10.1",
         "@types/vscode": "^1.80.0",
+        "railroad-diagrams": "^1.0.0",
         "tsx": "^4.19.3",
         "typescript": "^5.7.2",
         "uglify-js": "^3.19.3"
