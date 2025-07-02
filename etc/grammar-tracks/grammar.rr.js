@@ -11,7 +11,9 @@ const $dg = (...items) => new Rd.Diagram(...items)
 const $nt = (text, title) => new Rd.NonTerminal(text, {title: title, href: `#${text.trim()}`})
 const $om = (item, rep) => new Rd.OneOrMore(item, rep)
 const $op = (item) => new Rd.Optional(item, 'skip')
+const $sk = () => new Rd.Skip()
 const $sq = (...items) => new Rd.Sequence(...items)
+const $st = (...items) => new Rd.Stack(...items)
 const $tn = (text) => new Rd.Terminal(text)
 const $vs = (...items) => new Rd.VerticalSequence(...items)
 const $zm = (item, rep, skip) => new Rd.ZeroOrMore(item, rep, skip)
@@ -411,26 +413,44 @@ const __UNIT__ = null
 
 G.set('unit', $cd(
     $cn(2,
-        $sq($nt('composite-unit'), $co('foo')),
-        $sq($nt('interface-unit'), $co('foo')),
-        $sq($nt('module-unit   '), $co('foo')),
-        $sq($nt('template-unit '), $co('foo')),
+        $sq($nt('composite-unit'), $co('// meta-only implementation')),
+        $sq($nt('interface-unit'), $co('// abstract specification')),
+        $sq($nt('module-unit   '), $co('// meta|target implementation')),
+        $sq($nt('template-unit '), $co('// build-time unit synthesis')),
     )
 ))
 
 G.set('module-unit', $cd($vs(
-    $cf(`import em from '@$$emscript'`, 'knks'),
-    $cf(`export const $U = em.$declare('MODULE')`, 'kbrnrs'),
-    $nt('import-list '),
-    $nt('feature-decl-list'),
-    $nt('meta-code        '),
-    $nt('target-code      '),
+    $cf(`import em from '@$$emscript'`, 'kxks'),
+    $cf(`export const $U = em.$declare('MODULE')`, 'kbrxrs'),
+    $nt('unit-imports         '),
+    $nt('unit-features        '),
+    $nt('meta-implentation    '),
+    $nt('target-implementation'),
 )))
 
-G.set('import-list', $cd($zm($ch(
-    $cf('import * as'),
-    $co('other TypeScript import statements')
+G.set('unit-prologue', $cd($vs(
+    $cf(`import em from '@$$emscript'`, 'kxks'),
+    $sq(
+        $cf(`export const $U = em.$declare(`, 'kbrxr'),
+        $ch(
+            $cf(`'COMPOSITE'`, 's'),
+            $cf(`'INTERFACE'`, 's'),
+            $cf(`'MODULE'   `, 's'),
+            $cf(`'TEMPLATE' `, 's'),
+        ),
+        $cf(')')
 ))))
+
+
+G.set('unit-imports', $cd($zm($sq(
+    $cf('import * as', 'kk'),
+    $tn('name'),
+    $cf('from', 'k'),
+    $tn('path'),
+    $co(`// '@<bundle>/<Unit>.em'`)
+    ), $co('*')
+)))
 
 let html = `
 <!DOCTYPE html>
