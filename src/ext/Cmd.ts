@@ -87,7 +87,7 @@ export namespace em$meta { }
 //>> ---- em$targ ---- <<//
 
 export function em$run() {
-    em.halt()
+    halt()
 }
 
 
