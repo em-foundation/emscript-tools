@@ -111,8 +111,8 @@ function expand(doneSet: Set<string>): Array<string> {
                 const tuid = ud.imports.get(m[2])!
                 const tud = Unit.units().get(tuid)!
                 let lines = Array<string>(`// *** GENERATED UNIT CLONED FROM '${tud.id}'\n`)
-                lines.push("import em from '@$$emscript'")
-                lines.push("export const $U = em.$declare('MODULE')")
+                lines.push("import '@$$emscript'")
+                lines.push("export const $U = $declare('MODULE')")
                 let found = false
                 for (let line of tud.sf.getText(tud.sf).split('\n').slice(2)) {
                     if (line.startsWith('export namespace em$template')) {

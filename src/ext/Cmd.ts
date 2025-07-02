@@ -40,8 +40,8 @@ export async function clearSetup() {
 
 export async function newComposite(uri: Vsc.Uri) {
     const content = `
-import em from '@$$emscript'
-export const $U = em.$declare('COMPOSITE')
+import '@$$emscript'
+export const $U = $declare('COMPOSITE')
 
 `
     await Utils.newUnit(uri, 'composite', content.trim())
@@ -50,8 +50,8 @@ export const $U = em.$declare('COMPOSITE')
 
 export async function newInterface(uri: Vsc.Uri) {
     const content = `
-import em from '@$$emscript'
-export const $U = em.$declare('INTERFACE')
+import '@$$emscript'
+export const $U = $declare('INTERFACE')
 
 export interface em$meta { }
 
@@ -65,8 +65,8 @@ export interface $I {
 
 export async function newModule(uri: Vsc.Uri) {
     const content = `
-import em from '@$$emscript'
-export const $U = em.$declare('MODULE')
+import '@$$emscript'
+export const $U = $declare('MODULE')
 
 export namespace em$meta { }
 
@@ -79,8 +79,8 @@ export namespace em$meta { }
 
 export async function newProgram(uri: Vsc.Uri) {
     const content = `
-import em from '@$$emscript'
-export const $U = em.$declare('MODULE')
+import '@$$emscript'
+export const $U = $declare('MODULE')
 
 export namespace em$meta { }
 
@@ -97,11 +97,11 @@ export function em$run() {
 
 export async function newTemplate(uri: Vsc.Uri) {
     const content = `
-import em from '@$$emscript'
-export const $T = em.$declare('TEMPLATE')
+import '@$$emscript'
+export const $T = $declare('TEMPLATE')
 
 export namespace em$template {
-    export const $U = em.$declare('MODULE')
+    export const $U = $declare('MODULE')
 
     namespace em$meta { }
 }
