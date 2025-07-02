@@ -10,10 +10,8 @@ const $cd = (...items) => new Rd.ComplexDiagram(...items)
 const $dg = (...items) => new Rd.Diagram(...items)
 const $nt = (text, title) => new Rd.NonTerminal(text, {title: title, href: `#${text.trim()}`})
 const $om = (item, rep) => new Rd.OneOrMore(item, rep)
-const $op = (item, skip) => new Rd.Optional(item, skip)
-const $sk = () => new Rd.Skip()
+const $op = (item) => new Rd.Optional(item, 'skip')
 const $sq = (...items) => new Rd.Sequence(...items)
-const $st = (...items) => new Rd.Stack(...items)
 const $tn = (text) => new Rd.Terminal(text)
 const $vs = (...items) => new Rd.VerticalSequence(...items)
 const $zm = (item, rep, skip) => new Rd.ZeroOrMore(item, rep, skip)
@@ -27,6 +25,7 @@ const G = new Map()
 G.set('CATEGORY', $dg(
     $nt('decl'),
     $nt('expr'),
+    $nt('func'),
     $nt('stmt'),
     $nt('type'),
     $nt('unit'),
@@ -84,7 +83,8 @@ G.set('type-decl', $cd(
     $op($cf('export', 'k')),
     $ch(
         $nt('alias-type-decl '),
-        $nt('array-type-decl '),    
+        $nt('array-type-decl '), 
+        $nt('enum-type-decl  '),   
         $nt('struct-type-decl'),
 )))
 
@@ -111,6 +111,15 @@ G.set('array-type-decl', $cd(
     $nt('type'),
     $cf('> { $len =', 'r'),
     $nt('expr'),
+    $cf('}'),
+))
+
+G.set('enum-type-decl', $cd(
+    $op($cf('export', 'k')),
+    $cf('enum', 'b'),
+    $tn('name'),
+    $cf('{'),
+    $om($sq($tn('enum-val-name')), $sq($co('*'), $cf(','))),
     $cf('}'),
 ))
 
@@ -142,10 +151,196 @@ G.set('struct-methods', $cd(
 G.set('method-decl', $cd(
     $tn('name'),
     $cf('('),
-    $op($om($sq($tn('arg-name'), $cf(':'), $nt('type')), $sq($co('*'), $cf(',')))),
+    $op($nt('func-args')),
     $cf(')'),
     $cf(':'),
     $nt('type'),
+))
+
+const __EXPR__ = null
+
+G.set('expr', $cd($ch(
+    $sq($tn('constant    '), $co('123, true, ...')),
+    $sq($tn('name        '), $co('scoped symbol')),
+    $sq($cf('('), $nt('expr'), $cf(')')),
+    $sq($nt('binary-expr '), $co('e OP e')),
+    $sq($nt('call-expr   '), $co('e (...e)')),
+    $sq($nt('cast-expr   '), $co('<T> e')),
+    $sq($nt('cond-expr   '), $co('e ? e : e')),
+    $sq($nt('deref-expr  '), $co('e . $$')),
+    $sq($nt('member-expr '), $co('e . n')),
+    $sq($nt('prefix-expr '), $co('OP e')),
+    $sq($nt('postfix-expr'), $co('e OP')),
+    // $sq($nt('expr'), $nt('binary-op'), $nt('expr')),
+    // $sq($nt('prefix-op'), $nt('expr')),
+    // $sq($nt('expr'), $nt('postfix-op')),
+)))
+
+G.set('binary-expr', $cd(
+    $nt('expr'),
+    $ch(
+        $cf('+ '),
+        $cf('- '),
+        $cf('* '),
+        $cf('/ '),
+        $cf('% '),
+        $cf('=='),
+        $cf('!='),
+        $cf('> '),
+        $cf('>='),
+        $cf('< '),
+        $cf('<='),
+        $cf('& '),
+        $cf('| '),
+        $cf('^ '),
+        $cf('= '),
+        $cf('=+'),
+        $cf('=*'),
+        $cf('=/'),
+        $cf('=%'),
+        $cf('=&'),
+        $cf('=|'),
+        $cf('=^'),
+    ),
+    $nt('expr'),
+))
+
+G.set('cond-expr', $cd(
+    $nt('expr'),
+    $cf('?'),
+    $nt('expr'),
+    $cf(':'),
+    $nt('expr'),
+))
+
+const __FUNC__ = null
+
+G.set('func', $cd($ch(
+    $sq(
+        $op($cf('export', 'k')),
+        $cf('function', 'b'),
+        $tn('name'),
+        $cf('('),
+        $op($nt('func-args')),
+        $cf(')'),
+        $nt('func-body')
+    ),
+    $nt('method-func'),
+)))
+
+G.set('func-args', $cd($om(
+    $sq(
+        $tn('arg-name'),
+        $cf(':'),
+        $nt('type'),
+        $op($sq($cf('='), $nt('expr')))
+    ), $sq($co('*'), $cf(','))),
+))
+
+G.set('func-body', $cd(
+    $cf('{'),
+    $zm($nt('stmt'), $co('*')),
+    $cf('}'),
+))
+
+G.set('method-func', $cd(
+    $tn('struct-name'),
+    $cf('.prototype.', 'n'),
+    $tn('method-name'),
+    $cf('= function(', 'b'),
+    $nt('func-args'),
+    $cf(')'),
+    $nt('func-body')
+))
+
+const __STMT__ = null
+
+G.set('stmt', $cd($ch(
+    $nt('expr          '),
+    $nt('block-stmt    '),
+    $nt('for-of-stmt   '),
+    $nt('if-else-stmt  '),
+    $nt('local-var-stmt'),
+    $nt('loop-jump-stmt'),
+    $nt('return-stmt   '),
+    $nt('switch-stmt   '),
+    $nt('while-stmt    '),
+)))
+
+G.set('block-stmt', $cd(
+    $cf('{'),
+    $zm($nt('stmt'), $co('*')),
+    $cf('}'),
+))
+
+G.set('local-var-stmt', $cd($ch(
+    $sq(
+        $cf('const', 'b'),
+        $tn('name'),
+        $op($sq($cf(':'), $nt('type'))),
+        $cf('='),
+        $nt('expr')
+    ),
+    $sq(
+        $cf('let  ', 'b'),
+        $tn('name'),
+        $op($sq($cf(':'), $nt('type'))),
+        $op($sq($cf('='), $nt('expr'))),
+    ),
+)))
+
+G.set('if-else-stmt', $cd(
+    $cf('if (', 'k'),
+    $nt('expr'),
+    $cf(')'),
+    $nt('stmt'),
+    $op($sq($cf('else', 'k'), $nt('stmt')))
+))
+
+G.set('for-of-stmt', $cd(
+    $cf('for (const', 'k'),
+    $tn('name'),
+    $cf('of', 'k'),
+    $nt('expr'),
+    $cf(')'),
+    $nt('stmt'),
+))
+
+G.set('loop-jump-stmt', $cd($ch(
+    $cf('break   ', 'k'),
+    $cf('continue', 'k'),
+)))
+
+G.set('return-stmt', $cd(
+    $cf('return', 'k'),
+    $op($nt('expr')),
+))
+
+G.set('switch-stmt', $cd(
+    $cf('if (', 'k'),
+    $nt('expr'),
+    $zm($nt(`switch-case`), $co('*')),
+    $op($nt(`switch-default`)),
+    $cf(') {'),
+))
+
+G.set('switch-case', $cd(
+    $cf('case', 'k'),
+    $nt('expr'),
+    $cf(':'),
+    $zm($nt(`stmt`), $co('*')),
+))
+
+G.set('switch-default', $cd(
+    $cf('default :', 'k'),
+    $zm($nt(`stmt`), $co('*')),
+))
+
+G.set('while-stmt', $cd(
+    $cf('while (', 'k'),
+    $nt('expr'),
+    $cf(')'),
+    $nt('stmt')
 ))
 
 const __TYPE__ = null
@@ -153,12 +348,11 @@ const __TYPE__ = null
 G.set('type', $cd($ch(
     $nt('basic-type    '),
     $nt('callback-type '),
-    $nt('enum-type     '),
+    $nt('declared-type '),
     $nt('frame-type    '),
-    $nt('ptr-type      '),
-    $nt('ref-type      '),
+    $nt('pointer-type  '),
+    $nt('reference-type'),
     $nt('volatile-type '),
-    $tn('type-decl-name'),
 )))
 
 G.set('basic-type', $dg($ch(
@@ -182,20 +376,25 @@ G.set('callback-type', $cd(
     $cf(']>')
 ))
 
+G.set('declared-type', $cd(
+    $op($sq($tn('unit-name'), $cf('.'))),
+    $tn('type-decl-name')
+))
+
 G.set('frame-type', $cd(
     $cf('frame_t<', 't'),
     $nt('type'),
     $cf('>')
 ))
 
-G.set('ptr-type', $cd(
+G.set('pointer-type', $cd(
     $cf('ptr_t<', 't'),
     $nt('type'),
     $cf('>')
 ))
 
-G.set('ref-type', $cd(
-    $cf('ref_t<', 't'),
+G.set('reference-type', $cd(
+    $cf('$$<'),
     $nt('type'),
     $cf('>')
 ))
@@ -212,10 +411,10 @@ const __UNIT__ = null
 
 G.set('unit', $cd(
     $cn(2,
-        $nt('composite-unit'),
-        $nt('interface-unit'),
-        $nt('module-unit   '),
-        $nt('template-unit '),
+        $sq($nt('composite-unit'), $co('foo')),
+        $sq($nt('interface-unit'), $co('foo')),
+        $sq($nt('module-unit   '), $co('foo')),
+        $sq($nt('template-unit '), $co('foo')),
     )
 ))
 
@@ -239,7 +438,7 @@ let html = `
 <head>
     <meta charset="UTF-8">
     <title>EM•Script Grammar</title>
-    <link rel="stylesheet" href="grammar.css">
+    <link rel="stylesheet" href="../grammar.css">
     <script>
         history.scrollRestoration = 'manual'
         window.scrollTo(0, 0)
@@ -262,7 +461,7 @@ html += `
 </html>
 `
 
-Fs.writeFileSync('grammar.html', html)
+Fs.writeFileSync('diagrams/index.html', html)
 
 function fixup(svg) {
     const re = /^(<text\b[^>]*class=)"comment">(.*?)<\/text>\s*<title>([a-z]*)<\/title>/gm
