@@ -41,7 +41,6 @@ let cur_props: PropMap = new Map
 let done_set: PropSet = new Set
 let work_set: PropSet = new Set
 
-let has_setup = false
 let root_dir: string
 
 export function addPackage(name: string) {
@@ -84,10 +83,9 @@ export function addWorkspace() {
 
 function addWorkspaceProps(ppath: string) {
     const pm = readProps(ppath)
-    if (!has_setup) applyExtends(pm)
+    applyExtends(pm)
     applyRequires(pm)
     pm.forEach((v, k) => {
-        if (has_setup && k == PROP_EXTENDS) return
         cur_props.set(k, v)
     })
 }
