@@ -41,7 +41,6 @@ let cur_props: PropMap = new Map
 let done_set: PropSet = new Set
 let work_set: PropSet = new Set
 
-let has_setup = false
 let root_dir: string
 
 export function addPackage(name: string) {
@@ -61,6 +60,7 @@ export function addSetup(name: string) {
     const sa = name.split(SETUP_SEP)
     const path = Path.join(root_dir, sa[0], `setup-${sa[1]}.ini`)
     addWorkspaceProps(path)
+    cur_props.set(PROP_EXTENDS, name)
 }
 
 export function addToolsHome(projDir: string) {
@@ -83,10 +83,9 @@ export function addWorkspace() {
 
 function addWorkspaceProps(ppath: string) {
     const pm = readProps(ppath)
-    if (!has_setup) applyExtends(pm)
+    applyExtends(pm)
     applyRequires(pm)
     pm.forEach((v, k) => {
-        if (has_setup && k == PROP_EXTENDS) return
         cur_props.set(k, v)
     })
 }
@@ -145,13 +144,10 @@ export function getSetup(): string {
     return cur_props.get(PROP_EXTENDS) ?? ''
 }
 
-export function init(dir: string, sname?: string) {
+export function init(dir: string) {
     root_dir = dir
     cur_props.clear()
     cur_pkgs = []
-    if (!sname) return
-    has_setup = true
-    cur_props.set(PROP_EXTENDS, sname)
 }
 
 export function print() {

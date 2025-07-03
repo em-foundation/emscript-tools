@@ -29,8 +29,8 @@ export function activate(root: string, mode: Mode, setup?: string): void {
     if (mode == Mode.ROOTS) return
     process.chdir(projDir)
     Props.init(workDir)
-    if (setup) Props.addSetup(setup)
     Props.addWorkspace()
+    if (setup) Props.addSetup(setup)
     Props.addToolsHome(projDir)
     if (mode != Mode.BUILD && mode != Mode.CLEAN) return
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
