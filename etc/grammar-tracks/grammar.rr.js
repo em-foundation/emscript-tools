@@ -36,12 +36,13 @@ G.set('CATEGORY', $dg(
 const __DECL__ = null
 
 G.set('decl', $cd($ch(
-    $nt('config-decl'),
-    $nt('const-decl '),
-    $nt('proxy-decl '),
-    $nt('table-decl '),
-    $nt('type-decl  '),
-    $nt('var-decl   '),
+    $nt('config-decl   '),
+    $nt('const-decl    '),
+    $nt('delegate-decl '),
+    $nt('proxy-decl    '),
+    $nt('table-decl    '),
+    $nt('type-decl     '),
+    $nt('var-decl      '),
 )))
 
 G.set('config-decl', $cd(
@@ -62,6 +63,17 @@ G.set('const-decl', $cd(
     $op($sq($cf(':'), $nt('type'))),
     $cf('= '),
     $nt('expr'),
+))
+
+G.set('delegate-decl', $cd(
+    $op($cf('export', 'k')),
+    $cf('const', 'b'),
+    $tn('name'),
+    $cf('= $delegate(', 'r'),
+    $tn('imported-unit-name'),
+    $cf('.'),
+    $tn('delegate-name'),
+    $cf(')'),
 ))
 
 G.set('proxy-decl', $cd(
