@@ -28,9 +28,9 @@ export function activate(root: string, mode: Mode, setup?: string): void {
     buildDir = `${workDir}/.emscript`
     if (mode == Mode.ROOTS) return
     process.chdir(projDir)
-    Props.init(workDir, setup)
-    if (setup) Props.addSetup(setup)
+    Props.init(workDir)
     Props.addWorkspace()
+    if (setup) Props.addSetup(setup)
     Props.addToolsHome(projDir)
     if (mode != Mode.BUILD && mode != Mode.CLEAN) return
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
