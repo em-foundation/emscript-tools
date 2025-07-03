@@ -8,6 +8,7 @@ const $cn = (idx, ...items) => new Rd.Choice(idx, ...items)
 const $co = (text) => new Rd.Comment(text)
 const $cd = (...items) => new Rd.ComplexDiagram(...items)
 const $dg = (...items) => new Rd.Diagram(...items)
+const $gr = (item, label) => new Rd.Group(item, label)
 const $nt = (text, title) => new Rd.NonTerminal(text, {title: title, href: `#${text.trim()}`})
 const $om = (item, rep) => new Rd.OneOrMore(item, rep)
 const $op = (item) => new Rd.Optional(item, 'skip')
@@ -36,6 +37,7 @@ G.set('CATEGORY', $dg(
 const __DECL__ = null
 
 G.set('decl', $cd($ch(
+    $nt('clone-decl    '),
     $nt('config-decl   '),
     $nt('const-decl    '),
     $nt('delegate-decl '),
@@ -44,6 +46,15 @@ G.set('decl', $cd($ch(
     $nt('type-decl     '),
     $nt('var-decl      '),
 )))
+
+G.set('clone-decl', $cd(
+    $op($cf('export', 'k')),
+    $cf('const', 'b'),
+    $tn('name'),
+    $cf('= $clone(', 'r'),
+    $tn('template-name'),
+    $cf(')'),
+))
 
 G.set('config-decl', $cd(
     $op($cf('export', 'k')),
@@ -70,7 +81,7 @@ G.set('delegate-decl', $cd(
     $cf('const', 'b'),
     $tn('name'),
     $cf('= $delegate(', 'r'),
-    $tn('imported-unit-name'),
+    $tn('unit-name'),
     $cf('.'),
     $tn('delegate-name'),
     $cf(')'),
@@ -177,17 +188,14 @@ G.set('expr', $cd($ch(
     $sq($tn('constant    '), $co('123, true, ...')),
     $sq($tn('name        '), $co('scoped symbol')),
     $sq($cf('('), $nt('expr'), $cf(')')),
-    $sq($nt('binary-expr '), $co('e OP e')),
-    $sq($nt('call-expr   '), $co('e (...e)')),
+    $sq($nt('binary-expr '), $co('e1 OP e2')),
+    $sq($nt('call-expr   '), $co('e (...ei)')),
     $sq($nt('cast-expr   '), $co('<T> e')),
-    $sq($nt('cond-expr   '), $co('e ? e : e')),
+    $sq($nt('cond-expr   '), $co('e1 ? e2 : e3')),
     $sq($nt('deref-expr  '), $co('e . $$')),
     $sq($nt('member-expr '), $co('e . n')),
     $sq($nt('prefix-expr '), $co('OP e')),
     $sq($nt('postfix-expr'), $co('e OP')),
-    // $sq($nt('expr'), $nt('binary-op'), $nt('expr')),
-    // $sq($nt('prefix-op'), $nt('expr')),
-    // $sq($nt('expr'), $nt('postfix-op')),
 )))
 
 G.set('binary-expr', $cd(
@@ -419,8 +427,6 @@ G.set('volatile-type', $cd(
     $cf('>')
 ))
 
-
-
 const __UNIT__ = null
 
 G.set('unit', $cd(
@@ -432,37 +438,101 @@ G.set('unit', $cd(
     )
 ))
 
-G.set('module-unit', $cd($vs(
-    $cf(`import em from '@$$emscript'`, 'kxks'),
-    $cf(`export const $U = em.$declare('MODULE')`, 'kbrxrs'),
-    $nt('unit-imports         '),
-    $nt('unit-features        '),
-    $nt('meta-implentation    '),
-    $nt('target-implementation'),
-)))
-
-G.set('unit-prologue', $cd($vs(
-    $cf(`import em from '@$$emscript'`, 'kxks'),
-    $sq(
-        $cf(`export const $U = em.$declare(`, 'kbrxr'),
-        $ch(
-            $cf(`'COMPOSITE'`, 's'),
-            $cf(`'INTERFACE'`, 's'),
-            $cf(`'MODULE'   `, 's'),
-            $cf(`'TEMPLATE' `, 's'),
-        ),
-        $cf(')')
-))))
-
-
-G.set('unit-imports', $cd($zm($sq(
+const UNIT_IMPORTS = $zm($sq(
     $cf('import * as', 'kk'),
     $tn('name'),
     $cf('from', 'k'),
-    $tn('path'),
-    $co(`// '@<bundle>/<Unit>.em'`)
+    $nt('unit-path'),
     ), $co('*')
+)
+const UNIT_EXPORTS = $op($sq(
+    $cf('export {', 'k'),
+    $om($sq($tn('unit-name')), $sq($co('*'), $cf(','))),
+    $cf('}')
+))
+const UNIT_FEATURES = $zm($nt('decl'), $co('*'))
+
+const META_IMPL = $zm($ch(
+    $nt('decl'),
+    $nt('func'),
+    $co('other typescript code')
+), $co('*'))
+const META_IMPL2 = $zm($ch(
+    $nt('func'),
+    $co('other typescript code')
+), $co('*'))
+const META_SPEC = $zm($nt('method-decl'), $co('*'))
+
+const TARG_IMPL = $zm($nt('func'), $co('*'))
+const TARG_SPEC = $zm($nt('method-decl'), $co('*'))
+
+G.set('module-unit', $cd($vs(
+    $cf(`import '@$$emscript'`, 'ks'),
+    $cf(`export const $U = $declare('MODULE')`, 'kbrrs'),
+    $sk(),
+    $nt('unit imports '),
+    $nt('unit exports '),
+    $nt('unit features'),
+    $sk(),
+    $co('meta implementation'),
+    $cf('export namespace em$meta {', 'kb'),
+    $gr(META_IMPL),
+    $cf('}'),
+    $sk(),
+    $co('target implementation'),
+    $cf('//>> ---- em$targ ---- <<//'),
+    $gr(TARG_IMPL),
 )))
+
+G.set('unit-imports', $cd(UNIT_IMPORTS))
+
+G.set('unit-path', $cd(
+    $cf(`'@`),
+    $tn('bundle-name'),
+    $cf('/'),
+    $tn('unit-name'),
+    $cf(`.em.ts'`)
+))
+
+G.set('unit-exports', $cd(UNIT_EXPORTS))
+
+G.set('unit-features', $cd(UNIT_FEATURES))
+
+G.set('composite-unit', $cd($vs(
+    $cf(`import '@$$emscript'`, 'ks'),
+    $cf(`export const $U = $declare('COMPOSITE')`, 'kbrrs'),
+    $sk(),
+    $nt('unit imports '),
+    $nt('unit exports '),
+    $nt('unit features'),
+    $sk(),
+    $co('meta implementation'),
+    $gr(META_IMPL2),
+)))
+
+G.set('interface-unit', $cd($vs(
+    $cf(`import '@$$emscript'`, 'ks'),
+    $cf(`export const $U = $declare('INTERFACE')`, 'kbrrs'),
+    $sk(),
+    $nt('unit imports '),
+    $nt('unit exports '),
+    $nt('unit features'),
+    $sk(),
+    $co('meta specification'),
+    $cf('export interface em$meta {', 'kb'),
+    $gr(META_SPEC),
+    $cf('}'),
+    $sk(),
+    $co('target specification'),
+    $cf('export interface $I {', 'kbr'),
+    $cf('    em$meta: em$meta'),
+    $gr(TARG_SPEC),
+    $cf('}'),
+)))
+
+const _main_ = null
+
+if (!Fs.existsSync('diagrams')) Fs.mkdirSync('diagrams')
 
 let html = `
 <!DOCTYPE html>

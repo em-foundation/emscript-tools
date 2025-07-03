@@ -74,14 +74,20 @@ svg.railroad-diagram text.comment {
 
 svg.railroad-diagram g.non-terminal rect {
     fill: hsl(165, 80%, 60%) !important;
+    stroke-width: 1.5;
+    stroke: hsl(203, 100%, 75%);
 }
 
 svg.railroad-diagram rect {
-    stroke-width: 1;
-    stroke: hsl(203, 100%, 75%);
     fill: hsl(17, 50%, 75%);
 }
 
+svg.railroad-diagram rect.group-box {
+    stroke-width: 1;
+    stroke: hsl(203, 100%, 75%);
+    stroke-dasharray: 4 2;
+    fill: none;
+}
 .diagramHeader {
     display: inline-block;
     -webkit-touch-callout: default;
