@@ -41,6 +41,7 @@ let cur_props: PropMap = new Map
 let done_set: PropSet = new Set
 let work_set: PropSet = new Set
 
+let cur_setup = ''
 let has_setup = false
 let root_dir: string
 
@@ -142,7 +143,8 @@ export function getRegInfo(): RegInfo {
 }
 
 export function getSetup(): string {
-    return cur_props.get(PROP_EXTENDS) ?? ''
+    return cur_setup
+    // return cur_props.get(PROP_EXTENDS) ?? ''
 }
 
 export function init(dir: string, sname?: string) {
@@ -150,7 +152,8 @@ export function init(dir: string, sname?: string) {
     cur_props.clear()
     cur_pkgs = []
     if (!sname) return
-    has_setup = true
+    cur_setup = sname
+    // has_setup = true
     cur_props.set(PROP_EXTENDS, sname)
 }
 
