@@ -461,9 +461,14 @@ const META_IMPL2 = $zm($ch(
     $nt('func'),
     $co('other typescript code')
 ), $co('*'))
+const META_IMPL3 = $zm($ch(
+    $nt('func'),
+    $co('other typescript code')
+), $co('*'))
 const META_SPEC = $zm($nt('method-decl'), $co('*'))
 
 const TARG_IMPL = $zm($nt('func'), $co('*'))
+const TARG_IMPL2 = $zm($nt('func'), $co('*'))
 const TARG_SPEC = $zm($nt('method-decl'), $co('*'))
 
 G.set('module-unit', $cd($vs(
@@ -529,6 +534,35 @@ G.set('interface-unit', $cd($vs(
     $gr(TARG_SPEC),
     $cf('}'),
 )))
+
+.set('template-unit', $cd($vs(
+    $cf(`import '@$$emscript'`, 'ks'),
+    $cf(`export const $T = $declare('TEMPLATE')`, 'kbrrs'),
+    $sk(),
+    $nt('unit imports '),
+    $sk(),
+    $cf('export namespace em$template {', 'kb'),
+    $cf(`export const $U = $declare('MODULE')`, 'kbrrs'),
+    $sk(),
+    $nt('unit features'),
+    $sk(),
+    $co('meta implementation'),
+    $cf('export namespace em$meta {', 'kb'),
+    $gr(META_IMPL3),
+    $cf('}'),
+    $sk(),
+    $co('target implementation'),
+    $cf('//>> ---- em$targ ---- <<//'),
+    $gr(TARG_IMPL2),
+    $cf('}'),
+    $sk(),
+    $co('stock $clone implementation'),
+    $cf('export function $clone() {', 'kbr'),
+    $cf('    return { $T, ...em$template }', 'kr'),
+    $cf('}'),
+)))
+
+
 
 const _main_ = null
 
