@@ -9,6 +9,7 @@ const $co = (text) => new Rd.Comment(text)
 const $cd = (...items) => new Rd.ComplexDiagram(...items)
 const $dg = (...items) => new Rd.Diagram(...items)
 const $gr = (item, label) => new Rd.Group(item, label)
+const $hc = (...items) => new Rd.HorizontalChoice(...items)
 const $nt = (text, title) => new Rd.NonTerminal(text, {title: title, href: `#${text.trim()}`})
 const $om = (item, rep) => new Rd.OneOrMore(item, rep)
 const $op = (item) => new Rd.Optional(item, 'skip')
@@ -184,46 +185,56 @@ G.set('method-decl', $cd(
 
 const __EXPR__ = null
 
+const LITERAL = 
+
 G.set('expr', $cd($ch(
-    $sq($tn('constant    '), $co('123, true, ...')),
-    $sq($tn('name        '), $co('scoped symbol')),
+    $sq($tn('declared-name'), $co('scoped symbol')),
+    $sq($nt('literal-value'), $co('42, true, ...')),
     $sq($cf('('), $nt('expr'), $cf(')')),
-    $sq($nt('binary-expr '), $co('e1 OP e2')),
-    $sq($nt('call-expr   '), $co('e (...ei)')),
-    $sq($nt('cast-expr   '), $co('<T> e')),
-    $sq($nt('cond-expr   '), $co('e1 ? e2 : e3')),
-    $sq($nt('deref-expr  '), $co('e . $$')),
-    $sq($nt('member-expr '), $co('e . n')),
-    $sq($nt('prefix-expr '), $co('OP e')),
-    $sq($nt('postfix-expr'), $co('e OP')),
+    $sq($nt('binary-expr  '), $co('e1 OP e2')),
+    $sq($nt('call-expr    '), $co('e (...ei)')),
+    $sq($nt('cast-expr    '), $co('<T> e')),
+    $sq($nt('cond-expr    '), $co('e1 ? e2 : e3')),
+    $sq($nt('selector-expr'), $co('e . s')),
+    $sq($nt('unary-expr   '), $co('OP e, e OP')),
+)))
+
+G.set('literal-value', $cd($ch(
+    $sq($tn('decimal-num'), $co('42, -7, 0')),
+    $sq($tn('hex-num    '), $co('0x24, 0xDEAD_beef')),
+    $sq($tn('binary-num '), $co('0b1101')),
+    $sq($tn('octal-num  '), $co('0o755')),
+    $sq($hc($cf('true', 'b'), $cf('false', 'b')), $co('boolean')),
+    $sq($cf('$null', 'r'), $co('reference')),
+    $sq($cf('$c`', 'r'), $tn('text'), $cf('`'), $co('char')),
+    $sq($cf('$t`', 'r'), $tn('text'), $cf('`'), $co('string')),
+    $sq($cf('$e`', 'r'), $tn('text'), $cf('`'), $co('C/C++ expr')),
 )))
 
 G.set('binary-expr', $cd(
     $nt('expr'),
     $ch(
-        $cf('+ '),
-        $cf('- '),
-        $cf('* '),
-        $cf('/ '),
-        $cf('% '),
-        $cf('=='),
-        $cf('!='),
-        $cf('> '),
-        $cf('>='),
-        $cf('< '),
-        $cf('<='),
-        $cf('& '),
-        $cf('| '),
-        $cf('^ '),
-        $cf('= '),
-        $cf('=+'),
-        $cf('=*'),
-        $cf('=/'),
-        $cf('=%'),
-        $cf('=&'),
-        $cf('=|'),
-        $cf('=^'),
+        $hc($cf('+'), $cf('-'), $cf('*'), $cf('/'), $cf('%')),
+        $hc($cf('=='), $cf('!='), $cf('>'), $cf('>='), $cf('<'), $cf('<=')),
+        $hc($cf('&'), $cf('|'), $cf('^ '), $cf('<<'), $cf('>>')),
+        $hc($cf('='), $cf('&&'), $cf('||')),
+        $hc($cf('=+'), $cf('=-'), $cf('=*'), $cf('=/'), $cf('=%')),
+        $hc($cf('=&'), $cf('=|'), $cf('=^'), $cf('=<<'), $cf('=>>')),
     ),
+    $nt('expr'),
+))
+
+G.set('call-expr', $cd(
+    $nt('expr'),
+    $cf('('),
+    $zm($nt('expr'), $sq($co('*'), $cf(','))),
+    $cf(')'),
+))
+
+G.set('cast-expr', $cd(
+    $cf('<'),
+    $nt('type'),
+    $cf('>'),
     $nt('expr'),
 ))
 
@@ -234,6 +245,24 @@ G.set('cond-expr', $cd(
     $cf(':'),
     $nt('expr'),
 ))
+
+G.set('selector-expr', $cd(
+    $nt('expr'),
+    $cf('.'),
+    $ch(
+        $tn('field-name'),
+        $tn('method-name'),
+        $sq($cf('$ intrinsic', 'rR'), $co('meta+target :: $len, $make, $ref, ...')),
+        $sq($cf('$$ intrinsic', 'xX'), $co('meta-only :: $$add, $$val, ...')),
+        $sq($cf('$$'), $co('target-only :: pointer dereference')),
+    )
+))
+
+G.set('unary-expr', $cd($ch(
+    $sq($hc($cf('+'), $cf('-'), $cf('!'), $cf('~'), $cf('++'), $cf('--')), $nt('expr')),
+    $sq($nt('expr'), $hc($cf('++'), $cf('--')))
+)))
+
 
 const __FUNC__ = null
 
@@ -295,22 +324,6 @@ G.set('block-stmt', $cd(
     $cf('}'),
 ))
 
-G.set('local-var-stmt', $cd($ch(
-    $sq(
-        $cf('const', 'b'),
-        $tn('name'),
-        $op($sq($cf(':'), $nt('type'))),
-        $cf('='),
-        $nt('expr')
-    ),
-    $sq(
-        $cf('let  ', 'b'),
-        $tn('name'),
-        $op($sq($cf(':'), $nt('type'))),
-        $op($sq($cf('='), $nt('expr'))),
-    ),
-)))
-
 G.set('if-else-stmt', $cd(
     $cf('if (', 'k'),
     $nt('expr'),
@@ -327,6 +340,22 @@ G.set('for-of-stmt', $cd(
     $cf(')'),
     $nt('stmt'),
 ))
+
+G.set('local-var-stmt', $cd($ch(
+    $sq(
+        $cf('const', 'b'),
+        $tn('name'),
+        $op($sq($cf(':'), $nt('type'))),
+        $cf('='),
+        $nt('expr')
+    ),
+    $sq(
+        $cf('let  ', 'b'),
+        $tn('name'),
+        $op($sq($cf(':'), $nt('type'))),
+        $op($sq($cf('='), $nt('expr'))),
+    ),
+)))
 
 G.set('loop-jump-stmt', $cd($ch(
     $cf('break   ', 'k'),
@@ -433,7 +462,7 @@ G.set('unit', $cd(
     $cn(2,
         $sq($nt('composite-unit'), $co('// meta-only implementation')),
         $sq($nt('interface-unit'), $co('// abstract specification')),
-        $sq($nt('module-unit   '), $co('// meta|target implementation')),
+        $sq($nt('module-unit   '), $co('// meta+target implementation')),
         $sq($nt('template-unit '), $co('// build-time unit synthesis')),
     )
 ))
@@ -476,7 +505,6 @@ G.set('module-unit', $cd($vs(
     $cf(`export const $U = $declare('MODULE')`, 'kbrrs'),
     $sk(),
     $nt('unit imports '),
-    $nt('unit exports '),
     $nt('unit features'),
     $sk(),
     $co('meta implementation'),
@@ -499,28 +527,13 @@ G.set('unit-path', $cd(
     $cf(`.em.ts'`)
 ))
 
-G.set('unit-exports', $cd(UNIT_EXPORTS))
-
 G.set('unit-features', $cd(UNIT_FEATURES))
-
-G.set('composite-unit', $cd($vs(
-    $cf(`import '@$$emscript'`, 'ks'),
-    $cf(`export const $U = $declare('COMPOSITE')`, 'kbrrs'),
-    $sk(),
-    $nt('unit imports '),
-    $nt('unit exports '),
-    $nt('unit features'),
-    $sk(),
-    $co('meta implementation'),
-    $gr(META_IMPL2),
-)))
 
 G.set('interface-unit', $cd($vs(
     $cf(`import '@$$emscript'`, 'ks'),
     $cf(`export const $U = $declare('INTERFACE')`, 'kbrrs'),
     $sk(),
     $nt('unit imports '),
-    $nt('unit exports '),
     $nt('unit features'),
     $sk(),
     $co('meta specification'),
@@ -534,6 +547,20 @@ G.set('interface-unit', $cd($vs(
     $gr(TARG_SPEC),
     $cf('}'),
 )))
+
+G.set('composite-unit', $cd($vs(
+    $cf(`import '@$$emscript'`, 'ks'),
+    $cf(`export const $U = $declare('COMPOSITE')`, 'kbrrs'),
+    $sk(),
+    $nt('unit imports '),
+    $nt('unit exports '),
+    $nt('unit features'),
+    $sk(),
+    $co('meta implementation'),
+    $gr(META_IMPL2),
+)))
+
+G.set('unit-exports', $cd(UNIT_EXPORTS))
 
 .set('template-unit', $cd($vs(
     $cf(`import '@$$emscript'`, 'ks'),
@@ -562,8 +589,6 @@ G.set('interface-unit', $cd($vs(
     $cf('}'),
 )))
 
-
-
 const _main_ = null
 
 if (!Fs.existsSync('diagrams')) Fs.mkdirSync('diagrams')
@@ -574,7 +599,7 @@ let html = `
 <head>
     <meta charset="UTF-8">
     <title>EM•Script Grammar</title>
-    <link rel="stylesheet" href="../grammar.css">
+    <link rel="stylesheet" href="./grammar.css">
     <script>
         history.scrollRestoration = 'manual'
         window.scrollTo(0, 0)
@@ -597,10 +622,12 @@ html += `
 </html>
 `
 
+console.log(process.argv[2])
+
 Fs.writeFileSync('diagrams/index.html', html)
 
 function fixup(svg) {
-    const re = /^(<text\b[^>]*class=)"comment">(.*?)<\/text>\s*<title>([a-z]*)<\/title>/gm
+    const re = /^(<text\b[^>]*class=)"comment">(.*?)<\/text>\s*<title>([a-zA-Z]*)<\/title>/gm
     return svg.replaceAll(re, (_, m1, m2, m3) => `${m1}"code-frag">${span(m2, m3)}</text>`)
 }
 

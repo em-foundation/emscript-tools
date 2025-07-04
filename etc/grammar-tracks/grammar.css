@@ -58,6 +58,12 @@ svg.railroad-diagram text.code-frag tspan.r {
     font-weight: bold;
 }
 
+svg.railroad-diagram text.code-frag tspan.R {
+    fill: hsl(18, 93%, 69%);
+    font-style: italic;
+    font-weight: normal;
+}
+
 svg.railroad-diagram text.code-frag tspan.s {
     fill: hsl(17, 47%, 64%);
 }
@@ -65,6 +71,11 @@ svg.railroad-diagram text.code-frag tspan.s {
 svg.railroad-diagram text.code-frag tspan.t {
     fill: hsl(168, 80%, 55%);
     font-weight: bold;
+}
+
+svg.railroad-diagram text.code-frag tspan.X {
+    font-style: italic;
+    font-weight: normal;
 }
 
 svg.railroad-diagram text.comment {
