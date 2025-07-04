@@ -214,8 +214,8 @@ export function make(expr: Ts.Expression): string {
 function mkDbg(expr: Ts.Expression, txt: string): string | null {
     if (!Ts.isElementAccessExpression(expr)) return null
     const sf = Targ.context().ud.sf
-    if (txt.startsWith('em.$reg')) {
-        const m = txt.match(/^em\.(.+)\[/)
+    if (txt.startsWith('$reg')) {
+        const m = txt.match(/^(.+)\[/)
         const addr = make(expr.argumentExpression)
         return `*em::${m![1]}(${addr})`
     }

@@ -38,7 +38,7 @@ export function callbackTransformer(cname: string): Ts.TransformerFactory<Ts.Sou
 export function declareTransformer(uid: string): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {
-            if (Ts.isCallExpression(node) && node.expression.getText(sourceFile) == 'em.$declare') {
+            if (Ts.isCallExpression(node) && node.expression.getText(sourceFile) == '$declare') {
                 return Ts.factory.updateCallExpression(
                     node,
                     node.expression,
