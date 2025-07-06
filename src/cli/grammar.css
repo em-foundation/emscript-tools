@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata&display=swap');
+
+
+body {
+    background-color: hsl(231, 15%, 18%);
+    width: 680px;
+    height: auto;
+}
+
+svg.railroad-diagram path {
+    stroke-width: 1.5;
+    stroke: hsl(203, 100%, 75%);
+    fill: none;
+    shape-rendering: geometricPrecision;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+/*
+svg.railroad-diagram path {
+    stroke-width: 1;
+    stroke: hsl(203, 100%, 75%);
+}
+*/
+
+svg.railroad-diagram text {
+    fill: black;
+    font: bold 13px 'Inconsolata';
+    text-anchor: middle;
+}
+
+svg.railroad-diagram text.label {
+    text-anchor: start;
+}
+
+svg.railroad-diagram text.code-frag {
+    fill: rgb(213, 215, 226);
+    font: bold 15px 'Inconsolata';
+}
+
+svg.railroad-diagram text.code-frag tspan.b {
+    fill: hsl(207, 61%, 59%);
+    font-weight: bold;
+}
+
+svg.railroad-diagram text.code-frag tspan.k {
+    fill: hsl(280, 50%, 65%);
+    font-weight: bold;
+}
+
+svg.railroad-diagram text.code-frag tspan.n {
+    fill: hsl(201, 100%, 80%);
+    font-weight: bold;
+}
+
+svg.railroad-diagram text.code-frag tspan.r {
+    fill: hsl(18, 93%, 69%);
+    font-weight: bold;
+}
+
+svg.railroad-diagram text.code-frag tspan.R {
+    fill: hsl(18, 93%, 69%);
+    font-style: italic;
+    font-weight: normal;
+}
+
+svg.railroad-diagram text.code-frag tspan.s {
+    fill: hsl(17, 47%, 64%);
+}
+
+svg.railroad-diagram text.code-frag tspan.t {
+    fill: hsl(168, 80%, 55%);
+    font-weight: bold;
+}
+
+svg.railroad-diagram text.code-frag tspan.X {
+    font-style: italic;
+    font-weight: normal;
+}
+
+svg.railroad-diagram text.comment {
+    fill: hsl(203, 100%, 75%);
+    font: italic 14px 'Inconsolata';
+}
+
+svg.railroad-diagram g.non-terminal rect {
+    fill: hsl(165, 80%, 60%) !important;
+    stroke-width: 1.5;
+    stroke: hsl(203, 100%, 75%);
+}
+
+svg.railroad-diagram rect {
+    fill: hsl(17, 50%, 75%);
+}
+
+svg.railroad-diagram rect.group-box {
+    stroke-width: 1;
+    stroke: hsl(203, 100%, 75%);
+    stroke-dasharray: 4 2;
+    fill: none;
+}
+.diagramHeader {
+    display: inline-block;
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    color: hsl(203, 100%, 75%);
+    user-select: text;
+    font-weight: bold;
+    font-family: 'Inconsolata';
+    font-size: 18px;
+    margin-top: 8px;
+    margin-bottom: -8px;
+    text-align: center;
+}
+
+/*
+.diagramFrame {
+    width: 680px;
+    height: auto;
+}
+*/
+
+.diagramHeaderDef {
+    background-color: lightgreen;
+}
+
+svg.railroad-diagram text {
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+svg.railroad-diagram g.non-terminal rect.diagramRectUsage {
+    color: green;
+    fill: yellow;
+    stroke: 5;
+}
+
+svg.railroad-diagram g.terminal rect.diagramRectUsage {
+    color: green;
+    fill: yellow;
+    stroke: 5;
+}
+
+div {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+svg {
+    width: 100%;
+}
+
+svg.railroad-diagram g.non-terminal text {
+    cursor: pointer;
+}
+

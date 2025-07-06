@@ -18,6 +18,7 @@ import * as Props from './Props'
 import * as Render from './Render'
 import * as Session from './Session'
 import * as Targ from './Targ'
+import * as Tracks from './Tracks'
 import * as Unit from './Unit'
 
 declare global {
@@ -76,6 +77,10 @@ CMD.command('genregs')
         '<package-name>/<distro-bucket-name>'
     )
     .action((opts: any) => doGenRegs(opts))
+CMD.command('grammar')
+    .description('generate HTML file of language grammar')
+    .requiredOption('-o, --outdir <dir>', 'output directory', '.')
+    .action((opts: any) => doGrammar(opts))
 CMD.command('load')
     .description('load program')
     .action((opts: any) => doLoad(opts))
@@ -229,6 +234,10 @@ function doGenRegs(opts: any): void {
     })
     if (proc.error) console.log(String(proc.error))
     console.log('done')
+}
+
+function doGrammar(opts: any): void {
+    Tracks.generate()
 }
 
 function doLoad(opts: any) {

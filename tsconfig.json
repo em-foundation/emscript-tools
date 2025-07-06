@@ -1,14 +1,19 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "ESNext",
-        "outDir": "out",
-        "esModuleInterop": true,
-        "strict": true,
-        "lib": ["esnext"],
-        "sourceMap": true,
-        "rootDir": "src"
-    },
-    "include": ["src/**/*"],
-    "exclude": ["junk/**/*"],
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ESNext",
+    "outDir": "out",
+    "esModuleInterop": true,
+    "strict": true,
+    "lib": ["esnext"],
+    "sourceMap": true,
+    "rootDir": "src",
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "junk/**/*"]
 }
+
