@@ -593,11 +593,10 @@ G.set('template-unit', $cd($vs(
 
 const _generate_ = null
 
-export function generate() {
+export function generate(out_dir: string) {
 
     const ETCDIR = '../../etc/grammar-tracks'
     const in_dir = Path.join(__dirname, ETCDIR)
-    const out_dir = __dirname
 
     const css_txt = Fs.readFileSync(Path.join(in_dir, 'grammar.css'), 'utf-8')
 
@@ -619,8 +618,9 @@ ${css_txt.replace(/\/\*[\s\S]*?\*\//g, '')}
 <body>
 <div align="center">
 `
+    console.log('grammar productions ...')
     for (const [name, diag] of G) {
-        console.log(name)
+        console.log(`    ${name}`)
         const svg = fixup(diag.format(15).toString())
         html += `<div id="${name}" class="diagramHeader">${name}</div>\n`
         html += `<div class="diagramFrame">${svg}</div>\n`
@@ -630,7 +630,9 @@ ${css_txt.replace(/\/\*[\s\S]*?\*\//g, '')}
 </body>
 </html>
 `
-    Fs.writeFileSync(Path.join(out_dir, 'grammar.html'), html)
+    const out_file = Path.join(out_dir, 'grammar.html')
+    console.log(`\nwriting ${out_file}`)
+    Fs.writeFileSync(out_file, html)
 }
 
 function fixup(svg: string) {

@@ -79,7 +79,7 @@ CMD.command('genregs')
     .action((opts: any) => doGenRegs(opts))
 CMD.command('grammar')
     .description('generate HTML file of language grammar')
-    .requiredOption('-o, --outdir <dir>', 'output directory', '.')
+    .option('-o, --outdir <dir>', 'output directory', '.')
     .action((opts: any) => doGrammar(opts))
 CMD.command('load')
     .description('load program')
@@ -237,7 +237,7 @@ function doGenRegs(opts: any): void {
 }
 
 function doGrammar(opts: any): void {
-    Tracks.generate()
+    Tracks.generate(opts.outdir)
 }
 
 function doLoad(opts: any) {
