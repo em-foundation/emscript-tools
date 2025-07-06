@@ -596,6 +596,10 @@ const _generate_ = null
 export function generate() {
 
     const ETCDIR = '../../etc/grammar-tracks'
+    const in_dir = Path.join(__dirname, ETCDIR)
+    const out_dir = __dirname
+
+    const css_txt = Fs.readFileSync(Path.join(in_dir, 'grammar.css'), 'utf-8')
 
     let html = `
 <!DOCTYPE html>
@@ -608,13 +612,13 @@ export function generate() {
         history.scrollRestoration = 'manual'
         window.scrollTo(0, 0)
     </script>
+    <style>
+${css_txt.replace(/\/\*[\s\S]*?\*\//g, '')}
+    </style>
 </head>
 <body>
 <div align="center">
 `
-    const in_dir = Path.join(__dirname, ETCDIR)
-    const out_dir = __dirname
-    Fs.writeFileSync(Path.join(out_dir, 'grammar.css'), Fs.readFileSync(Path.join(in_dir, 'grammar.css'), 'utf-8'))
     for (const [name, diag] of G) {
         console.log(name)
         const svg = fixup(diag.format(15).toString())
@@ -626,7 +630,7 @@ export function generate() {
 </body>
 </html>
 `
-    Fs.writeFileSync(Path.join(out_dir, 'index.html'), html)
+    Fs.writeFileSync(Path.join(out_dir, 'grammar.html'), html)
 }
 
 function fixup(svg: string) {
