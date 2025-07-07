@@ -73,6 +73,9 @@ export async function activate(context: Vsc.ExtensionContext) {
     context.subscriptions.push(
         Vsc.commands.registerCommand("em.newTemplate", Cmd.newTemplate)
     );
+    context.subscriptions.push(
+        Vsc.commands.registerCommand("em.showGrammar", Cmd.showGrammar)
+    );
 
     context.subscriptions.push(
         Vsc.languages.registerDocumentSemanticTokensProvider(
