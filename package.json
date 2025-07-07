@@ -25,6 +25,7 @@
         "build-cli": "esbuild --bundle --external:vscode ./src/cli/Main --outdir=out/cli --platform=node --format=cjs",
         "build-ext": "esbuild --bundle --external:vscode ./src/ext/extension --outdir=out/ext --platform=node --format=cjs",
         "build": "npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap",
+        "postbuild": "cp src/cli/grammar.css out/cli/",
         "cli-executable": "mkdir -p out/cli/bin && uglifyjs out/cli/Main.js -o out/cli/bin/emscript && chmod +x out/cli/bin/emscript",
         "watch": "npm run build-cli -- --sourcemap --watch"
     },
