@@ -595,10 +595,7 @@ const _generate_ = null
 
 export function generate(out_dir: string) {
 
-    const ETCDIR = '../etc/grammar-tracks'
-    const in_dir = Path.join(__dirname, ETCDIR)
-
-    const css_txt = Fs.readFileSync(Path.join(in_dir, 'grammar.css'), 'utf-8')
+    const css_txt = Fs.readFileSync(Path.join(__dirname, 'grammar.css'), 'utf-8')
 
     let html = `
 <!DOCTYPE html>
