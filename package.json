@@ -117,6 +117,10 @@
                 "title": "EM•Script – New Template..."
             },
             {
+                "command": "em.showGrammar",
+                "title": "EM•Script – Show Grammar"
+            },
+            {
                 "command": "em.version",
                 "title": "EM•Script – Show Version"
             },

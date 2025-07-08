@@ -112,3 +112,7 @@ export function $clone() { return { $T, ...em$template } }
     await Utils.newUnit(uri, 'template', content.trim())
 }
 
+export async function showGrammar() {
+    await Utils.showGrammar()
+}
+

@@ -277,6 +277,11 @@ export async function refreshProps() {
     }
 }
 
+export async function showGrammar() {
+    const htmlPath = Vsc.Uri.file(Path.join(getExtRoot(), 'etc/grammar.html'))
+    Vsc.env.openExternal(htmlPath)
+}
+
 export function showVersion() {
     Vsc.window.showInformationMessage(`EM•Script activated [ version ${getVersFull()} ]`)
 }
