@@ -159,17 +159,18 @@ function doBuild(opts: any): void {
     const usedCnt = Session.getUnits().size
     const t1 = mkDelta()
     Targ.generate()
-    console.log(
-        `    executed 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units in ${t1} seconds`
-    )
-    if (opts.meta) return
-    console.log(`compiling 'main.cpp' ...`)
+    if (opts.meta) {
+        console.log(
+            `${curTab}done ${t1} sec, 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units`
+        )
+        return
+    }
     const stdout = Targ.build()
     if (stdout === null) process.exit(1)
-    printSha32()
-    printSize(stdout)
     const t2 = mkDelta()
-    console.log(`${curTab}done in ${t2} seconds`)
+    const sha32 = sprintSha32()
+    const sizes = sprintSizes(stdout)
+    console.log(`${curTab}done ${t2} sec, image: ${sha32}, ${sizes}`)
     if (!opts.load) return
     printProgress('loading')
     loadProg()
@@ -327,7 +328,7 @@ function printProgress(
     console.log(`    using setup '${setup}' with board '${board}'`)
 }
 
-function printSha32() {
+function sprintSha32() {
     const txt = Fs.readFileSync(
         Path.join(Session.getBuildDir(), '.out', 'main.out.hex'),
         'utf-8'
@@ -336,10 +337,10 @@ function printSha32() {
         .update(txt)
         .digest('hex')
         .slice(0, 8)
-    console.log(`    image sha32: ${hash}`)
+    return `sha(${hash})`
 }
 
-function printSize(stdout: string) {
+function sprintSizes(stdout: string) {
     const lines = stdout.split('\n').filter((ln) => ln.match(/^\s*\d/))
     const map = new Map<string, number>([
         ['.text', 0],
@@ -356,7 +357,5 @@ function printSize(stdout: string) {
     const constSz = map.get('.const')
     const dataSz = map.get('.data')
     const bssSz = map.get('.bss')
-    console.log(
-        `    image size: text (${textSz}) + const (${constSz}) + data (${dataSz}) + bss (${bssSz})`
-    )
+    return `text(${textSz}), const(${constSz}), data(${dataSz}), bss(${bssSz})`
 }
