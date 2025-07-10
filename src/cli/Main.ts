@@ -161,7 +161,7 @@ function doBuild(opts: any): void {
     Targ.generate()
     if (opts.meta) {
         console.log(
-            `${curTab}executed 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units in ${t1} seconds`
+            `${curTab}done ${t1} sec, 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units`
         )
         return
     }
@@ -170,7 +170,7 @@ function doBuild(opts: any): void {
     const t2 = mkDelta()
     const sha32 = sprintSha32()
     const sizes = sprintSizes(stdout)
-    console.log(`${curTab}done ${t2} sec, image: ${sha32} ${sizes}`)
+    console.log(`${curTab}done ${t2} sec, image: ${sha32}, ${sizes}`)
     if (!opts.load) return
     printProgress('loading')
     loadProg()
@@ -337,7 +337,7 @@ function sprintSha32() {
         .update(txt)
         .digest('hex')
         .slice(0, 8)
-    return `sha32: ${hash}`
+    return `sha(${hash})`
 }
 
 function sprintSizes(stdout: string) {
