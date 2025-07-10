@@ -121,7 +121,7 @@
                 "title": "EM-Script: Show Grammar"
             },
             {
-                "command": "em.version",
+                "command": "em.showVersion",
                 "title": "EM-Script: Show Version"
             },
             {
