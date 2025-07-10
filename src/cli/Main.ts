@@ -159,18 +159,16 @@ function doBuild(opts: any): void {
     const usedCnt = Session.getUnits().size
     const t1 = mkDelta()
     Targ.generate()
-    if (opts.meta) {
-        console.log(
-            `${curTab}done ${t1} sec, 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units`
-        )
-        return
-    }
+    console.log(
+        `${curTab}done ${t1} sec, 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units`
+    )
+    if (opts.meta) return
     const stdout = Targ.build()
     if (stdout === null) process.exit(1)
     const t2 = mkDelta()
     const sha32 = sprintSha32()
     const sizes = sprintSizes(stdout)
-    console.log(`${curTab}done ${t2} sec, image: ${sha32}, ${sizes}`)
+    console.log(`${curTab}done ${t2} sec, image: ${sizes}, ${sha32}`)
     if (!opts.load) return
     printProgress('loading')
     loadProg()
@@ -321,11 +319,13 @@ function printProgress(
     label: string,
     using: { setup: string; board: string } | boolean = false
 ) {
-    console.log(`${label} '${Props.getProg()}' ...`)
-    if (using === false) return
-    const board = using === true ? Props.getBoardKind() : using.board
-    const setup = using === true ? Props.getSetup() : using.setup
-    console.log(`    using setup '${setup}' with board '${board}'`)
+    const output = `${label} ${Props.getProg()}` +
+        (
+            using !== false
+                ? `, setup ${using === true ? Props.getSetup() : using.setup}, board ${using === true ? Props.getBoardKind() : using.board}`
+                : ''
+        )
+    console.log(output)
 }
 
 function sprintSha32() {
