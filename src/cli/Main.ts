@@ -160,7 +160,7 @@ function doBuild(opts: any): void {
     const t1 = mkDelta()
     Targ.generate()
     console.log(
-        `${curTab}done ${t1} sec, 'em$meta' program, generated 'main.cpp' using [${usedCnt}/${unitCnt}] units`
+        `${curTab}done ${t1} sec, em$meta program, generated main.cpp using [${usedCnt}/${unitCnt}] units`
     )
     if (opts.meta) return
     const stdout = Targ.build()
