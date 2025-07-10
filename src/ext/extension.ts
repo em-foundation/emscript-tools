@@ -115,6 +115,7 @@ export async function activate(context: Vsc.ExtensionContext) {
             detail: "Click below to select a tooling setup",
             modal: true,
         };
+        await Utils.boardC.set('')
         if (
             await Vsc.window.showWarningMessage(`EM•Script Setups`, opts, "Select...")
         ) {
