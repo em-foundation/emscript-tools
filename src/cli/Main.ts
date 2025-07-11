@@ -160,7 +160,7 @@ function doBuild(opts: any): void {
     const t1 = mkDelta()
     Targ.generate()
     console.log(
-        `${curTab}done ${t1} sec, em$meta program, generated main.cpp using [${usedCnt}/${unitCnt}] units`
+        `${curTab}  translated ${t1} sec .emscript/main.cpp using [${usedCnt}/${unitCnt}] units`
     )
     if (opts.meta) return
     const stdout = Targ.build()
@@ -168,7 +168,7 @@ function doBuild(opts: any): void {
     const t2 = mkDelta()
     const sha32 = sprintSha32()
     const sizes = sprintSizes(stdout)
-    console.log(`${curTab}done ${t2} sec, image: ${sizes}, ${sha32}`)
+    console.log(`${curTab}  compiled ${t2} sec .emscript/.out image: ${sizes}, ${sha32}`)
     if (!opts.load) return
     printProgress('loading')
     loadProg()
@@ -322,7 +322,7 @@ function printProgress(
     const output = `${label} ${Props.getProg()}` +
         (
             using !== false
-                ? `, setup ${using === true ? Props.getSetup() : using.setup}, board ${using === true ? Props.getBoardKind() : using.board}`
+                ? ` for ${using === true ? Props.getSetup() : using.setup} on ${using === true ? Props.getBoardKind() : using.board}`
                 : ''
         )
     console.log(output)
