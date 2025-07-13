@@ -1,21 +1,15 @@
 import Fs from 'fs'
 import Path from 'path'
 
-type Sig = Float32Array<ArrayBuffer>
+export type SigKind = 'current' | 'voltage'
+export type Values = Readonly<Float32Array>
 
-type SigKind = 'current' | 'voltage'
-
-const sig_units = new Map<SigKind, string>([
-    ['current', 'A'],
-    ['voltage', 'V'],
-])
-
-interface Marker {
+export interface Marker {
     start: number
     end: number
 }
 
-class Options {
+export class Options {
     readonly sample_rate: number = 1_000_000 // 1 MHz
     readonly event_thresh: number = 0.0001
     event_min_dt: number = 0.001 // 1 ms
@@ -25,6 +19,10 @@ class Options {
 }
 
 export class Signal {
+    private static units = new Map<SigKind, string>([
+        ['current', 'A'],
+        ['voltage', 'V'],
+    ])
     private data: Float32Array<ArrayBuffer>
     constructor(readonly kind: SigKind, dir: string = '.', readonly opts: Options = new Options) {
         const buf = Fs.readFileSync(Path.join(dir, `${kind}.bin`))
@@ -37,7 +35,8 @@ export class Signal {
     get duration(): number { return this.length / this.opts.sample_rate }
     get length(): number { return this.data.length }
     get sample_rate(): number { return this.opts.sample_rate }
-    get units(): string { return sig_units.get(this.kind)! }
+    get units(): string { return Signal.units.get(this.kind)! }
+    get values(): Values { return this.data }
     average(): number {
         const sum = this.data.reduce((a, b) => a + b, 0)
         const avg = sum / this.length
