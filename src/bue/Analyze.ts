@@ -1,17 +1,23 @@
 import Fs from 'fs'
 import Path from 'path'
 
-export type SigKind = 'current' | 'voltage'
+const UnitToMicro = 1000000
+
+export enum SigKind {
+    Current = 'current'
+}
+
 export type Values = Readonly<Float32Array>
 
 export interface Marker {
-    start: number
-    width: number
+    sample_offset: number
+    sample_count: number
 }
 
 export class Options {
     readonly sample_rate: number = 1_000_000 // 1 MHz
     readonly event_thresh: number = 0.0001
+    readonly voltage: number = 3.3
     event_min_dt: number = 0.001 // 1 ms
     constructor(init?: Partial<Options>) {
         Object.assign(this, init)
@@ -20,10 +26,10 @@ export class Options {
 
 export class Signal {
     private static units = new Map<SigKind, string>([
-        ['current', 'A'],
-        ['voltage', 'V'],
+        [SigKind.Current, 'A']
     ])
     private data: Float32Array<ArrayBuffer>
+
     constructor(readonly kind: SigKind, dir: string = '.', readonly opts: Options = new Options) {
         const buf = Fs.readFileSync(Path.join(dir, `${kind}.f32.bin`))
         const cnt = buf.length / 4
@@ -32,31 +38,31 @@ export class Signal {
             this.data[i] = buf.readFloatLE(i * 4)
         }
     }
-    get duration(): number { return this.length / this.opts.sample_rate }
-    get length(): number { return this.data.length }
+
+    get sample_average(): number { return this.sample_total / this.data.length }
+    get elapsed_seconds(): number { return this.data.length / this.opts.sample_rate }
+    get number_of_samples(): number { return this.data.length }
     get sample_rate(): number { return this.opts.sample_rate }
+    get sample_total(): number { return this.data.reduce((a, b) => a + b, 0) }
     get units(): string { return Signal.units.get(this.kind)! }
     get values(): Values { return this.data }
-    average(): number {
-        const sum = this.data.reduce((a, b) => a + b, 0)
-        const avg = sum / this.length
-        return avg
-    }
+    get voltage(): number { return this.opts.voltage }
+
     findEvents(): Marker[] {
         const thresh = this.opts.event_thresh
         const dt = this.opts.event_min_dt
         const min_width = Math.round(dt * this.opts.sample_rate)
         let res = new Array<Marker>()
         let in_event = false
-        let start = 0
-        for (let i = 0; i < this.length; i++) {
+        let sample_offset = 0
+        for (let i = 0; i < this.number_of_samples; i++) {
             const val = this.data[i]
             if (!in_event && val >= thresh) {
                 in_event = true
-                start = i
+                sample_offset = i
             } else if (in_event && val < thresh) {
-                if (i - start >= min_width) {
-                    res.push({ start: start, width: i - start })
+                if (i - sample_offset >= min_width) {
+                    res.push({ sample_offset: sample_offset, sample_count: i - sample_offset })
                 }
                 in_event = false
             }
@@ -66,19 +72,19 @@ export class Signal {
 }
 
 export function exec(opts: any) {
-    const I_sig = new Signal('current')
-    console.log(`length = ${I_sig.length}`)
-    console.log(`duration = ${I_sig.duration} s`)
-    console.log(`average = ${toEng(I_sig.average(), I_sig.units)}`)
-    for (const [i, evt] of I_sig.findEvents().entries()) {
-        console.log(`event ${i}: ${evt.width} µs`) // TODO: adjust for sample_rate
-    }
-}
+    const I_sig = new Signal(SigKind.Current)
+    console.log(`Sample Rate = ${I_sig.sample_rate.toLocaleString()} Hz`)
+    console.log(`Voltage = ${I_sig.voltage} V`)
+    console.log(`Number of Samples = ${I_sig.number_of_samples.toLocaleString()}`)
+    console.log(`Average current = ${I_sig.sample_average * UnitToMicro} uA`)
+    console.log(`Average power consumption = ${I_sig.sample_average * UnitToMicro * I_sig.voltage} uW`)
 
-function toEng(x: number, u: string): string {
-    const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3
-    const mantissa = x / 10 ** exp
-    const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}` }[exp] || `e${exp} ${u}`
-    return `${mantissa.toFixed(3)}${unit}`
+    const events = I_sig.findEvents()
+    const eventTimes = events.map(evt => (
+        {
+            offset_s: evt.sample_offset / I_sig.sample_rate,
+            duration_us: evt.sample_count * UnitToMicro / I_sig.sample_rate
+        }
+    ))
+    console.log(`Events Detected (${eventTimes.length}): ${JSON.stringify(eventTimes, null, 2)}`)
 }
-
