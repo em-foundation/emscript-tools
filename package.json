@@ -31,7 +31,6 @@
         "watch-bue": "npm run build-bue -- --sourcemap --watch",
         "watch-cli": "npm run build-cli -- --sourcemap --watch"
     },
-
     "dependencies": {
         "@prantlf/railroad-diagrams": "^1.0.1",
         "@types/js-yaml": "^4.0.9",

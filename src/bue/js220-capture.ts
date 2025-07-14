@@ -1,6 +1,6 @@
-/// <reference path="./joulescope_driver.d.ts"
+/// <reference path="./joulescope_driver.d.ts" />
 
-import Fs from 'fs'
+import * as Fs from 'fs'
 import JoulescopeDriver, { Value } from 'joulescope_driver'
 
 const drv = new JoulescopeDriver

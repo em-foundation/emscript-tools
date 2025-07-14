@@ -33,5 +33,5 @@ declare module 'joulescope_driver' {
         ): () => void
     }
 
-    export default JouleScopeDriver
+    export default JoulescopeDriver
 }
