@@ -25,7 +25,7 @@ export class Signal {
     ])
     private data: Float32Array<ArrayBuffer>
     constructor(readonly kind: SigKind, dir: string = '.', readonly opts: Options = new Options) {
-        const buf = Fs.readFileSync(Path.join(dir, `${kind}.bin`))
+        const buf = Fs.readFileSync(Path.join(dir, `${kind}.f32.bin`))
         const cnt = buf.length / 4
         this.data = new Float32Array(cnt)
         for (let i = 0; i < cnt; i++) {
