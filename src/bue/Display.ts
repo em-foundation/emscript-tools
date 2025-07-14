@@ -7,10 +7,10 @@ const TOP = 1.05
 const FONT_SIZE = 13
 
 export function exec(opts: any) {
-    const I_sig = new Analyze.Signal('current')
+    const I_sig = new Analyze.Signal(Analyze.SigKind.Current)
     const event = I_sig.findEvents()[0]     // TODO: assuming event #0
     const vals = I_sig.values
-    const html = genHtml(vals.slice(event.start - PRE, event.start + 5100), event.width, 2)
+    const html = genHtml(vals.slice(event.sample_offset - PRE, event.sample_offset + 5100), event.sample_count, 2)
     Fs.writeFileSync('event.html', html)
 }
 
