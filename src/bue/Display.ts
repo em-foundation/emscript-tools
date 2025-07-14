@@ -28,10 +28,6 @@ function genHtml(signal: Analyze.Values, width: number, down_sample: number = 1)
     @import url('https://fonts.googleapis.com/css2?family=Inconsolata&display=swap');
   body {
     background: hsla(232,15%,15%,1);
-    font-family: serif;
-    font-size: 24pt;
-    margin: 0;
-    padding: 0;
     display: flex;
     justify-content:center;
     align-items:center;
@@ -64,10 +60,8 @@ Plotly.newPlot('plot', [{
     paper_bgcolor: '#111',
     plot_bgcolor: '#111',
     font: { family: 'Inconsolata', color: '#eee' },
-    margin: { l: 50, r: 20, t: 16, b: 40 },
-
+    margin: { l: 50, r: 20, t: 16, b: 30 },
     xaxis: {
-        // title: 'ms',
         side: 'bottom',
         color: '#eee',
         tickmode: 'array',
@@ -87,7 +81,6 @@ Plotly.newPlot('plot', [{
         }
     },
     yaxis: {
-        // title: 'mA',
         color: '#eee',
         range: [-0.5, 10.5],
         dtick: 2,
@@ -114,7 +107,7 @@ Plotly.newPlot('plot', [{
             yref: 'paper',
             x0: 0,
             x1: ${width / 1000},
-            y0: -2,
+            y0: -0.1,
             y1: ${TOP},
             fillcolor: 'hsla(150, 100%, 50%, 0.10)',
             line: { width: 1, color: 'green' }
