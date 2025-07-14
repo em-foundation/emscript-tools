@@ -3,12 +3,14 @@ import * as Analyze from './Analyze'
 import Fs from 'fs'
 
 const PRE = 300
+const TOP = 1.05
+const FONT_SIZE = 11
 
 export function exec(opts: any) {
     const I_sig = new Analyze.Signal('current')
     const event = I_sig.findEvents()[0]     // TODO: assuming event #0
     const vals = I_sig.values
-    const html = genHtml(vals.slice(event.start - PRE, event.start + 5100), 2)
+    const html = genHtml(vals.slice(event.start - PRE, event.start + 5100), event.width, 2)
     Fs.writeFileSync('event.html', html)
 }
 
@@ -16,7 +18,7 @@ function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
 
-function genHtml(signal: Analyze.Values, down_sample: number = 1): string {
+function genHtml(signal: Analyze.Values, width: number, down_sample: number = 1): string {
     const x_data = decimate(down_sample, Array.from({ length: signal.length }, (_, i) => (i - PRE) * 0.001))
     const y_data = decimate(down_sample, Array.from(signal).map(y => y * 1000))
     const html = `
@@ -24,17 +26,22 @@ function genHtml(signal: Analyze.Values, down_sample: number = 1): string {
 <meta charset="utf-8">
 <style>
   body {
-    background: #111;
-    color: #eee;
+    background: hsla(232,15%,15%,1);
     font-family: sans-serif;
+    font-size: 24pt;
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh
   }
   #plot-container {
     width: 680px;
     height: 400px;
+    background: black;
     margin: auto;
-    padding-top: 10px;
+    padding-top: 0px;
   }
 </style>
 <script src="https://cdn.plot.ly/plotly-2.30.1.min.js"></script>
@@ -56,17 +63,18 @@ Plotly.newPlot('plot', [{
     paper_bgcolor: '#111',
     plot_bgcolor: '#111',
     font: { color: '#eee' },
-    margin: { l: 50, r: 20, t: 30, b: 40 },
+    margin: { l: 50, r: 20, t: 16, b: 40 },
     xaxis: {
         title: 'ms',
-        side: 'top',
+        side: 'bottom',
         color: '#eee',
         tickmode: 'array',
         tickvals: [0, 1, 2, 3, 4, 5],
         ticktext: ['0', '1', '2', '3', '4', '5'],
+        tickfont: { size: ${FONT_SIZE}},
         showgrid: true,
         gridcolor: '#444',
-        gridwidth: 1,
+        gridwidth: 2,
         minor: {
             tickmode: 'linear',
             tick0: 0,
@@ -79,13 +87,50 @@ Plotly.newPlot('plot', [{
     yaxis: {
         title: 'mA',
         color: '#eee',
-        range: [-0.5, 10],
+        range: [-0.5, 10.5],
         fixedrange: true,
         gridcolor: '#444',
+        tickfont: { size: ${FONT_SIZE}},
         zeroline: true,
         zerolinecolor: '#444',
         zerolinewidth: 1
-    }
+    },
+    shapes: [
+        {
+            type: 'rect',
+            xref: 'x',
+            yref: 'paper',
+            x0: 0,
+            x1: ${width / 1000},
+            y0: 0,
+            y1: ${TOP},
+            fillcolor: 'rgba(0, 255, 0, 0.1)',
+            line: { width: 1, color: 'green' }
+        },
+        {
+            type: 'rect',
+            xref: 'x',
+            yref: 'paper',
+            x0: 0,
+            x1: ${width / 1000},
+            y0: 1,
+            y1: ${TOP},
+            fillcolor: 'rgba(0, 255, 0, 0.5)',
+            line: { width: 1, color: 'green' }
+        }
+    ],
+    annotations: [
+        {
+            xref: 'x',
+            yref: 'paper',
+            x: ${width / 1000 / 2},
+            y: ${TOP},
+            text: '${width / 1000} ms',
+            showarrow: false,
+            font: { color: '#ccc', size: ${FONT_SIZE} },
+            align: 'center'
+        }
+    ]
 })
 </script>
 </body>

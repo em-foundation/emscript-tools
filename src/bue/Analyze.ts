@@ -6,7 +6,7 @@ export type Values = Readonly<Float32Array>
 
 export interface Marker {
     start: number
-    end: number
+    width: number
 }
 
 export class Options {
@@ -56,7 +56,7 @@ export class Signal {
                 start = i
             } else if (in_event && val < thresh) {
                 if (i - start >= min_width) {
-                    res.push({ start: start, end: i })
+                    res.push({ start: start, width: i - start })
                 }
                 in_event = false
             }
@@ -71,7 +71,7 @@ export function exec(opts: any) {
     console.log(`duration = ${I_sig.duration} s`)
     console.log(`average = ${toEng(I_sig.average(), I_sig.units)}`)
     for (const [i, evt] of I_sig.findEvents().entries()) {
-        console.log(`event ${i}: ${evt.end - evt.start} µs`)
+        console.log(`event ${i}: ${evt.width} µs`) // TODO: adjust for sample_rate
     }
 }
 
