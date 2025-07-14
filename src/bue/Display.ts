@@ -4,7 +4,7 @@ import Fs from 'fs'
 
 const PRE = 300
 const TOP = 1.05
-const FONT_SIZE = 11
+const FONT_SIZE = 13
 
 export function exec(opts: any) {
     const I_sig = new Analyze.Signal('current')
@@ -25,9 +25,10 @@ function genHtml(signal: Analyze.Values, width: number, down_sample: number = 1)
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inconsolata&display=swap');
   body {
     background: hsla(232,15%,15%,1);
-    font-family: sans-serif;
+    font-family: serif;
     font-size: 24pt;
     margin: 0;
     padding: 0;
@@ -62,10 +63,11 @@ Plotly.newPlot('plot', [{
 }], {
     paper_bgcolor: '#111',
     plot_bgcolor: '#111',
-    font: { color: '#eee' },
+    font: { family: 'Inconsolata', color: '#eee' },
     margin: { l: 50, r: 20, t: 16, b: 40 },
+
     xaxis: {
-        title: 'ms',
+        // title: 'ms',
         side: 'bottom',
         color: '#eee',
         tickmode: 'array',
@@ -78,22 +80,32 @@ Plotly.newPlot('plot', [{
         minor: {
             tickmode: 'linear',
             tick0: 0,
-            dtick: 0.2,
+            dtick: 0.25,
             showgrid: true,
             gridcolor: '#333',
             gridwidth: 1
         }
     },
     yaxis: {
-        title: 'mA',
+        // title: 'mA',
         color: '#eee',
         range: [-0.5, 10.5],
+        dtick: 2,
         fixedrange: true,
         gridcolor: '#444',
+        gridwidth: 2,
         tickfont: { size: ${FONT_SIZE}},
         zeroline: true,
         zerolinecolor: '#444',
-        zerolinewidth: 1
+        zerolinewidth: 1,
+        minor: {
+            tickmode: 'linear',
+            tick0: 0,
+            dtick: 1,
+            showgrid: true,
+            gridcolor: '#333',
+            gridwidth: 1
+        }
     },
     shapes: [
         {
@@ -102,9 +114,9 @@ Plotly.newPlot('plot', [{
             yref: 'paper',
             x0: 0,
             x1: ${width / 1000},
-            y0: 0,
+            y0: -2,
             y1: ${TOP},
-            fillcolor: 'rgba(0, 255, 0, 0.1)',
+            fillcolor: 'hsla(150, 100%, 50%, 0.10)',
             line: { width: 1, color: 'green' }
         },
         {
@@ -115,11 +127,31 @@ Plotly.newPlot('plot', [{
             x1: ${width / 1000},
             y0: 1,
             y1: ${TOP},
-            fillcolor: 'rgba(0, 255, 0, 0.5)',
+            fillcolor: 'hsla(150, 100%, 50%, 0.50)',
             line: { width: 1, color: 'green' }
         }
     ],
     annotations: [
+        {
+            xref: 'paper',
+            yref: 'paper',
+            x: -0.07,
+            y: -0.05,
+            text: 'ms',
+            showarrow: false,
+            font: { color: 'yellow', size: ${FONT_SIZE} },
+            align: 'center'
+        },
+        {
+            xref: 'paper',
+            yref: 'paper',
+            x: -0.07,
+            y: 0.5,
+            text: 'mA',
+            showarrow: false,
+            font: { color: 'yellow', size: ${FONT_SIZE} },
+            align: 'center'
+        },
         {
             xref: 'x',
             yref: 'paper',
