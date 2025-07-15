@@ -21,7 +21,7 @@ export class Options {
     readonly kernel_length = 20
     event_min_dt: number = 0.001 // 1 ms
     dir = '.'
-    filename = ''
+    data_source = ''
     constructor(init?: Partial<Options>) {
         Object.assign(this, init)
     }
@@ -35,8 +35,8 @@ export class Signal {
 
     constructor(readonly kind: SigKind, dir: string = '.', readonly opts: Options = new Options) {
         this.opts.dir = dir
-        this.opts.filename = resolve(dir, `${kind}.f32.bin`)
-        const buf = readFileSync(this.opts.filename)
+        this.opts.data_source = resolve(dir, `${kind}.f32.bin`)
+        const buf = readFileSync(this.opts.data_source)
         const cnt = buf.length / 4
         this.data = new Float32Array(cnt)
         for (let i = 0; i < cnt; i++) {
@@ -45,7 +45,7 @@ export class Signal {
     }
 
     get elapsed_seconds(): number { return this.data.length / this.opts.sample_rate }
-    get filename(): string { return this.opts.filename }
+    get data_source(): string { return this.opts.data_source }
     get kernel_length(): number { return this.opts.kernel_length }
     get number_of_samples(): number { return this.data.length }
     get sample_average(): number { return this.sample_total / this.data.length }
@@ -96,7 +96,7 @@ export class Signal {
 export function exec(opts: any) {
     const I_sig = new Signal(SigKind.Current)
     const events = I_sig.findEvents()
-    console.log(`*** Analyzing ${I_sig.opts.filename} ***`)
+    console.log(`*** Analyzing ${I_sig.opts.data_source} ***`)
     console.log(`Sample Rate = ${I_sig.sample_rate.toLocaleString()} Hz`)
     console.log(`Voltage = ${I_sig.voltage} V`)
     console.log(`Number of Samples = ${I_sig.number_of_samples.toLocaleString()}`)
@@ -111,8 +111,13 @@ export function exec(opts: any) {
     const filename = resolve(I_sig.opts.dir, 'current.json')
     writeFileSync(filename, JSON.stringify({
         opts: I_sig.opts,
+        number_of_samples: I_sig.values.length,
+        elapsed_seconds: I_sig.elapsed_seconds,
+        average_current: I_sig.sample_average,
+        average_power: I_sig.sample_average * I_sig.voltage,
+        number_of_events: events.length,
         events: events,
-        data: I_sig.values
+        sample_data: I_sig.values
     }, null, 2))
     console.log(`Wrote JSON data to ${filename}`)
 }
