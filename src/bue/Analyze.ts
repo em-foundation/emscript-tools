@@ -18,6 +18,7 @@ export class Options {
     readonly sample_rate: number = 1_000_000 // 1 MHz
     readonly event_thresh: number = 0.0001
     readonly voltage: number = 3.3
+    readonly kernel_length = 20
     event_min_dt: number = 0.001 // 1 ms
     dir = '.'
     filename = ''
@@ -45,6 +46,7 @@ export class Signal {
 
     get elapsed_seconds(): number { return this.data.length / this.opts.sample_rate }
     get filename(): string { return this.opts.filename }
+    get kernel_length(): number { return this.opts.kernel_length }
     get number_of_samples(): number { return this.data.length }
     get sample_average(): number { return this.sample_total / this.data.length }
     get sample_rate(): number { return this.opts.sample_rate }
@@ -71,8 +73,7 @@ export class Signal {
         let res = new Array<Marker>()
         let in_event = false
         let sample_offset = 0
-        const kernelLength = 20
-        const kernel = new Array(kernelLength).fill(1.0 / kernelLength)
+        const kernel = new Array(this.opts.kernel_length).fill(1.0 / this.opts.kernel_length)
         this.convolve1D(kernel).forEach((val, i) => {
             if (!in_event && val >= thresh) {
                 in_event = true
@@ -80,7 +81,10 @@ export class Signal {
             } else if (in_event && val < thresh) {
                 const width = i - sample_offset
                 if (width >= min_width) {
-                    res.push({ sample_offset: sample_offset - 2 * kernelLength, sample_count: width + 3 * kernelLength })
+                    res.push({
+                        sample_offset: sample_offset - 2 * this.opts.kernel_length,
+                        sample_count: width + 3 * this.opts.kernel_length
+                    })
                 }
                 in_event = false
             }
