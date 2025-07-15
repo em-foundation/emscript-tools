@@ -1,5 +1,3 @@
-/// <reference path="./joulescope_driver.d.ts" />
-
 import JoulescopeDriver, { Value } from 'joulescope_driver'
 
 import Fs from 'fs'
