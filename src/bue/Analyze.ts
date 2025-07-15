@@ -98,29 +98,32 @@ export class Signal {
 
 export function exec(opts: any) {
     const I_sig = new Signal(SigKind.Current)
+    console.log(`*** Analyzing ${I_sig.opts.data_source} ***\n`)
     const events = I_sig.findEvents()
-    console.log(`*** Analyzing ${I_sig.opts.data_source} ***`)
-    console.log(`Sample Rate = ${I_sig.sample_rate.toLocaleString()} Hz`)
-    console.log(`Voltage = ${I_sig.voltage} V`)
-    console.log(`Number of Samples = ${I_sig.number_of_samples.toLocaleString()}`)
-    console.log(`Elapsed time = ${I_sig.elapsed_seconds} S`)
-    console.log(`Average current = ${I_sig.sample_average * UnitToMicro} uA`)
-    console.log(`Average power consumption = ${I_sig.sample_average * UnitToMicro * I_sig.voltage} uW`)
     const eventTimes = events.map(evt => ({
         offset_s: evt.sample_offset / I_sig.sample_rate,
         duration_us: evt.sample_count * UnitToMicro / I_sig.sample_rate
     }))
     console.log(`Events Detected (${eventTimes.length}): ${JSON.stringify(eventTimes, null, 2)}`)
-    const filename = resolve(I_sig.opts.dir, 'current.json')
-    writeFileSync(filename, JSON.stringify({
+
+    const startOffset = events[0].sample_offset - 0.5 * I_sig.sample_rate
+    const endOffset = startOffset + events.length * I_sig.sample_rate
+    const goodSamples = I_sig.values.slice(startOffset, endOffset)
+
+    const goodSampleTotal = goodSamples.reduce((a, b) => a + b, 0)
+    const goodSampleAverage = goodSampleTotal / goodSamples.length
+
+    const outputJson = JSON.stringify({
         opts: I_sig.opts,
-        number_of_samples: I_sig.values.length,
-        elapsed_seconds: I_sig.elapsed_seconds,
-        average_current: I_sig.sample_average,
-        average_power: I_sig.sample_average * I_sig.voltage,
+        number_of_samples_averaged: goodSamples.length,
+        elapsed_seconds: goodSamples.length / I_sig.sample_rate,
+        average_current: goodSampleAverage,
+        average_power: goodSampleAverage * I_sig.voltage,
         number_of_events: events.length,
-        events: events,
-        sample_data: I_sig.values
-    }, null, 2))
+        events: events
+    }, null, 2)
+    console.log(outputJson)
+    const filename = resolve(I_sig.opts.dir, 'current.json')
+    writeFileSync(filename, outputJson)
     console.log(`Wrote JSON data to ${filename}`)
 }
