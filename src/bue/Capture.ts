@@ -12,42 +12,53 @@ export function exec(opts: any) {
         drv.finalize()
         process.exit(1)
     }
-    function initialize() {
 
-        let unsubs: any[] = [];
+    let unsubs: any[] = [];
 
-        const LEN = 3_500_000
-        let buf = Buffer.allocUnsafe(LEN * 4)
+    const LEN = Math.round(opts.seconds * 1_000_000)
 
-        let cur_cnt = 0
+    let buf = Buffer.allocUnsafe(LEN * 4)
 
-        drv.open(dev);
-        const sample_cbk = (topic: string, value: Value) => {
-            console.log(cur_cnt)
+    let i_sum = 0
+    let v_sum = 0
+    let cnt = 0
+
+    const sampleCb = (topic: string, value: Value) => {
+        if (topic.indexOf('/s/i/') != -1) {
+            process.stdout.write(`\r${(cnt / 1_000_000).toFixed(3)} s ...`)
             for (const v of value.data) {
-                if (cur_cnt < LEN) {
-                    buf.writeFloatLE(v, cur_cnt * 4)
-                    cur_cnt += 1
+                if (cnt < LEN) {
+                    buf.writeFloatLE(v, cnt * 4)
+                    i_sum += v
+                    cnt += 1
                 } else {
-                    console.log('write file')
                     Fs.writeFileSync('current.f32.bin', buf)
-                    drv.publish(dev.concat('/s/i/ctrl'), 0, 0);
-                    drv.close(dev);
-                    drv.finalize();
+                    process.stdout.write('\r                 \rdone.\n')
+                    const avg = i_sum / cnt
+                    console.log(`average current = ${toEng(avg, 'A')}`)
+                    // drv.publish(dev.concat('/s/i/ctrl'), 0, 0);
+                    // drv.publish(dev.concat('/s/v/ctrl'), 0, 0);
+                    // drv.close(dev);
+                    // drv.finalize();
                     process.exit()
                 }
             }
+            return
         }
-        drv.publish(dev.concat("/s/i/range/mode"), "auto");
-        unsubs.push(drv.subscribe(dev.concat("/s/i/!data"), 2, sample_cbk));
-        drv.publish(dev.concat("/s/i/ctrl"), 1, 0);
-        return () => {
-            unsubs.forEach((unsub) => unsub());
-            drv.publish(dev.concat('/s/i/ctrl'), 0, 0);
-            drv.close(dev);
-            drv.finalize();
+        if (topic.indexOf('/s/v/') != -1) {
         }
     }
-    const finalize_cbk = initialize();
-    process.on('SIGINT', finalize_cbk);
+
+    drv.open(dev);
+    drv.subscribe(dev.concat("/s/i/!data"), 2, sampleCb)
+    drv.subscribe(dev.concat("/s/v/!data"), 2, sampleCb)
+    drv.publish(dev.concat("/s/i/ctrl"), 1, 0)
+    drv.publish(dev.concat("/s/v/ctrl"), 1, 0)
+}
+
+function toEng(x: number, u: string): string {
+    const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3
+    const mantissa = x / 10 ** exp
+    const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}` }[exp] || `e${exp} ${u}`
+    return `${mantissa.toFixed(3)}${unit}`
 }
