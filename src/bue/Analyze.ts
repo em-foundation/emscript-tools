@@ -19,6 +19,8 @@ export class Options {
     readonly event_thresh: number = 0.0001
     readonly voltage: number = 3.3
     event_min_dt: number = 0.001 // 1 ms
+    dir = '.'
+    filename = ''
     constructor(init?: Partial<Options>) {
         Object.assign(this, init)
     }
@@ -31,7 +33,9 @@ export class Signal {
     private data: Float32Array<ArrayBuffer>
 
     constructor(readonly kind: SigKind, dir: string = '.', readonly opts: Options = new Options) {
-        const buf = Fs.readFileSync(Path.join(dir, `${kind}.f32.bin`))
+        this.opts.dir = dir
+        this.opts.filename = Path.resolve(dir, `${kind}.f32.bin`)
+        const buf = Fs.readFileSync(this.opts.filename)
         const cnt = buf.length / 4
         this.data = new Float32Array(cnt)
         for (let i = 0; i < cnt; i++) {
@@ -39,9 +43,10 @@ export class Signal {
         }
     }
 
-    get sample_average(): number { return this.sample_total / this.data.length }
     get elapsed_seconds(): number { return this.data.length / this.opts.sample_rate }
+    get filename(): string { return this.opts.filename }
     get number_of_samples(): number { return this.data.length }
+    get sample_average(): number { return this.sample_total / this.data.length }
     get sample_rate(): number { return this.opts.sample_rate }
     get sample_total(): number { return this.data.reduce((a, b) => a + b, 0) }
     get units(): string { return Signal.units.get(this.kind)! }
@@ -86,18 +91,17 @@ export class Signal {
 
 export function exec(opts: any) {
     const I_sig = new Signal(SigKind.Current)
+    const events = I_sig.findEvents()
+    console.log(`*** Analyzing ${I_sig.opts.filename} ***`)
     console.log(`Sample Rate = ${I_sig.sample_rate.toLocaleString()} Hz`)
     console.log(`Voltage = ${I_sig.voltage} V`)
     console.log(`Number of Samples = ${I_sig.number_of_samples.toLocaleString()}`)
+    console.log(`Elapsed time = ${I_sig.elapsed_seconds} S`)
     console.log(`Average current = ${I_sig.sample_average * UnitToMicro} uA`)
     console.log(`Average power consumption = ${I_sig.sample_average * UnitToMicro * I_sig.voltage} uW`)
-
-    const events = I_sig.findEvents()
-    const eventTimes = events.map(evt => (
-        {
-            offset_s: evt.sample_offset / I_sig.sample_rate,
-            duration_us: evt.sample_count * UnitToMicro / I_sig.sample_rate
-        }
-    ))
+    const eventTimes = events.map(evt => ({
+        offset_s: evt.sample_offset / I_sig.sample_rate,
+        duration_us: evt.sample_count * UnitToMicro / I_sig.sample_rate
+    }))
     console.log(`Events Detected (${eventTimes.length}): ${JSON.stringify(eventTimes, null, 2)}`)
 }
