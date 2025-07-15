@@ -1,5 +1,5 @@
-import Fs from 'fs'
-import Path from 'path'
+import { readFileSync, writeFileSync } from 'fs'
+import { resolve } from 'path'
 
 const UnitToMicro = 1000000
 
@@ -35,8 +35,8 @@ export class Signal {
 
     constructor(readonly kind: SigKind, dir: string = '.', readonly opts: Options = new Options) {
         this.opts.dir = dir
-        this.opts.filename = Path.resolve(dir, `${kind}.f32.bin`)
-        const buf = Fs.readFileSync(this.opts.filename)
+        this.opts.filename = resolve(dir, `${kind}.f32.bin`)
+        const buf = readFileSync(this.opts.filename)
         const cnt = buf.length / 4
         this.data = new Float32Array(cnt)
         for (let i = 0; i < cnt; i++) {
@@ -108,4 +108,11 @@ export function exec(opts: any) {
         duration_us: evt.sample_count * UnitToMicro / I_sig.sample_rate
     }))
     console.log(`Events Detected (${eventTimes.length}): ${JSON.stringify(eventTimes, null, 2)}`)
+    const filename = resolve(I_sig.opts.dir, 'current.json')
+    writeFileSync(filename, JSON.stringify({
+        opts: I_sig.opts,
+        events: events,
+        data: I_sig.values
+    }, null, 2))
+    console.log(`Wrote JSON data to ${filename}`)
 }
