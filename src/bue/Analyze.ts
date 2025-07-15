@@ -104,6 +104,9 @@ export function exec(opts: any) {
         offset_s: evt.sample_offset / I_sig.sample_rate,
         duration_us: evt.sample_count * UnitToMicro / I_sig.sample_rate
     }))
+    if (events.length > I_sig.values.length / I_sig.sample_rate) {
+        throw new Error('Bad input file.  Too many events')
+    }
     console.log(`Events Detected (${eventTimes.length}): ${JSON.stringify(eventTimes, null, 2)}`)
 
     const startOffset = events[0].sample_offset - 0.5 * I_sig.sample_rate
