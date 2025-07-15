@@ -29,10 +29,10 @@ export function exec(opts: any) {
             const avg = i_sum / i_cnt
             console.log(`average current = ${toEng(i_sum / i_cnt, 'A')}`)
             console.log(`average voltage = ${toEng(v_sum / v_cnt, 'V')}`)
-            // drv.publish(dev.concat('/s/i/ctrl'), 0, 0);
-            // drv.publish(dev.concat('/s/v/ctrl'), 0, 0);
-            // drv.close(dev);
-            // drv.finalize();
+            drv.publish(dev.concat('/s/i/ctrl'), 0, 0);
+            drv.publish(dev.concat('/s/v/ctrl'), 0, 0);
+            drv.close(dev);
+            drv.finalize();
             process.exit()
 
         }
@@ -59,6 +59,7 @@ export function exec(opts: any) {
     }
 
     drv.open(dev);
+    drv.publish(dev.concat("/s/i/range/mode"), "auto");
     drv.subscribe(dev.concat("/s/v/!data"), 2, sampleCb)
     drv.subscribe(dev.concat("/s/i/!data"), 2, sampleCb)
     drv.publish(dev.concat("/s/i/ctrl"), 1, 0)
