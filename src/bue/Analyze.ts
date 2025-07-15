@@ -48,6 +48,17 @@ export class Signal {
     get values(): Values { return this.data }
     get voltage(): number { return this.opts.voltage }
 
+    convolve1D(kernel: number[]): number[] {
+        const input = this.data
+        const output = new Array(input.length + kernel.length - 1).fill(0);
+        for (let i = 0; i < input.length; i++) {
+            for (let j = 0; j < kernel.length; j++) {
+                output[i + j] += input[i] * kernel[j];
+            }
+        }
+        return output;
+    }
+
     findEvents(): Marker[] {
         const thresh = this.opts.event_thresh
         const dt = this.opts.event_min_dt
@@ -55,18 +66,20 @@ export class Signal {
         let res = new Array<Marker>()
         let in_event = false
         let sample_offset = 0
-        for (let i = 0; i < this.number_of_samples; i++) {
-            const val = this.data[i]
+        const kernelLength = 20
+        const kernel = new Array(kernelLength).fill(1.0 / kernelLength)
+        this.convolve1D(kernel).forEach((val, i) => {
             if (!in_event && val >= thresh) {
                 in_event = true
                 sample_offset = i
             } else if (in_event && val < thresh) {
-                if (i - sample_offset >= min_width) {
-                    res.push({ sample_offset: sample_offset, sample_count: i - sample_offset })
+                const width = i - sample_offset
+                if (width >= min_width) {
+                    res.push({ sample_offset: sample_offset - 2 * kernelLength, sample_count: width + 3 * kernelLength })
                 }
                 in_event = false
             }
-        }
+        })
         return res
     }
 }
