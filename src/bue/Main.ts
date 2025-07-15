@@ -17,6 +17,7 @@ CMD.command('capture')
     .action((opts: any) => Capture.exec(opts))
 CMD.command('display')
     .description('display active events')
+    .option('-e --event-number <value>', 'event number', parseFloat, 0)
     .action((opts: any) => Display.exec(opts))
 
 

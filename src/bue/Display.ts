@@ -8,7 +8,13 @@ const FONT_SIZE = 13
 
 export function exec(opts: any) {
     const I_sig = new Analyze.Signal(Analyze.SigKind.Current)
-    const event = I_sig.findEvents()[0]     // TODO: assuming event #0
+    const event_tab = I_sig.findEvents()
+    const ev_num = opts.eventNumber as number
+    if (ev_num > event_tab.length) {
+        console.error("*** event number out of range")
+        process.exit(1)
+    }
+    const event = I_sig.findEvents()[ev_num]
     const vals = I_sig.values
     const html = genHtml(vals.slice(event.sample_offset - PRE, event.sample_offset + 5100), event.sample_count, 2)
     Fs.writeFileSync('event.html', html)
@@ -150,7 +156,7 @@ Plotly.newPlot('plot', [{
             yref: 'paper',
             x: ${width / 1000 / 2},
             y: ${TOP},
-            text: '${width / 1000} ms',
+            text: '${(width / 1000).toFixed(3)} ms',
             showarrow: false,
             font: { color: '#ccc', size: ${FONT_SIZE} },
             align: 'center'
