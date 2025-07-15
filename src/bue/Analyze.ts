@@ -80,7 +80,10 @@ export class Signal {
                 sample_offset = i
             } else if (in_event && val < thresh) {
                 const width = i - sample_offset
-                if (width >= min_width) {
+                if (width >= min_width &&
+                    sample_offset >= (0.5 * this.opts.sample_rate) &&
+                    i < (this.number_of_samples - 0.5 * this.opts.sample_rate)
+                ) {
                     res.push({
                         sample_offset: sample_offset - 2 * this.opts.kernel_length,
                         sample_count: width + 3 * this.opts.kernel_length
