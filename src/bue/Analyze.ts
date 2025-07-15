@@ -109,16 +109,16 @@ export function exec(opts: any) {
     const startOffset = events[0].sample_offset - 0.5 * I_sig.sample_rate
     const endOffset = startOffset + events.length * I_sig.sample_rate
     const goodSamples = I_sig.values.slice(startOffset, endOffset)
-
     const goodSampleTotal = goodSamples.reduce((a, b) => a + b, 0)
     const goodSampleAverage = goodSampleTotal / goodSamples.length
-
+    const averageEventDuration = events.reduce((a, b) => a + b.sample_count, 0) / events.length
     const outputJson = JSON.stringify({
         opts: I_sig.opts,
         number_of_samples_averaged: goodSamples.length,
         elapsed_seconds: goodSamples.length / I_sig.sample_rate,
         average_current: goodSampleAverage,
         average_power: goodSampleAverage * I_sig.voltage,
+        average_event_sample_count: averageEventDuration,
         number_of_events: events.length,
         events: events
     }, null, 2)
