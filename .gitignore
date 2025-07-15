@@ -13,3 +13,7 @@
 /etc/grammar.html
 
 .DS_Store
+
+*.f32.bin
+event.html
+current.json
