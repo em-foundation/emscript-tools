@@ -98,7 +98,7 @@ export class Signal {
 
 export function exec(opts: any) {
     const I_sig = new Signal(SigKind.Current)
-    console.log(`*** Analyzing ${I_sig.opts.data_source} ***\n`)
+    console.log(`Analyzing ${I_sig.opts.data_source}`)
     const events = I_sig.findEvents()
     const eventTimes = events.map(evt => ({
         offset_s: evt.sample_offset / I_sig.sample_rate,
@@ -107,15 +107,15 @@ export function exec(opts: any) {
     if (events.length > I_sig.values.length / I_sig.sample_rate) {
         throw new Error('Bad input file.  Too many events')
     }
-    console.log(`Events Detected (${eventTimes.length}): ${JSON.stringify(eventTimes, null, 2)}`)
-
     const startOffset = events[0].sample_offset - 0.5 * I_sig.sample_rate
     const endOffset = startOffset + events.length * I_sig.sample_rate
     const goodSamples = I_sig.values.slice(startOffset, endOffset)
     const goodSampleTotal = goodSamples.reduce((a, b) => a + b, 0)
     const goodSampleAverage = goodSampleTotal / goodSamples.length
     const averageEventDuration = events.reduce((a, b) => a + b.sample_count, 0) / events.length
+    console.log(`Events Detected: ${eventTimes.length}, Average Duration: ${averageEventDuration}`)
     const outputJson = JSON.stringify({
+        analysis_time: new Date().toISOString(),
         opts: I_sig.opts,
         number_of_samples_averaged: goodSamples.length,
         elapsed_seconds: goodSamples.length / I_sig.sample_rate,
@@ -125,8 +125,7 @@ export function exec(opts: any) {
         number_of_events: events.length,
         events: events
     }, null, 2)
-    console.log(outputJson)
-    const filename = resolve(I_sig.opts.dir, 'current.json')
+    const filename = resolve(I_sig.opts.dir, 'analysis_results.json')
     writeFileSync(filename, outputJson)
-    console.log(`Wrote JSON data to ${filename}`)
+    console.log(`Analysis results in ${filename}`)
 }
