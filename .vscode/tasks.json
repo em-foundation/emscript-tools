@@ -22,10 +22,25 @@
                 "base": "$tsc"
             }
         },
-        {
-            "label": "npm: watch",
+       {
+            "label": "npm: watch-bue",
             "type": "npm",
-            "script": "watch",
+            "script": "watch-bue",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "never",
+                "panel": "dedicated"
+            },
+            "group": "build",
+            "detail": "npm run build-bue -- --sourcemap --watch",
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        {
+            "label": "npm: watch-cli",
+            "type": "npm",
+            "script": "watch-cli",
             "isBackground": true,
             "presentation": {
                 "reveal": "never",
@@ -36,6 +51,6 @@
             "runOptions": {
                 "runOn": "folderOpen"
             }
-        }
-    ]
+        },
+     ]
 }
