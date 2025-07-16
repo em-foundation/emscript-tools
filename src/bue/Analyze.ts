@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs'
-import { resolve } from 'path'
+import { relative, resolve } from 'path'
 
 const UnitToMicro = 1000000
 
@@ -98,7 +98,7 @@ export class Signal {
 
 export function exec(opts: any) {
     const I_sig = new Signal(SigKind.Current)
-    console.log(`Analyzing ${I_sig.opts.data_source}`)
+    console.log(`Analyzing ${relative('.', I_sig.opts.data_source)}`)
     const events = I_sig.findEvents()
     const eventTimes = events.map(evt => ({
         offset_s: evt.sample_offset / I_sig.sample_rate,
@@ -127,5 +127,5 @@ export function exec(opts: any) {
     }, null, 2)
     const filename = resolve(I_sig.opts.dir, 'analysis_results.json')
     writeFileSync(filename, outputJson)
-    console.log(`Analysis results in ${filename}`)
+    console.log(`Analysis results in ${relative('.', filename)}`)
 }
