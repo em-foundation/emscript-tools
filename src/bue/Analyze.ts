@@ -15,13 +15,15 @@ export interface Marker {
 }
 
 export class Options {
-    readonly sample_rate: number = 1_000_000 // 1 MHz
-    readonly event_thresh: number = 0.0001
-    readonly voltage: number = 3.3
-    readonly kernel_length = 20
-    event_min_dt: number = 0.001 // 1 ms
-    dir = '.'
     data_source = ''
+    dir = '.'
+    readonly event_min_dt: number = 0.001 // 1 ms
+    readonly event_rate: number = 1 // Hz
+    readonly event_thresh: number = 0.0001
+    readonly kernel_length = 20
+    readonly sample_rate: number = 1_000_000 // 1 MHz
+    readonly voltage: number = 3.3
+
     constructor(init?: Partial<Options>) {
         Object.assign(this, init)
     }
@@ -46,9 +48,11 @@ export class Signal {
 
     get elapsed_seconds(): number { return this.data.length / this.opts.sample_rate }
     get data_source(): string { return this.opts.data_source }
+    get event_rate(): number { return this.opts.event_rate }
     get kernel_length(): number { return this.opts.kernel_length }
     get number_of_samples(): number { return this.data.length }
     get sample_average(): number { return this.sample_total / this.data.length }
+    get sample_margin(): number { return this.opts.sample_rate * 0.5 / this.event_rate }
     get sample_rate(): number { return this.opts.sample_rate }
     get sample_total(): number { return this.data.reduce((a, b) => a + b, 0) }
     get units(): string { return Signal.units.get(this.kind)! }
@@ -81,8 +85,8 @@ export class Signal {
             } else if (in_event && val < thresh) {
                 const width = i - sample_offset
                 if (width >= min_width &&
-                    sample_offset >= (0.5 * this.opts.sample_rate) &&
-                    i < (this.number_of_samples - 0.5 * this.opts.sample_rate)
+                    sample_offset >= this.sample_margin &&
+                    i < this.number_of_samples - this.sample_margin
                 ) {
                     res.push({
                         sample_offset: sample_offset - 2 * this.opts.kernel_length,
@@ -107,7 +111,7 @@ export function exec(opts: any) {
     if (events.length > I_sig.values.length / I_sig.sample_rate) {
         throw new Error('Bad input file.  Too many events')
     }
-    const startOffset = events[0].sample_offset - 0.5 * I_sig.sample_rate
+    const startOffset = events[0].sample_offset - I_sig.sample_margin
     const endOffset = startOffset + events.length * I_sig.sample_rate
     const goodSamples = I_sig.values.slice(startOffset, endOffset)
     const goodSampleTotal = goodSamples.reduce((a, b) => a + b, 0)
@@ -118,7 +122,9 @@ export function exec(opts: any) {
         analysis_time: new Date().toISOString(),
         opts: I_sig.opts,
         number_of_samples_averaged: goodSamples.length,
-        elapsed_seconds: goodSamples.length / I_sig.sample_rate,
+        number_of_samples_total: I_sig.values.length,
+        elapsed_seconds_averaged: goodSamples.length / I_sig.sample_rate,
+        elapsed_seconds_total: I_sig.values.length / I_sig.sample_rate,
         average_current: goodSampleAverage,
         average_power: goodSampleAverage * I_sig.voltage,
         average_event_sample_count: averageEventDuration,
