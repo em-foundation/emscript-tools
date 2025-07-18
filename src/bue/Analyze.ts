@@ -113,6 +113,12 @@ export function exec(opts: any) {
     if (events.length > I_sig.values.length / I_sig.sample_rate) {
         throw new Error('Bad input file.  Too many events')
     }
+    const deltaStartTimes = eventTimes
+        .map(eventTime => eventTime.offset_s)
+        .map((eventStartTime, i, eventStartTimes) =>
+            (i === 0) ? 0 : eventStartTime - eventStartTimes[i - 1])
+        .filter((_, i) => i > 0)
+    const averageEventRateFound = deltaStartTimes.length / deltaStartTimes.reduce((a, b) => a + b)
     const startOffset = events[0].sample_offset - I_sig.sample_margin
     const endOffset = startOffset + events.length * I_sig.sample_rate / I_sig.event_rate
     const goodSamples = I_sig.values.slice(startOffset, endOffset)
@@ -120,7 +126,7 @@ export function exec(opts: any) {
     const goodSampleAverage = goodSampleTotal / goodSamples.length
     const averageEventDuration = events.reduce((a, b) => a + b.sample_count, 0) / events.length
     const estimatedCr2032Years = cr2032AmpereHours / HoursPerYear / goodSampleAverage
-    console.log(`CR2032_Years: ${Math.round(estimatedCr2032Years * 10) / 10}, Events Detected: ${eventTimes.length}, Average Duration: ${averageEventDuration}`)
+    console.log(`CR2032_Years: ${Math.round(estimatedCr2032Years * 10) / 10}, Events Detected: ${eventTimes.length}, Average Duration: ${averageEventDuration} samples, Average Rate: ${Math.round(averageEventRateFound * 10) / 10} Hz`)
     const outputJson = JSON.stringify({
         analysis_time: new Date().toISOString(),
         opts: I_sig.opts,
@@ -131,7 +137,7 @@ export function exec(opts: any) {
         average_current: goodSampleAverage,
         average_power: goodSampleAverage * I_sig.voltage,
         average_event_sample_count: averageEventDuration,
-        estimated_cr2032_years: estimatedCr2032Years,
+        average_event_rate_found: averageEventRateFound,
         number_of_events: events.length,
         events: events
     }, null, 2)
