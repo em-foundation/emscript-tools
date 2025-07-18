@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync } from 'fs'
 import { relative, resolve } from 'path'
 
 const UnitToMicro = 1000000
+const cr2032AmpereHours = .220
+const HoursPerYear = 24 * 365
 
 export enum SigKind {
     Current = 'current'
@@ -117,7 +119,8 @@ export function exec(opts: any) {
     const goodSampleTotal = goodSamples.reduce((a, b) => a + b, 0)
     const goodSampleAverage = goodSampleTotal / goodSamples.length
     const averageEventDuration = events.reduce((a, b) => a + b.sample_count, 0) / events.length
-    console.log(`Events Detected: ${eventTimes.length}, Average Duration: ${averageEventDuration}`)
+    const estimatedCr2032Years = cr2032AmpereHours / HoursPerYear / goodSampleAverage
+    console.log(`CR2032_Years: ${Math.round(estimatedCr2032Years * 10) / 10}, Events Detected: ${eventTimes.length}, Average Duration: ${averageEventDuration}`)
     const outputJson = JSON.stringify({
         analysis_time: new Date().toISOString(),
         opts: I_sig.opts,
@@ -128,6 +131,7 @@ export function exec(opts: any) {
         average_current: goodSampleAverage,
         average_power: goodSampleAverage * I_sig.voltage,
         average_event_sample_count: averageEventDuration,
+        estimated_cr2032_years: estimatedCr2032Years,
         number_of_events: events.length,
         events: events
     }, null, 2)
