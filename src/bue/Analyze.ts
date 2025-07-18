@@ -114,7 +114,7 @@ export function exec(opts: any) {
         throw new Error('Bad input file.  Too many events')
     }
     const startOffset = events[0].sample_offset - I_sig.sample_margin
-    const endOffset = startOffset + events.length * I_sig.sample_rate
+    const endOffset = startOffset + events.length * I_sig.sample_rate / I_sig.event_rate
     const goodSamples = I_sig.values.slice(startOffset, endOffset)
     const goodSampleTotal = goodSamples.reduce((a, b) => a + b, 0)
     const goodSampleAverage = goodSampleTotal / goodSamples.length
