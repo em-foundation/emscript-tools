@@ -124,9 +124,14 @@ export function exec(opts: any) {
     const goodSamples = I_sig.values.slice(startOffset, endOffset)
     const goodSampleTotal = goodSamples.reduce((a, b) => a + b, 0)
     const goodSampleAverage = goodSampleTotal / goodSamples.length
-    const averageEventDuration = events.reduce((a, b) => a + b.sample_count, 0) / events.length
+    const averageEventDuration = eventTimes.reduce((a, b) => a + b.duration_us, 0) / events.length
     const estimatedCr2032Years = cr2032AmpereHours / HoursPerYear / goodSampleAverage
-    console.log(`CR2032_Years: ${Math.round(estimatedCr2032Years * 10) / 10}, Events Detected: ${eventTimes.length}, Average Duration: ${averageEventDuration} samples, Average Rate: ${Math.round(averageEventRateFound * 10) / 10} Hz`)
+    console.log(`Averaging data across ${eventTimes.length} events found`)
+    console.log(`CR2032_Years: ${Math.round(estimatedCr2032Years * 10) / 10}` +
+        `, Avg. Power: ${Math.round(goodSampleAverage * UnitToMicro * 10) / 10} uW` +
+        `, Event Rate: ${Math.round(averageEventRateFound * 10) / 10} Hz` +
+        `, Event Duration: ${Math.round(averageEventDuration / 100) / 10} mS`
+    )
     const outputJson = JSON.stringify({
         analysis_time: new Date().toISOString(),
         opts: I_sig.opts,
