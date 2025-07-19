@@ -22,7 +22,7 @@
     "main": "./out/ext/extension",
     "scripts": {
         "build-base": "esbuild --bundle --external:vscode src/extension.ts --outdir=out --platform=node --format=cjs",
-        "build-bue": "esbuild --bundle --external:vscode ./src/bue/Main --outdir=out/bue --platform=node --format=cjs",
+        "build-bue": "esbuild --bundle --external:vscode --external:joulescope_driver ./src/bue/Main --outdir=out/bue --platform=node --format=cjs",
         "build-cli": "esbuild --bundle --external:vscode ./src/cli/Main --outdir=out/cli --platform=node --format=cjs",
         "build-ext": "esbuild --bundle --external:vscode ./src/ext/extension --outdir=out/ext --platform=node --format=cjs",
         "build": "npm run build-bue -- --sourcemap && npm run build-cli -- --sourcemap && npm run build-ext -- --sourcemap",
