@@ -126,9 +126,9 @@ export function exec(opts: any) {
     const goodSampleAverage = goodSampleTotal / goodSamples.length
     const averageEventDuration = eventTimes.reduce((a, b) => a + b.duration_us, 0) / events.length
     const estimatedCr2032Years = cr2032AmpereHours / HoursPerYear / goodSampleAverage
-    console.log(`Averaging data across ${eventTimes.length} events found`)
+    console.log(`Averaging data across ${eventTimes.length} events found, ${I_sig.voltage} VDC`)
     console.log(`CR2032_Years: ${Math.round(estimatedCr2032Years * 10) / 10}` +
-        `, Avg. Power: ${Math.round(goodSampleAverage * UnitToMicro * 10) / 10} uW` +
+        `, Avg. Current: ${Math.round(goodSampleAverage * UnitToMicro * 10) / 10} uA` +
         `, Event Rate: ${Math.round(averageEventRateFound * 10) / 10} Hz` +
         `, Event Duration: ${Math.round(averageEventDuration / 100) / 10} mS`
     )
@@ -141,6 +141,7 @@ export function exec(opts: any) {
         elapsed_seconds_total: I_sig.values.length / I_sig.sample_rate,
         average_current: goodSampleAverage,
         average_power: goodSampleAverage * I_sig.voltage,
+        estimated_cr2032_years: estimatedCr2032Years,
         average_event_sample_count: averageEventDuration,
         average_event_rate_found: averageEventRateFound,
         number_of_events: events.length,
