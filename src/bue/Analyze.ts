@@ -17,13 +17,18 @@ export interface Marker {
 }
 
 export class Options {
+    readonly board = 'LP-EM-CC2340R5'
+    readonly chip = 'CC2340R5'
     data_source = ''
     dir = '.'
     readonly event_min_dt: number = 0.001 // 1 ms
     readonly event_rate: number = 1 // Hz
     readonly event_thresh: number = 0.0001
     readonly kernel_length = 20
+    readonly manufacturer = 'TI'
+    readonly measurement_tool = 'JouleScope JS-220'
     readonly sample_rate: number = 1_000_000 // 1 MHz
+    readonly software = 'SimpleLink'
     readonly voltage: number = 3.3
 
     constructor(init?: Partial<Options>) {
@@ -104,7 +109,6 @@ export class Signal {
 
 export function exec(opts: any) {
     const I_sig = new Signal(SigKind.Current)
-    console.log(`Analyzing ${relative('.', I_sig.opts.data_source)}`)
     const events = I_sig.findEvents()
     const eventTimes = events.map(evt => ({
         offset_s: evt.sample_offset / I_sig.sample_rate,
@@ -126,12 +130,16 @@ export function exec(opts: any) {
     const goodSampleAverage = goodSampleTotal / goodSamples.length
     const averageEventDuration = eventTimes.reduce((a, b) => a + b.duration_us, 0) / events.length
     const estimatedCr2032Years = cr2032AmpereHours / HoursPerYear / goodSampleAverage
-    console.log(`Averaging data across ${eventTimes.length} events found, ${I_sig.voltage} VDC`)
+
+    console.log(`Analyzing ${relative('.', I_sig.opts.data_source)}`)
+    console.log(`Data from ${I_sig.opts.measurement_tool}, ${I_sig.opts.manufacturer} ${I_sig.opts.board}, ${I_sig.voltage} VDC, ${I_sig.opts.software}`)
+    console.log(`Averaging data for ${eventTimes.length} events found, ${goodSamples.length / I_sig.sample_rate}s used, ${I_sig.elapsed_seconds}s collected`)
     console.log(`CR2032_Years: ${Math.round(estimatedCr2032Years * 10) / 10}` +
         `, Avg. Current: ${Math.round(goodSampleAverage * UnitToMicro * 10) / 10} uA` +
         `, Event Rate: ${Math.round(averageEventRateFound * 10) / 10} Hz` +
         `, Event Duration: ${Math.round(averageEventDuration / 100) / 10} mS`
     )
+
     const outputJson = JSON.stringify({
         analysis_time: new Date().toISOString(),
         opts: I_sig.opts,
