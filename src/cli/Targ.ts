@@ -45,7 +45,7 @@ export function context(): Context {
 
 function genBody(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.cpp`)
-    Out.addText(`#include <${ud.id}.hpp>\n\n`)
+    Out.addText(`#include "${ud.id}.hpp"\n\n`)
     Out.print("namespace %1 {\n\n%+", ud.cname)
     genFxns(ud)
     genStructMethods(ud)
@@ -74,20 +74,20 @@ function genHeader(ud: Unit.Desc) {
     Out.open(`${Session.getBuildDir()}/${ud.id}.hpp`)
     Out.addText(`#ifndef ${ud.cname}__M\n`)
     Out.addText(`#define ${ud.cname}__M\n`)
-    Out.addText('#include <emscript.hpp>\n\n')
+    Out.addText('#include "emscript.hpp"\n\n')
     if (ud.$uobj.$U._aux_h) {
         genIncludeAux(ud, 'hpp')
     }
     const rid = ud.imports.get('$R')
     if (rid) {
         const rud = unitTab.get(rid)!
-        if (rud) Out.addText(`#include <${rud.id}.hpp>\n`)
+        if (rud) Out.addText(`#include "${rud.id}.hpp"\n`)
     }
     ud.imports.forEach((iid, key) => {
         if (key == '$R') return
         const iud = unitTab.get(iid)!
         if (iud.isMetaOnly()) return
-        Out.addText(`#include <${iud.id}.hpp>\n`)
+        Out.addText(`#include "${iud.id}.hpp"\n`)
     })
     Out.print("\nnamespace %1 {\n\n%+", ud.cname)
     // Out.print("%tnamespace $$ = %1;\n", ud.cname)
@@ -113,18 +113,18 @@ function genIncludeAux(ud: Unit.Desc, suf: string) {
 
 function genMain() {
     Out.open(`${Session.getBuildDir()}/main.cpp`)
-    Out.addText('#include <emscript.hpp>\n')
+    Out.addText('#include "emscript.hpp"\n')
     Out.genTitle('MODULE HEADERS')
-    Out.addText(`#include <${Session.getDistro().bucket}/REGS.hpp>\n`)
-    Array.from($$units.keys()).forEach(uid => Out.addText(`#include <${uid}.hpp>\n`))
+    Out.addText(`#include "${Session.getDistro().bucket}/REGS.hpp"\n`)
+    Array.from($$units.keys()).forEach(uid => Out.addText(`#include "${uid}.hpp"\n`))
     Out.genTitle('STARTUP CODE')
     const dist = Session.getDistro()
-    Out.addText(`#include <${dist.bucket}/startup.cpp>\n`)
+    Out.addText(`#include "${dist.bucket}/startup.cpp"\n`)
     Out.genTitle('PROXY BINDINGS')
     Array.from($$units.keys()).forEach(uid => genProxies(uid))
     Array.from($$units.keys()).forEach(uid => {
         Out.genTitle(`MODULE ${uid}`)
-        Out.addText(`#include <${uid}.cpp>\n`)
+        Out.addText(`#include "${uid}.cpp"\n`)
         genConfigs(unitTab.get(uid)!)
     })
     Out.genTitle('EXIT FUNCTIONS')
