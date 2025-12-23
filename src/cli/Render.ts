@@ -13,6 +13,7 @@ const sufMap = new Map<string, string>([
 const types = new Set<string>([
     'arg_t',
     'bool_t',
+    'f32',
     'i8',
     'i16',
     'i32',

@@ -411,6 +411,7 @@ G.set('type', $cd($ch(
 G.set('basic-type', $dg($ch(
     $cf('arg_t ', 't'),
     $cf('bool_t', 't'),
+    $cf('f32   ', 't'),
     $cf('i8    ', 't'),
     $cf('i16   ', 't'),
     $cf('i32   ', 't'),

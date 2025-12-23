@@ -7,6 +7,7 @@ import * as Unit from './Unit'
 
 const primitiveSizes: Record<string, number> = {
     bool_t: 1,
+    f32: 4,
     i8: 1,
     i16: 2,
     i32: 4,
