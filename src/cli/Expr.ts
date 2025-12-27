@@ -13,7 +13,9 @@ export function make(expr: Ts.Expression): string {
     const tc = Targ.context().ud.tc
     const txt = expr.getText(sf)
     if (Ts.isNumericLiteral(expr)) {
-        return txt.replaceAll("_", "'")
+        const ns = txt.replaceAll("_", "'")
+        const suf = (ns.indexOf('.') != -1) ? 'f' : ''
+        return `${ns}${suf}`
     }
     else if (Ts.isStringLiteral(expr)) {
         const etxt = expr.text

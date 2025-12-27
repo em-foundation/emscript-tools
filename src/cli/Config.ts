@@ -67,7 +67,9 @@ export function getObj(name: string): any {
 
 function printVal(val: any, ts?: string) {
     if (typeof val === 'number' || typeof val === 'boolean') {
-        Out.print("%1", val)
+        const vs = val.toString()
+        const suf = (vs.indexOf('.') != -1) ? 'f' : ''
+        Out.print("%1%2", vs, suf)
         return
     }
     if (typeof val === 'object') {
