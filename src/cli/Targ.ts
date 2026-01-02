@@ -1,4 +1,5 @@
 import * as ChildProc from 'child_process'
+import * as Fs from 'fs'
 import * as Ts from 'typescript'
 
 import * as Decl from './Decl'
@@ -107,6 +108,7 @@ function genHeader(ud: Unit.Desc) {
 }
 
 function genIncludeAux(ud: Unit.Desc, suf: string) {
+    /// TODO: test file existence
     const path = ud.sf.fileName.replace('.em.ts', `_aux.${suf}`)
     Out.addText(`#include "${path}"\n`)
 }
@@ -124,6 +126,11 @@ function genMain() {
     Array.from($$units.keys()).forEach(uid => genProxies(uid))
     Array.from($$units.keys()).forEach(uid => {
         Out.genTitle(`MODULE ${uid}`)
+        const gfile = `${uid}-gen.cpp`
+        const gpath = `${Session.getBuildDir()}/${gfile}`
+        if (Fs.existsSync(gpath)) {
+            Out.addText(`#include "${gfile}"\n`)
+        }
         Out.addText(`#include "${uid}.cpp"\n`)
         genConfigs(unitTab.get(uid)!)
     })
