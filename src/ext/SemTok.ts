@@ -1,8 +1,6 @@
 import * as Ts from 'typescript'
 import * as Vsc from 'vscode'
 
-import * as Ast from '../cli/Ast'
-
 function addComments(doc: Vsc.TextDocument, builder: Vsc.SemanticTokensBuilder) {
     const txt = doc.getText()
     const re = /^\/\/\>.+$/gm

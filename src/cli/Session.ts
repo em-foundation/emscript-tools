@@ -44,6 +44,10 @@ export function getBuildDir(): string {
     return buildDir
 }
 
+export function getRootDir(): string {
+    return projDir
+}
+
 export function getDistro(): { package: string, bucket: string } {
     return Props.getDistro()!
 }
@@ -81,6 +85,26 @@ export function isPackage(path: string): boolean {
     let ifile = Path.join(path, 'em-package.ini');
     if (!Fs.existsSync(ifile)) return false;
     return true;
+}
+
+export function listUnitPaths(): Array<string> {
+    let res = new Array<string>()
+    const wd = getWorkDir()
+    for (const pn of Fs.readdirSync(wd)) {
+        if (pn.startsWith('.')) continue
+        const pd = Path.join(wd, pn)
+        if (!Fs.statSync(pd).isDirectory()) continue
+        for (const bn of Fs.readdirSync(pd)) {
+            const bd = Path.join(pd, bn)
+            if (!Fs.statSync(bd).isDirectory()) continue
+            for (const fn of Fs.readdirSync(bd)) {
+                if (fn.endsWith('.em.ts')) {
+                    res.push(`${pn}/${bn}/${fn}`)
+                }
+            }
+        }
+    }
+    return res
 }
 
 export function mkUid(upath: string): string {

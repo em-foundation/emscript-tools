@@ -5,9 +5,6 @@ import * as ChildProc from 'child_process'
 import * as Crypto from 'crypto'
 import * as Fs from 'fs'
 import * as Path from 'path'
-import * as Ts from 'typescript'
-
-import * as JSON5 from 'json5'
 
 import * as Ast from './Ast'
 import * as Format from './Format'
@@ -16,6 +13,7 @@ import * as Meta from './Meta'
 import * as Prettier from './Prettier'
 import * as Props from './Props'
 import * as Render from './Render'
+import * as SemTokens from './SemTokens'
 import * as Session from './Session'
 import * as Targ from './Targ'
 import * as Tracks from './Tracks'
@@ -123,6 +121,9 @@ CMD.command('render')
     )
     .option('--verbose', 'additional output', false)
     .action((opts: any) => doRender(opts))
+CMD.command('semtoks')
+    .description('generate token metadata for the workspace')
+    .action((opts: any) => doSemToks(opts))
 
 let t0 = Date.now()
 CMD.parse(process.argv)
@@ -283,6 +284,15 @@ function doProperties(opts: any) {
 function doRender(opts: any) {
     const ud = mkUnit(opts, 'rendering')
     console.log(Render.exec(ud, opts.verbose))
+}
+
+function doSemToks(opts: any) {
+    const rd = getRootDir()
+    Session.activate(rd, Session.Mode.PARSE)
+    for (const up of Session.listUnitPaths()) {
+        console.log(up)
+        SemTokens.generate(up)
+    }
 }
 
 function loadProg() {
