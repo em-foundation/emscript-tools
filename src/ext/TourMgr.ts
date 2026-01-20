@@ -1,5 +1,5 @@
 import * as Fs from 'fs'
-import * as MdMod from 'markdown-it'            /// TODO: fix path
+import * as MdMod from 'markdown-it'
 import * as Path from 'path'
 import * as Vsc from 'vscode'
 import * as Yaml from 'js-yaml'

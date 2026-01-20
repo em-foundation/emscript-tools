@@ -224,7 +224,7 @@ function doGenRegs(opts: any): void {
     const distro = opts.distro as string
     const genprog = Path.join(distro, 'genregs.ts')
     if (!Fs.existsSync(genprog)) {
-        console.error(`*** 'genreg.ts' not found in ${distro}`)
+        console.error(`*** 'genregs.ts' not found in ${distro}`)
         process.exit(1)
     }
     console.log('generating...')
