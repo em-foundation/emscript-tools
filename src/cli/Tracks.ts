@@ -114,9 +114,9 @@ G.set('type-decl', $cd(
     $op($cf('export', 'k')),
     $ch(
         $nt('alias-type-decl '),
-        $nt('array-type-decl '),
         $nt('enum-type-decl  '),
         $nt('struct-type-decl'),
+        $nt('vector-type-decl '),
     )))
 
 G.set('var-decl', $cd(
@@ -132,17 +132,6 @@ G.set('alias-type-decl', $cd(
     $tn('name'),
     $cf('= '),
     $nt('type'),
-))
-
-G.set('array-type-decl', $cd(
-    $op($cf('export', 'k')),
-    $cf('class', 'b'),
-    $tn('name'),
-    $cf('extends $arrayof<', 'br'),
-    $nt('type'),
-    $cf('> { $len =', 'r'),
-    $nt('expr'),
-    $cf('}'),
 ))
 
 G.set('enum-type-decl', $cd(
@@ -162,6 +151,17 @@ G.set('struct-type-decl', $cd(
     $om($nt('field-decl'), $co('*')),
     $cf('}'),
     $op($nt('struct-methods')),
+))
+
+G.set('vector-type-decl', $cd(
+    $op($cf('export', 'k')),
+    $cf('class', 'b'),
+    $tn('name'),
+    $cf('extends $vector<', 'br'),
+    $nt('type'),
+    $cf('> { $len =', 'r'),
+    $nt('expr'),
+    $cf('}'),
 ))
 
 G.set('field-decl', $cd(
