@@ -329,10 +329,12 @@ function printProgress(
     label: string,
     using: { setup: string; board: string } | boolean = false
 ) {
-    const output = `${label} ${Props.getProg()}` +
+    let brd = using === false ? '' : using === true ? Props.getBoardKind() : using.board
+    brd = brd.replace(/^.*\:\/\/(.*)$/, '$1')
+    const output = `${label} '${Props.getProg()}'` +
         (
             using !== false
-                ? ` for ${using === true ? Props.getSetup() : using.setup} on ${using === true ? Props.getBoardKind() : using.board}`
+                ? ` for '${brd}' with setup '${using === true ? Props.getSetup() : using.setup}'`
                 : ''
         )
     console.log(output)
