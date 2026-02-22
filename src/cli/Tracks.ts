@@ -499,13 +499,13 @@ const META_IMPL3 = $zm($ch(
 ), $co('*'))
 const META_SPEC = $zm($nt('method-decl'), $co('*'))
 
-const TARG_IMPL = $zm($nt('func'), $co('*'))
+const TARG_IMPL = $zm($ch($nt('decl'), $nt('func')), $co('*'))
 const TARG_IMPL2 = $zm($nt('func'), $co('*'))
 const TARG_SPEC = $zm($nt('method-decl'), $co('*'))
 
 G.set('module-unit', $cd($vs(
     $cf(`import '@$$emscript'`, 'ks'),
-    $cf(`export const $U = $declare('MODULE')`, 'kbrrs'),
+    $gr($sq($cf(`export const $U = $declare('MODULE'`, 'kbrrs'), $op($sq($cf(`,`), $tn('interface-name'))), $cf(`)`))),
     $sk(),
     $nt('unit imports '),
     $nt('unit features'),
