@@ -4,15 +4,5 @@
 /build/
 /node_modules/
 /out/
-/*.vsix
-
-/emscript-cli.tgz
-
-/releng/gh-auth.txt
-
-/etc/grammar.html
 
 .DS_Store
-
-*.f32.bin
-captures

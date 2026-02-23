@@ -4,25 +4,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Extension in Background",
-            "group": "build",
-            "type": "npm",
-            "script": "watch",
-            "problemMatcher": {
-                "base": "$tsc-watch"
-            },
-            "isBackground": true
-        },
-        {
-            "label": "Build Extension",
-            "group": "build",
-            "type": "npm",
-            "script": "build",
-            "problemMatcher": {
-                "base": "$tsc"
-            }
-        },
-        {
             "label": "npm: watch-cli",
             "type": "npm",
             "script": "watch-cli",
