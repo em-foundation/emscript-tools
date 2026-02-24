@@ -1,12 +1,12 @@
 {
     "name": "emscript-cli",
-    "version": "26.2.1",
+    "version": "26.2.2",
     "bin": {
         "emscript": "./out/Main.js"
     },
     "scripts": {
         "build-cli": "esbuild --bundle --external:vscode ./src/Main --outdir=out --platform=node --format=cjs",
-        "publish": "rm -f *.tgz; TS=$(date -u +%Y%m%d%H%M); FILE=$(npm pack .); mv \"$FILE\" \"${FILE%.tgz}.$TS.tgz\"",
+        "pack-cli": "rm -f *.tgz; TS=$(date -u +%Y%m%d%H%M); FILE=$(npm pack .); mv \"$FILE\" \"${FILE%.tgz}.$TS.tgz\"",
         "watch-cli": "npm run build-cli -- --sourcemap --watch"
     },
     "dependencies": {

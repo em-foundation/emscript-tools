@@ -24,7 +24,6 @@ declare global {
     const $$units: Map<string, any>
 }
 
-
 (global as any).$$tdefs = new Map();
 (global as any).$$units = new Map();
 
