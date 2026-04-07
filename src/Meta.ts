@@ -193,7 +193,6 @@ export function parse(upath: string): void {
             getSourceFile: (fileName, languageVersion, onError) => {
                 if (fileName.endsWith(".em.ts") && Path.isAbsolute(fileName)) {
                     foundList.push(fileName)
-                    // console.log(`found: ${Unit.mkUid(fileName)}`)
                 }
                 return baseHost.getSourceFile(fileName, languageVersion, onError)
             },
