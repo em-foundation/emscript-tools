@@ -1,6 +1,6 @@
 {
     "name": "emscript-cli",
-    "version": "26.2.2",
+    "version": "26.3.0",
     "bin": {
         "emscript": "./out/Main.js"
     },
