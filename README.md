@@ -1,1 +1,1 @@
-# em-script-tools
+# The EM•Script language translator
