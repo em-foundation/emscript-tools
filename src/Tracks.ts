@@ -409,6 +409,7 @@ G.set('type', $cd($ch(
 )))
 
 G.set('basic-type', $dg($ch(
+    $cf('addr_t ', 't'),
     $cf('arg_t ', 't'),
     $cf('bool_t', 't'),
     $cf('f32   ', 't'),
