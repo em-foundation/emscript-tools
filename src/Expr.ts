@@ -228,7 +228,7 @@ function mkCast2(expr: Ts.CallExpression, txt: string): string | null {
     if (!txt.startsWith('$cast2')) return null
     const ts = Type.make(expr.typeArguments![0])
     const arg = make(expr.arguments[0])
-    return `((${ts})(${arg}))`
+    return `reinterpret_cast<${ts}>(${arg})`
 }
 
 function mkDbg(expr: Ts.Expression, txt: string): string | null {
