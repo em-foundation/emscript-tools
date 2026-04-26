@@ -6,13 +6,13 @@ import * as Type from './Type'
 import * as Unit from './Unit'
 
 const primitiveSizes: Record<string, number> = {
-    addr_t: 4,
     bool_t: 1,
     f32: 4,
     i8: 1,
     i16: 2,
     i32: 4,
     i64: 8,
+    opaq_t: 4,
     ptr_t: 4,
     ref_t: 4,
     u8: 1,

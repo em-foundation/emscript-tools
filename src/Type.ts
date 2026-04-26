@@ -6,7 +6,6 @@ import * as Targ from './Targ'
 import * as Unit from './Unit'
 
 const builtins = new Set<string>([
-    'addr_t',
     'arg_t',
     'bool_t',
     'const_t',
@@ -17,6 +16,7 @@ const builtins = new Set<string>([
     'i16',
     'i32',
     'i64',
+    'opaq_t',
     'ptr_t',
     'ref_t',
     'u8',

@@ -409,7 +409,6 @@ G.set('type', $cd($ch(
 )))
 
 G.set('basic-type', $dg($ch(
-    $cf('addr_t ', 't'),
     $cf('arg_t ', 't'),
     $cf('bool_t', 't'),
     $cf('f32   ', 't'),
@@ -417,6 +416,7 @@ G.set('basic-type', $dg($ch(
     $cf('i16   ', 't'),
     $cf('i32   ', 't'),
     $cf('i64   ', 't'),
+    $cf('opaq_t', 't'),
     $cf('text_t', 't'),
     $cf('u8    ', 't'),
     $cf('u16   ', 't'),

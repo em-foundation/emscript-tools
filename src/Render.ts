@@ -11,7 +11,6 @@ const sufMap = new Map<string, string>([
 ])
 
 const types = new Set<string>([
-    'addr_t',
     'arg_t',
     'bool_t',
     'f32',
@@ -19,6 +18,7 @@ const types = new Set<string>([
     'i16',
     'i32',
     'i64',
+    'opaq_t',
     'ptr_t',
     'ref_t',
     'text_t',

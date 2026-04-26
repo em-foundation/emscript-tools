@@ -141,8 +141,6 @@ export function make(expr: Ts.Expression): string {
         if (makeCall) return makeCall
         const size = mkSize(expr, txt)
         if (size) return size
-        const addr2 = mkAddr2(expr, txt)
-        if (addr2) return addr2
         const cast2 = mkCast2(expr, txt)
         if (cast2) return cast2
         let res = make(expr.expression) + '('
@@ -215,13 +213,6 @@ export function make(expr: Ts.Expression): string {
         Ast.fail('Expr', expr)
         return ''
     }
-}
-
-function mkAddr2(expr: Ts.CallExpression, txt: string): string | null {
-    if (!txt.startsWith('$addr2')) return null
-    const ts = Type.make(expr.typeArguments![0])
-    const arg = make(expr.arguments[0])
-    return `em::$addr2<${ts}>(${arg})`
 }
 
 function mkCast2(expr: Ts.CallExpression, txt: string): string | null {
