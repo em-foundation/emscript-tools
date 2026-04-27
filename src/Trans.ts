@@ -54,6 +54,78 @@ export function declareTransformer(uid: string): Ts.TransformerFactory<Ts.Source
     }
 }
 
+export function enumTransformer(cname: string): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        const updatedStatements = sourceFile.statements.flatMap((stmt): Ts.Statement[] => {
+            if (!Ts.isEnumDeclaration(stmt)) return [stmt]
+            const enumName = stmt.name.text
+            const isExported = stmt.modifiers?.some(
+                (mod) => mod.kind === Ts.SyntaxKind.ExportKeyword
+            ) ?? false
+            const members = stmt.members.map((member) => {
+                if (member.initializer) {
+                    throw new Error(`enum ${enumName}: initializers are not supported`)
+                }
+                const name = member.name
+                if (Ts.isIdentifier(name) || Ts.isStringLiteral(name)) {
+                    return Ts.factory.createStringLiteral(name.text)
+                }
+                throw new Error(`enum ${enumName}: unsupported member name`)
+            })
+            const constDecl = Ts.factory.createVariableStatement(
+                undefined,
+                Ts.factory.createVariableDeclarationList(
+                    [
+                        Ts.factory.createVariableDeclaration(
+                            enumName,
+                            undefined,
+                            undefined,
+                            Ts.factory.createCallExpression(
+                                Ts.factory.createIdentifier('$enum'),
+                                undefined,
+                                [
+                                    Ts.factory.createStringLiteral(`${cname}::${enumName}`),
+                                    Ts.factory.createArrayLiteralExpression(members, false),
+                                ]
+                            )
+                        ),
+                    ],
+                    Ts.NodeFlags.Const
+                )
+            )
+            const typeDecl = Ts.factory.createTypeAliasDeclaration(
+                isExported ? [Ts.factory.createModifier(Ts.SyntaxKind.ExportKeyword)] : undefined,
+                enumName,
+                undefined,
+                Ts.factory.createTypeReferenceNode(
+                    'enum_t',
+                    [
+                        Ts.factory.createTypeQueryNode(
+                            Ts.factory.createIdentifier(enumName)
+                        ),
+                    ]
+                )
+            )
+            const exportDecl = Ts.factory.createExportDeclaration(
+                undefined,
+                false,
+                Ts.factory.createNamedExports([
+                    Ts.factory.createExportSpecifier(
+                        false,
+                        undefined,
+                        Ts.factory.createIdentifier(enumName)
+                    ),
+                ]),
+                undefined
+            )
+            return isExported
+                ? [constDecl, typeDecl, exportDecl]
+                : [constDecl, typeDecl]
+        })
+        return Ts.factory.updateSourceFile(sourceFile, updatedStatements)
+    }
+}
+
 export const exportTransformer: Ts.TransformerFactory<Ts.SourceFile> = () => {
     return (root) => {
         const decls: Ts.PropertyAssignment[] = []

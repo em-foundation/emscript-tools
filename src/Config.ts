@@ -154,6 +154,10 @@ function printVal(val: any, ts?: string) {
             Out.print("%-%t})")
             return
         }
+        if (val.__em$class == 'em$enum') {
+            Out.print("%1::%2", val.$enum, val.$name)
+            return
+        }
     }
     console.log('*** UNKNOWN')
     console.log(val)

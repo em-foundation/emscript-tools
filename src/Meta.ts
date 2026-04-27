@@ -217,6 +217,7 @@ function transpile(options: Ts.CompilerOptions) {
                 before: [
                     Trans.callbackTransformer(ud.cname),
                     Trans.declareTransformer(uid),
+                    Trans.enumTransformer(ud.cname),
                     Trans.exportTransformer,
                     Trans.factoryTransformer(ud.cname),
                     Trans.frameTransformer(),
