@@ -22,7 +22,7 @@ const semanticCodes = new Set<number>([
 ])
 
 export interface ParseOptions {
-    checkOnly?: boolean
+    check?: boolean
 }
 
 export interface ParseResult {
@@ -308,7 +308,7 @@ export function parse(upath: string, opts: ParseOptions = {}): ParseResult {
             },
         }
         const prog = Ts.createProgram(workList, options, customHost)
-        collectDiagnostics(prog, foundList, topFile, diagnostics, seenDiagnostics)
+        if (opts.check) collectDiagnostics(prog, foundList, topFile, diagnostics, seenDiagnostics)
         const tc = prog.getTypeChecker()
         for (const p of foundList) {
             const sf = prog.getSourceFile(p)
@@ -320,7 +320,6 @@ export function parse(upath: string, opts: ParseOptions = {}): ParseResult {
     }
     curUidList = tsortUnits()
     const errorCount = diagnostics.length
-    if (opts.checkOnly) return { diagnostics, errorCount }
     transpile(options)
     return { diagnostics, errorCount }
 }
