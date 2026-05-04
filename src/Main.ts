@@ -39,6 +39,7 @@ CMD.version(Session.version()).option(
 CMD.command('build')
     .description('build a unit')
     .option('-a --ast', 'display AST', false)
+    .option('-c --check-only', 'check TypeScript diagnostics without translating', false)
     .option('-l --load', 'load after build', false)
     .option('-m --meta', 'meta-program only', false)
     .option(
@@ -153,7 +154,16 @@ function doBuild(opts: any): void {
         process.exit(1)
     }
     printProgress('building', true)
-    Meta.parse(upath)
+    const parseResult = Meta.parse(upath, { checkOnly: opts.checkOnly })
+    Meta.formatDiagnostics(parseResult.diagnostics).forEach(line => console.error(line))
+    if (parseResult.errorCount > 0) {
+        console.error(`*** check failed: ${parseResult.errorCount} error(s)`)
+        process.exit(1)
+    }
+    if (opts.checkOnly) {
+        console.log(`check passed: ${parseResult.diagnostics.length} diagnostic(s)`)
+        return
+    }
     Meta.exec()
     const unitCnt = Unit.units().size
     const usedCnt = Session.getUnits().size

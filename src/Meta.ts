@@ -11,6 +11,25 @@ import * as Unit from './Unit'
 let curUpath: string
 let curUidList: Array<string>
 
+const semanticCodes = new Set<number>([
+    2304, // Cannot find name
+    2307, // Cannot find module
+    2339, // Property does not exist
+    2345, // Argument type mismatch
+    2552, // Cannot find name; did you mean
+    2554, // Wrong argument count
+    2724, // Module has no exported member; did you mean
+])
+
+export interface ParseOptions {
+    checkOnly?: boolean
+}
+
+export interface ParseResult {
+    diagnostics: Ts.Diagnostic[]
+    errorCount: number
+}
+
 function call(fn: string, u: any) {
     if (fn in u) {
         // console.log(`call ${u.$U.uid}.${fn}`)  // TODO logging
@@ -155,11 +174,102 @@ function mkInitFxn(ud: Unit.Desc): string {
     return res
 }
 
-export function parse(upath: string): void {
+export function formatDiagnostics(diagnostics: ReadonlyArray<Ts.Diagnostic>): string[] {
+    return diagnostics.map(diagnostic => {
+        let fileName = '<unknown>'
+        let line = 0
+        let column = 0
+        if (diagnostic.file && diagnostic.start !== undefined) {
+            const pos = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start)
+            fileName = Path.relative(process.cwd(), diagnostic.file.fileName).replaceAll(/\\/g, '/')
+            line = pos.line + 1
+            column = pos.character + 1
+        }
+        const category = Ts.DiagnosticCategory[diagnostic.category].toLowerCase()
+        const code = `TS${diagnostic.code}`
+        const message = Ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ').replace(/\s+/g, ' ')
+        return `${fileName}:${line}:${column} ${category} ${code} ${message}`
+    })
+}
+
+function collectDiagnostics(
+    program: Ts.Program,
+    files: ReadonlyArray<string>,
+    topFile: string,
+    diagnostics: Ts.Diagnostic[],
+    seen: Set<string>
+) {
+    const topPath = normalizePath(topFile)
+    for (const file of files) {
+        if (!isEmSourcePath(file)) continue
+        const sf = program.getSourceFile(file)
+        if (!sf) continue
+        addDiagnostics(program.getSyntacticDiagnostics(sf), diagnostics, seen)
+        addDiagnostics(
+            program.getSemanticDiagnostics(sf).filter(diagnostic =>
+                semanticCodes.has(diagnostic.code) ||
+                (diagnostic.code == 2322 && normalizePath(sf.fileName) == topPath)
+            ),
+            diagnostics,
+            seen
+        )
+    }
+}
+
+function addDiagnostics(
+    incoming: ReadonlyArray<Ts.Diagnostic>,
+    diagnostics: Ts.Diagnostic[],
+    seen: Set<string>
+) {
+    for (const diagnostic of incoming) {
+        if (!diagnostic.file) continue
+        if (!isEmSourcePath(diagnostic.file.fileName)) continue
+        const message = flattenMessage(diagnostic)
+        if (isIteratorNoise(message)) continue
+        const key = [
+            diagnostic.file.fileName,
+            diagnostic.start ?? -1,
+            diagnostic.length ?? -1,
+            diagnostic.category,
+            diagnostic.code,
+            message,
+        ].join('|')
+        if (seen.has(key)) continue
+        seen.add(key)
+        diagnostics.push(diagnostic)
+    }
+}
+
+function isEmSourcePath(path: string): boolean {
+    const fileName = normalizePath(path)
+    if (!fileName.endsWith('.em.ts')) return false
+    if (fileName.includes('/node_modules/')) return false
+    if (Path.basename(fileName) == '$REGS.em.ts') return false
+    return true
+}
+
+function flattenMessage(diagnostic: Ts.Diagnostic): string {
+    return Ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+}
+
+function isIteratorNoise(message: string): boolean {
+    return message.includes('Iterator') ||
+        message.includes('Symbol.iterator') ||
+        message.includes("must have a '[Symbol.iterator]'")
+}
+
+function normalizePath(path: string): string {
+    return path.replaceAll(/\\/g, '/')
+}
+
+export function parse(upath: string, opts: ParseOptions = {}): ParseResult {
     curUpath = upath
+    const diagnostics = new Array<Ts.Diagnostic>()
+    const seenDiagnostics = new Set<string>()
     const dist = Session.getDistro()
+    const topFile = Path.join(Session.getWorkDir(), upath)
     let workList = new Array<string>(
-        Path.join(Session.getWorkDir(), upath),
+        topFile,
         Path.join(Session.getWorkDir(), dist.package, dist.bucket, 'BuildC.em.ts'),
     )
     const expandDoneSet = new Set<string>
@@ -198,12 +308,21 @@ export function parse(upath: string): void {
             },
         }
         const prog = Ts.createProgram(workList, options, customHost)
+        collectDiagnostics(prog, foundList, topFile, diagnostics, seenDiagnostics)
         const tc = prog.getTypeChecker()
-        for (const p of foundList) Unit.create(prog.getSourceFile(p)!, tc)
+        for (const p of foundList) {
+            const sf = prog.getSourceFile(p)
+            if (sf) Unit.create(sf, tc)
+        }
+        const errorCount = diagnostics.length
+        if (errorCount > 0) return { diagnostics, errorCount }
         workList = expand(expandDoneSet)
     }
     curUidList = tsortUnits()
+    const errorCount = diagnostics.length
+    if (opts.checkOnly) return { diagnostics, errorCount }
     transpile(options)
+    return { diagnostics, errorCount }
 }
 
 function transpile(options: Ts.CompilerOptions) {
