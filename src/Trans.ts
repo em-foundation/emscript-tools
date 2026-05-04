@@ -37,6 +37,38 @@ export function callbackTransformer(cname: string): Ts.TransformerFactory<Ts.Sou
     }
 }
 
+export function configTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
+    return (context) => (sourceFile) => {
+        const updatedStatements = sourceFile.statements.map(stmt => {
+            if (!Ts.isVariableStatement(stmt)) return stmt
+            const declList = stmt.declarationList
+            const decl = declList.declarations[0]
+            const init = decl.initializer
+            if (init && Ts.isCallExpression(init) && Ts.isIdentifier(init.expression) && init.expression.text === '$config') {
+                const acc = declList.flags & Ts.NodeFlags.Const ? 'ro' : 'rw'
+                const valArg = init.arguments.length > 0 ? init.arguments[0] : Ts.factory.createIdentifier('undefined')
+                const newInit = Ts.factory.updateCallExpression(
+                    init,
+                    init.expression,
+                    init.typeArguments,
+                    [valArg, Ts.factory.createStringLiteral(acc)]
+                )
+                const newDecl = Ts.factory.updateVariableDeclaration(
+                    decl,
+                    decl.name,
+                    decl.exclamationToken,
+                    decl.type,
+                    newInit
+                )
+                const newDeclList = Ts.factory.updateVariableDeclarationList(declList, [newDecl])
+                return Ts.factory.updateVariableStatement(stmt, stmt.modifiers, newDeclList)
+            }
+            return stmt
+        })
+        return Ts.factory.updateSourceFile(sourceFile, updatedStatements)
+    }
+}
+
 export function declareTransformer(uid: string): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
         function visit(node: Ts.Node): Ts.Node {

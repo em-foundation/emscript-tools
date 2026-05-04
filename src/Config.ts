@@ -13,7 +13,8 @@ export type Kind = 'NONE' | 'CONFIG' | 'PROXY' | 'TABLE'
 export function genConfig(decl: Ts.VariableDeclaration, dn: string) {
     const cobj = getObj(dn)
     const call = decl.initializer! as Ts.CallExpression
-    const cs = Targ.isHdr() ? 'extern const ' : 'const '
+    const qs = cobj.__acc == 'ro' ? 'const ' : ''
+    const cs = Targ.isHdr() ? `extern ${qs}` : qs
     const ts = Type.make(call.typeArguments![0])
     Out.print("%t%1%2 %3", cs, ts, dn)
     if (Targ.isMain()) {

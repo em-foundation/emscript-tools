@@ -335,6 +335,7 @@ function transpile(options: Ts.CompilerOptions) {
             transformers: {
                 before: [
                     Trans.callbackTransformer(ud.cname),
+                    Trans.configTransformer(),
                     Trans.declareTransformer(uid),
                     Trans.enumTransformer(ud.cname),
                     Trans.exportTransformer,
