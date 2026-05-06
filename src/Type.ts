@@ -40,7 +40,7 @@ export function make(type: Ts.TypeNode, tdef?: string, sf?: Ts.SourceFile): stri
     if (Ts.isTypeReferenceNode(type)) {
         let tn = type.typeName.getText(sf)
         if (tn == 'cb_t') {
-            res = makeCb(type.typeArguments![0] as Ts.TupleTypeNode, tdef!)
+            res = makeCb(type.typeArguments![0] as Ts.TupleTypeNode, type.typeArguments![1], tdef!)
         }
         else {
             if (builtins.has(tn)) tn = `em.${tn}`
@@ -80,11 +80,12 @@ export function make(type: Ts.TypeNode, tdef?: string, sf?: Ts.SourceFile): stri
     return res
 }
 
-function makeCb(tup: Ts.TupleTypeNode, tdef: string): string {
-    let res = `void (*${tdef})(`
+function makeCb(args: Ts.TupleTypeNode, ret: Ts.TypeNode | undefined, tdef: string): string {
+    const rt = ret ? make(ret) : 'void'
+    let res = `${rt} (*${tdef})(`
     let sep = ''
-    tup.elements.forEach(e => {
-        let t = Ts.isNamedTupleMember(e) ? e.type : e
+    args.elements.forEach(a => {
+        const t = Ts.isNamedTupleMember(a) ? a.type : a
         res += `${sep}${make(t)}`
         sep = ', '
     })
