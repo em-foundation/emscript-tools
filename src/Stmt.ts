@@ -83,13 +83,13 @@ export function generate(stmt: Ts.Statement, tab: boolean = true) {
         Out.print("%tswitch (%1) {%+\n", Expr.make(stmt.expression))
         stmt.caseBlock.clauses.forEach(clause => {
             if (clause.kind == Ts.SyntaxKind.CaseClause) {
-                Out.print("%tcase %1:%+\n", Expr.make(clause.expression))
+                Out.print("%tcase %1: {%+\n", Expr.make(clause.expression))
             }
             else {
-                Out.print("%tdefault:%+\n")
+                Out.print("%tdefault: {%+\n")
             }
             clause.statements.forEach(s => generate(s))
-            Out.print("%-")
+            Out.print("%-%t}\n")
         })
         Out.print("%-%t}\n")
     }
