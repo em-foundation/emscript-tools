@@ -99,6 +99,7 @@ function genHeader(ud: Unit.Desc) {
         Out.print(`%tnamespace %1 = %2;\n`, key, iud.cname)
     })
     genStructFwds(ud)
+    genSynthVecs(ud)
     genStmts(ud)
     // genStructDecls(ud)
     Out.print("\n%-};\n\n")
@@ -278,6 +279,13 @@ function genStructFwds(ud: Unit.Desc) {
             Out.print("%tstruct %1;\n", node.name!.text)
         }
     })
+}
+
+function genSynthVecs(ud: Unit.Desc) {
+    for (const sv of ud.synthVecs) {
+        const et = Type.make(sv.type)
+        Out.print("%ttypedef em::vec_t<%1, %2> %3;\n", et, sv.len, sv.name)
+    }
 }
 
 function genUnit(uid: string) {

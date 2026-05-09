@@ -341,6 +341,8 @@ function transpile(options: Ts.CompilerOptions) {
                     Trans.factoryTransformer(ud.cname),
                     Trans.frameTransformer(),
                     Trans.implementsTransformer(),
+                    Trans.vecTypeTransformer(ud),
+                    Trans.tdefsTransformer(ud),
                     Trans.structTransformer(ud),
                     Trans.tableTransformer(ud),
                     Trans.typeopTransformer(ud, '$config'),

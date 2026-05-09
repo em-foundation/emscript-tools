@@ -264,6 +264,11 @@ export function implementsTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
 
 export function structTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
+        function typeText(type: Ts.TypeNode): string {
+            if (Ts.isTypeReferenceNode(type) && Ts.isIdentifier(type.typeName)) return type.typeName.text
+            return type.getText(sourceFile)
+        }
+
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isClassDeclaration(node)) {
                 const extendsClause = node.heritageClauses?.find(
@@ -282,7 +287,7 @@ export function structTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
                             undefined,
                             undefined,
                             [],
-                            Ts.factory.createTypeReferenceNode(className, []), // return type
+                            Ts.factory.createTypeReferenceNode(className, []),
                             Ts.factory.createBlock([
                                 Ts.factory.createReturnStatement(
                                     Ts.factory.createNewExpression(
@@ -302,12 +307,11 @@ export function structTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
                         )
                         const updatedMembers = node.members.map((member) => {
                             if (Ts.isPropertyDeclaration(member) && member.type && !member.initializer) {
-                                const ts = ud.resolveType(member.type.getText(sourceFile)) ?? 'unknown'
+                                const ts = ud.resolveType(typeText(member.type)) ?? 'unknown'
                                 const defaultVal = Ts.factory.createCallExpression(
                                     Ts.factory.createIdentifier('$default'),
                                     [member.type],
                                     undefined
-                                    // [Ts.factory.createStringLiteral(ts), Ts.factory.createStringLiteral(ud.id)]
                                 )
                                 return Ts.factory.updatePropertyDeclaration(
                                     member,
@@ -372,11 +376,23 @@ export function tableTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Source
     }
 }
 
+export function tdefsTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
+    return () => (sf) => {
+        ud.addTdefs(sf)
+        return sf
+    }
+}
+
 export function typeopTransformer(ud: Unit.Desc, op: string): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
+        function typeText(type: Ts.TypeNode): string {
+            if (Ts.isTypeReferenceNode(type) && Ts.isIdentifier(type.typeName)) return type.typeName.text
+            return type.getText(sourceFile)
+        }
+
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isCallExpression(node) && Ts.isIdentifier(node.expression) && node.expression.text === op) {
-                const ts = ud.resolveType(node.typeArguments![0].getText(sourceFile)) ?? 'unknown'
+                const ts = ud.resolveType(typeText(node.typeArguments![0])) ?? 'unknown'
                 return Ts.factory.updateCallExpression(
                     node,
                     node.expression,
@@ -386,12 +402,18 @@ export function typeopTransformer(ud: Unit.Desc, op: string): Ts.TransformerFact
             }
             return Ts.visitEachChild(node, visit, context)
         }
+
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
     }
 }
 
 export function vectorTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
     return (context) => (sourceFile) => {
+        function typeText(type: Ts.TypeNode): string {
+            if (Ts.isTypeReferenceNode(type) && Ts.isIdentifier(type.typeName)) return type.typeName.text
+            return type.getText(sourceFile)
+        }
+
         function visit(node: Ts.Node): Ts.Node {
             if (Ts.isClassDeclaration(node)) {
                 const extendsClause = node.heritageClauses?.find(
@@ -401,8 +423,8 @@ export function vectorTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
                     const extendsType = extendsClause.types[0]
                     if (Ts.isExpressionWithTypeArguments(extendsType) &&
                         Ts.isIdentifier(extendsType.expression) &&
-                        extendsType.expression.text === "$vector") {
-                        const ts = ud.resolveType(extendsClause.types[0].typeArguments![0].getText(sourceFile)) ?? 'unknown'
+                        extendsType.expression.text === '$vector') {
+                        const ts = ud.resolveType(typeText(extendsType.typeArguments![0])) ?? 'unknown'
                         const rttProp = Ts.factory.createPropertyDeclaration(
                             [],
                             '_elem_rtt',
@@ -432,6 +454,78 @@ export function vectorTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Sourc
         }
 
         return Ts.visitNode(sourceFile, visit) as Ts.SourceFile
+    }
+}
+
+export function vecTypeTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.SourceFile> {
+    return () => {
+        function isStructClass(cls: Ts.ClassDeclaration): boolean {
+            const clause = cls.heritageClauses?.find((hc) => hc.token === Ts.SyntaxKind.ExtendsKeyword)
+            const type = clause?.types[0]
+            return !!type && Ts.isIdentifier(type.expression) && type.expression.text === '$struct'
+        }
+
+        function parseVecType(type: Ts.TypeNode): { elem: Ts.TypeNode, len: string } | null {
+            if (!Ts.isTypeReferenceNode(type) || !Ts.isIdentifier(type.typeName)) return null
+            if (type.typeName.text !== 'vec_t' || type.typeArguments?.length !== 2) return null
+            return { elem: type.typeArguments[0], len: type.typeArguments[1].getText() }
+        }
+
+        function makeVecClass(sv: Unit.SynthVec): Ts.ClassDeclaration {
+            return Ts.factory.createClassDeclaration(
+                undefined,
+                Ts.factory.createIdentifier(sv.name),
+                undefined,
+                [
+                    Ts.factory.createHeritageClause(Ts.SyntaxKind.ExtendsKeyword, [
+                        Ts.factory.createExpressionWithTypeArguments(Ts.factory.createIdentifier('$vector'), [sv.type]),
+                    ]),
+                ],
+                [
+                    Ts.factory.createPropertyDeclaration(
+                        undefined,
+                        '$len',
+                        undefined,
+                        undefined,
+                        Ts.factory.createNumericLiteral(sv.len)
+                    ),
+                ]
+            )
+        }
+
+        return (sf) => {
+            const statements = sf.statements.flatMap((stmt): Ts.Statement[] => {
+                if (!Ts.isClassDeclaration(stmt) || !stmt.name || !isStructClass(stmt)) return [stmt]
+                const generated: Ts.ClassDeclaration[] = []
+                const sname = stmt.name.text
+                const members = stmt.members.map((mem) => {
+                    if (!Ts.isPropertyDeclaration(mem) || !mem.type || !Ts.isIdentifier(mem.name)) return mem
+                    const vt = parseVecType(mem.type)
+                    if (!vt) return mem
+                    const vname = `${sname}__${mem.name.text}__vec`
+                    const sv = ud.addSynthVec(vname, vt.elem, vt.len)
+                    generated.push(makeVecClass(sv))
+                    return Ts.factory.updatePropertyDeclaration(
+                        mem,
+                        mem.modifiers,
+                        mem.name,
+                        mem.questionToken,
+                        Ts.factory.createTypeReferenceNode(vname),
+                        mem.initializer
+                    )
+                })
+                const updated = Ts.factory.updateClassDeclaration(
+                    stmt,
+                    stmt.modifiers,
+                    stmt.name,
+                    stmt.typeParameters,
+                    stmt.heritageClauses,
+                    members
+                )
+                return [...generated, updated]
+            })
+            return Ts.factory.updateSourceFile(sf, statements)
+        }
     }
 }
 
