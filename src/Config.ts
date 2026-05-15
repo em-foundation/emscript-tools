@@ -37,7 +37,7 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     }
     const ts = `em::table_${acc}<${Type.make(call.typeArguments![0])}, ${len}>`
     Out.print("%t%1%2%3 %4", es, cs, ts, dn)
-    if (Targ.isMain() && cobj.elems.length > 0) {
+    if (Targ.isMain()) {
         Out.print(" = {%+\n")
         for (let i = 0; i < len; i++) {
             Out.print("%t")

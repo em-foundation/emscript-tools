@@ -354,11 +354,14 @@ export function tableTransformer(ud: Unit.Desc): Ts.TransformerFactory<Ts.Source
                 // let dname = ((node.parent as Ts.VariableDeclaration).name as Ts.Identifier).text
 
                 const cname = `${ud.cname}::${(decl.name as Ts.Identifier).text}`
+                const valArg = init.arguments.length > 0
+                    ? init.arguments[0]
+                    : Ts.factory.createArrayLiteralExpression([], false)
                 const newInit = Ts.factory.updateCallExpression(
                     init,
                     init.expression,
                     init.typeArguments,
-                    [Ts.factory.createStringLiteral(acc), Ts.factory.createStringLiteral(cname)]
+                    [valArg, Ts.factory.createStringLiteral(acc), Ts.factory.createStringLiteral(cname)]
                 )
                 const newDecl = Ts.factory.updateVariableDeclaration(
                     decl,
