@@ -76,6 +76,7 @@ export function make(expr: Ts.Expression): string {
         // const DEBUG = txt.startsWith('Common.BusyWait.wait')
         const DEBUG = false
         if (DEBUG) console.log(`*** 0    kind = ${kind}, len = ${sa.length}`)
+        if (DEBUG) console.log(sa)
         if (DEBUG) console.log(Targ.context().ud.id)
         if (DEBUG) console.log(Targ.context().ud.imports)
         if (DEBUG) console.log(Targ.context().ud._proxies)
@@ -95,7 +96,11 @@ export function make(expr: Ts.Expression): string {
         }
         else if (kind != 'NONE' && kind != 'PROXY') {
             if (DEBUG) console.log('*** 3')
-            return sa.join('.')
+            let res = sa.join('.')
+            if (Targ.context().ud.imports.has(sa[0])) {
+                res = res.replace('.', '::')
+            }
+            return res
         }
         else if (tc.getTypeAtLocation(expr.expression).isClass()) {
             if (DEBUG) console.log(`*** 4    class ${texp}: ${etxt}`)
