@@ -35,7 +35,7 @@ export function genTable(decl: Ts.VariableDeclaration, dn: string) {
     if (cobj.tab_align > 0) {
         Out.print("alignas(%1) ", cobj.tab_align)
     }
-    const ts = `em::table_${acc}<${Type.make(call.typeArguments![0])}, ${len}>`
+    const ts = `em::table_${acc}_t<${Type.make(call.typeArguments![0])}, ${len}>`
     Out.print("%t%1%2%3 %4", es, cs, ts, dn)
     if (Targ.isMain()) {
         Out.print(" = {%+\n")

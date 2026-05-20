@@ -24,6 +24,8 @@ const builtins = new Set<string>([
     'u16',
     'u32',
     'u64',
+    'table_ro_t',
+    'table_rw_t',
     'text_t',
     'vec_t',
     'volatile_t'
