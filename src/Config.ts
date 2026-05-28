@@ -95,11 +95,11 @@ function printVal(val: any, ts?: string) {
             return
         }
         if (val.__em$class == 'em$cb') {
-            if (val.fxn == undefined) {
+            if (val.fname == undefined) {
                 Out.print("nullptr")
             }
             else {
-                Out.print("%1::%2", val.cname, val.fxn.name)
+                Out.print("%1::%2", val.cname, val.fname)
             }
             return
         }
