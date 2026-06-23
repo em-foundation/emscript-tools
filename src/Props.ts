@@ -102,6 +102,10 @@ function applyRequires(pm: PropMap) {
     reqs.split(', ').forEach(pn => addPackage(pn))
 }
 
+export function bindBoard(board: string) {
+    cur_props.set(PROP_BOARD, board)
+}
+
 export function bindProg(prog: string) {
     cur_props.set(PROP_PROG, prog)
 }

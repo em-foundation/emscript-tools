@@ -33,7 +33,7 @@ export function activate(root: string, mode: Mode, setup?: string): void {
     if (Fs.existsSync(buildDir)) Fs.rmSync(buildDir, { recursive: true })
     if (mode == Mode.CLEAN) return
     Fs.mkdirSync(buildDir)
-    Props.saveProps(Path.join(buildDir, 'props.json'))
+    // Props.saveProps(Path.join(buildDir, 'props.json'))
     process.chdir(root)
 }
 
@@ -106,6 +106,10 @@ export function listUnitPaths(): Array<string> {
 
 export function mkUid(upath: string): string {
     return `${Path.basename(Path.dirname(upath))}/${Path.basename(upath, '.em.ts')}`
+}
+
+export function saveProps() {
+    Props.saveProps(Path.join(buildDir, 'props.json'))
 }
 
 export function setUnits(umap: typeof $$units) {

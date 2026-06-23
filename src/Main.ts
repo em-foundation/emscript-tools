@@ -42,10 +42,8 @@ CMD.command('build')
     .option('-c --check', 'check TypeScript diagnostics', false)
     .option('-l --load', 'load after build', false)
     .option('-m --meta', 'meta-program only', false)
-    .option(
-        '-S --setup-properties <setup-name>',
-        `add definitions '<setup-name>-setup.properties'`
-    )
+    .option('-B --board [board-name]', `bind board`, '<bare-metal>')
+    .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
     .requiredOption(
         '-u --unit <qualified-name>',
         '<package-name>/<bucket-name>/<unit-name>'
@@ -148,11 +146,15 @@ function doBuild(opts: any): void {
         Session.Mode.BUILD,
         opts.setupProperties ?? ''
     )
+    if (opts.board) {
+        Props.bindBoard(opts.board)
+    }
     Props.bindProg(Session.mkUid(upath))
     if (!Props.getSetup()) {
         console.error('*** no setup defined')
         process.exit(1)
     }
+    Session.saveProps()
     printProgress('building', true)
     const parseResult = Meta.parse(upath, { check: opts.check })
     Meta.formatDiagnostics(parseResult.diagnostics).forEach(line => console.error(line))
