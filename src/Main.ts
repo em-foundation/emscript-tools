@@ -146,7 +146,7 @@ function doBuild(opts: any): void {
         Session.Mode.BUILD,
         opts.setupProperties ?? ''
     )
-    if (opts.board) {
+    if (CMD.getOptionValueSource('board') === 'cli') {
         Props.bindBoard(opts.board)
     }
     Props.bindProg(Session.mkUid(upath))
