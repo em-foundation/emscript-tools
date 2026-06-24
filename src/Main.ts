@@ -42,13 +42,13 @@ CMD.command('build')
     .option('-c --check', 'check TypeScript diagnostics', false)
     .option('-l --load', 'load after build', false)
     .option('-m --meta', 'meta-program only', false)
-    .option('-B --board [board-name]', `bind board`, '<bare-metal>')
+    .option('-B --board <board-name>', `bind board`)
     .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
     .requiredOption(
         '-u --unit <qualified-name>',
         '<package-name>/<bucket-name>/<unit-name>'
     )
-    .action((opts: any) => doBuild(opts))
+    .action((opts: any, cmd: Commander.Command) => doBuild(opts))
 CMD.command('clean')
     .description('clean this workspace')
     .action((opts: any) => doClean(opts))
@@ -146,7 +146,7 @@ function doBuild(opts: any): void {
         Session.Mode.BUILD,
         opts.setupProperties ?? ''
     )
-    if (CMD.getOptionValueSource('board') === 'cli') {
+    if (opts.board) {
         Props.bindBoard(opts.board)
     }
     Props.bindProg(Session.mkUid(upath))
