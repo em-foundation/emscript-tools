@@ -44,6 +44,7 @@ CMD.command('build')
     .option('-m --meta', 'meta-program only', false)
     .option('-B --board <board-name>', `bind board`)
     .option('-S --setup-properties <setup-name>', `add definitions '<setup-name>-setup.properties'`)
+    .option('--imports', 'display imports hiearchy', false)
     .requiredOption(
         '-u --unit <qualified-name>',
         '<package-name>/<bucket-name>/<unit-name>'
@@ -164,6 +165,14 @@ function doBuild(opts: any): void {
     }
     if (opts.check) {
         console.log(`check passed: ${parseResult.diagnostics.length} diagnostic(s)`)
+    }
+    if (opts.imports) {
+        for (const u of Unit.units().values()) {
+            console.log(`unit ${u.id}:`)
+            for (const iu of u.imports.values()) {
+                console.log(`    import ${iu}`)
+            }
+        }
     }
     Meta.exec()
     const unitCnt = Unit.units().size
