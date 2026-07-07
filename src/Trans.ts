@@ -45,6 +45,7 @@ export function configTransformer(): Ts.TransformerFactory<Ts.SourceFile> {
             const decl = declList.declarations[0]
             const init = decl.initializer
             if (init && Ts.isCallExpression(init) && Ts.isIdentifier(init.expression) && init.expression.text === '$config') {
+                /// TODO: enforce 'ro'
                 const acc = declList.flags & Ts.NodeFlags.Const ? 'ro' : 'rw'
                 const valArg = init.arguments.length > 0 ? init.arguments[0] : Ts.factory.createIdentifier('undefined')
                 const newInit = Ts.factory.updateCallExpression(
