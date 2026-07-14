@@ -1,6 +1,6 @@
 {
     "name": "emscript-cli",
-    "version": "26.3.1",
+    "version": "26.3.2",
     "bin": {
         "emscript": "./out/Main.js",
         "emscript-cli": "./out/Main.js"
@@ -23,5 +23,10 @@
         "@types/node": "^22.10.1",
         "tsx": "^4.19.3",
         "typescript": "^5.7.2"
+    },
+    "overrides": {
+        "@prantlf/railroad-diagrams": {
+            "js-yaml": "^4.1.1"
+        }
     }
 }
