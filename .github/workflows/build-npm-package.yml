@@ -1,0 +1,64 @@
+name: Build npm package
+
+on:
+  # push:
+  #   branches:
+  #     - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout emscript
+        uses: actions/checkout@v6
+        with:
+          path: emscript
+          token: ${{ secrets.token }}
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Get current version and date
+        id: date
+        run: |
+          echo "date=$(date -u +%Y%m%d%H%M)" >> $GITHUB_OUTPUT
+          echo "version=$(cat emscript/package.json | jq -r .version)" >> $GITHUB_OUTPUT
+
+      - name: Build emscript-cli package
+        run: |
+          VERSION_WITH_TIMESTAMP=${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}
+          pushd emscript
+          npm ci
+          npm run build-cli
+          rm -rf node_modules
+          file=$(npm pack .)
+          ls -l
+          echo file=${file}
+          mv ${file} emscript-cli-$VERSION_WITH_TIMESTAMP.tgz
+          popd
+
+      - name: Upload emscript package to npm-packages/resources
+        uses: softprops/action-gh-release@v3
+        with:
+          files: emscript/emscript-cli-${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}.tgz
+          repository: em-foundation/npm-packages
+          token: ${{ secrets.token }}
+          tag_name: resources
+  
+      - name: Tag repo
+        run: |
+          VERSION_WITH_TIMESTAMP=${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}
+          for repo in emscript
+          do
+            pushd $repo
+            git config --global user.name 'build workflow'
+            git config --global user.email 'hello@openem.org'
+            git remote set-url origin https://x-access-token:${{ secrets.token }}@github.com/em-foundation/$repo.git
+            git tag $VERSION_WITH_TIMESTAMP
+            git push --tags
+            popd
+          done
