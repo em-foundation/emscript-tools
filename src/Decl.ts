@@ -128,9 +128,9 @@ export function isVectorDecl(node: Ts.ClassDeclaration): boolean {
     return isAggDecl(node, 'vector')
 }
 
-export function makeVarDecl(decl: Ts.VariableDeclaration, agg_type: string = ''): string {
+export function makeVarDecl(decl: Ts.VariableDeclaration, rs: string): string {
     const dn = (decl.name as Ts.Identifier).text
     const ts = decl.type ? Type.make(decl.type) : 'auto'
     const init = decl.initializer ? ` = ${Expr.make(decl.initializer)}` : ''
-    return `${ts} ${dn}${init}`
+    return `${ts}${rs} ${dn}${init}`
 }
