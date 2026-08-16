@@ -389,10 +389,13 @@ function tsortUnits(): Array<string> {
     function dfs(uid: string) {
         if (visited.has(uid)) return
         visited.add(uid)
-        units.get(uid)!.imports.forEach(imp => {
-            dfs(imp)
-        })
-        res.push(uid)
+        const u = units.get(uid)
+        if (u) {
+            u.imports.forEach(imp => {
+                dfs(imp)
+            })
+            res.push(uid)
+        } else Err.fail(`no unit named '${uid}'`)
     }
     dfs(`${Session.getDistro().bucket}/BuildC`)
     dfs(Session.mkUid(curUpath))
